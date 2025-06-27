@@ -1,0 +1,52 @@
+{
+  "style_transfer": {
+    "free": [
+      {"label": "🖌️ Watercolor", "prompt": "watercolor painting"}
+    ],
+    "premium": [
+      {"label": "✏️ Pencil Sketch 💎", "prompt": "pencil sketch, detailed shading"},
+      {"label": "🖼️ Impressionist 💎", "prompt": "impressionist oil painting"},
+      {"label": "📷 Vintage Photo 💎", "prompt": "vintage 1960s photo"},
+      {"label": "🎞️ 90s Cartoon 💎", "prompt": "1990s cartoon, bold outlines"}
+    ]
+  },
+  "object_edit": {
+    "free": [{"label": "💇 Hair Color", "prompt": "change hair color to blonde"}],
+    "premium": [
+      {"label": "👓 Add Glasses 💎", "prompt": "add round glasses"},
+      {"label": "🧥 Change Outfit 💎", "prompt": "change outfit to business suit"},
+      {"label": "🎩 Add Hat 💎", "prompt": "add black top hat"}
+    ]
+  },
+  "text_edit": {
+    "free": [{"label": "✏️ Replace Text", "prompt": "\"replace 'OLD' with 'NEW'\""}],
+    "premium": [
+      {"label": "📐 Font 💎", "prompt": "change font to bold serif"},
+      {"label": "🎨 Color 💎", "prompt": "change text color to red"}
+    ]
+  },
+  "background_swap": {
+    "free": [{"label": "🏖️ Beach", "bg_file": "beach.jpg"}],
+    "premium": [
+      {"label": "🏙️ City 💎", "bg_file": "city.jpg"},
+      {"label": "🏞️ Mountains 💎", "bg_file": "mountains.jpg"},
+      {"label": "🌌 Space 💎", "bg_file": "space.jpg"}
+    ]
+  },
+  "face_enhance": {
+    "free": [{"label": "😊 Natural Smile", "prompt": "add subtle smile"}],
+    "premium": [
+      {"label": "💄 Makeup 💎", "prompt": "apply professional makeup subtly"},
+      {"label": "👦 Younger 💎", "prompt": "make face look 5 years younger"},
+      {"label": "👱 Haircut 💎", "prompt": "change haircut to short bob"}
+    ]
+  },
+  "animate": {
+    "free": [{"label": "🍃 Breeze", "kling_prompt": "gentle breeze"}],
+    "premium": [
+      {"label": "✨ Sparkle 💎", "kling_prompt": "sparkle effect"},
+      {"label": "🎞️ Zoom 💎", "kling_prompt": "slow cinematic zoom"},
+      {"label": "💡 Lights 💎", "kling_prompt": "moving light reflections"}
+    ]
+  }
+} 

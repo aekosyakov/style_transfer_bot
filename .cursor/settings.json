@@ -1,0 +1,24 @@
+{
+  "cursor.ai.allowedCommands": [
+    "./automation/deploy.sh *",
+    "./automation/deploy_and_monitor.sh *",
+    "./automation/setup_log_monitor.sh",
+    "./automation/log_monitor.py *",
+    "./automation/test_supir_complete.sh", 
+    "./automation/google_model_test.py *",
+    "./automation/realesrgan_model_test.sh",
+    "./magic_model_test.py *",
+    "./topaz_model_test.sh",
+    "./magic_model_test.sh",
+    "./all_models_comprehensive_test.sh",
+    "git status",
+    "git log --oneline -10",
+    "python bot.py",
+    "pythom *",
+    "ls -la",
+    "cat *.py",
+    "grep -r * *.py"
+  ],
+  "cursor.ai.autoApproveTerminal": true,
+  "cursor.ai.trustedWorkspace": true
+}

@@ -1,0 +1,10 @@
+{
+  "style_transfer": {
+    "free": [{"label": "🖌️ Watercolor", "prompt": "watercolor painting"}],
+    "premium": [{"label": "✏️ Pencil Sketch 💎", "prompt": "pencil sketch"}]
+  },
+  "animate": {
+    "free": [{"label": "🍃 Breeze", "kling_prompt": "gentle breeze"}],
+    "premium": [{"label": "✨ Sparkle 💎", "kling_prompt": "sparkle"}]
+  }
+} 
