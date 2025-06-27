@@ -29,22 +29,27 @@ class PaymentProcessor:
     ) -> bool:
         """Create and send premium subscription invoice."""
         try:
+            user_lang = L.get_user_language(update.effective_user)
+            
             if not self.provider_token:
                 logger.error("Provider token not configured")
-                await update.message.reply_text("Payment system temporarily unavailable.")
+                await update.message.reply_text(L.get("payment.system_unavailable", user_lang))
                 return False
             
             plan = self.premium_prices.get(plan_type, self.premium_prices["monthly"])
             
             # Create price list
-            prices = [LabeledPrice(label="Premium Subscription", amount=plan["amount"])]
+            prices = [LabeledPrice(
+                label=L.get("payment.premium_subscription", user_lang), 
+                amount=plan["amount"]
+            )]
             
             payload = f"premium_{plan_type}_{update.effective_user.id}"
             
             await context.bot.send_invoice(
                 chat_id=update.effective_chat.id,
-                title="🚀 Premium Subscription",
-                description=f"Unlock all premium features for {plan['duration_days']} days!",
+                title=L.get("payment.invoice_title", user_lang),
+                description=L.get("payment.invoice_description", user_lang, duration=plan['duration_days']),
                 payload=payload,
                 provider_token=self.provider_token,
                 currency="USD",
@@ -65,6 +70,7 @@ class PaymentProcessor:
             payment = update.message.successful_payment
             payload = payment.invoice_payload
             user_id = update.effective_user.id
+            user_lang = L.get_user_language(update.effective_user)
             
             # Parse payload to get plan type
             parts = payload.split("_")
@@ -76,8 +82,8 @@ class PaymentProcessor:
                 redis_client.set_user_premium(user_id, is_premium=True, duration_days=plan["duration_days"])
                 
                 await update.message.reply_text(
-                    f"🎉 Premium activated! Welcome to {plan_type} subscription.\n"
-                    f"Enjoy unlimited access to all features for {plan['duration_days']} days!"
+                    L.get("payment.success_message", user_lang, 
+                          plan_type=plan_type, duration=plan['duration_days'])
                 )
                 
                 logger.info(f"Premium activated for user {user_id}, plan: {plan_type}")

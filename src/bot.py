@@ -75,18 +75,7 @@ class StyleTransferBot:
             # Store user language preference
             redis_client.set_user_language(user.id, user_lang)
             
-            welcome_msg = (
-                f"🎨 Welcome to Style Transfer Bot, {user.first_name}!\n\n"
-                f"Transform your images with AI-powered enhancements:\n"
-                f"• 🖌️ Style Transfer\n"
-                f"• 👗 Object Editing\n"
-                f"• ✏️ Text Modification\n"
-                f"• 🌆 Background Swaps\n"
-                f"• 🧑 Face Enhancement\n"
-                f"• 📽 Image Animation\n\n"
-                f"Send me a photo to get started!"
-            )
-            
+            welcome_msg = L.get("msg.welcome", user_lang, name=user.first_name)
             keyboard = self._get_main_menu_keyboard(user_lang, user.id)
             
             await update.message.reply_text(
@@ -98,30 +87,19 @@ class StyleTransferBot:
             
         except Exception as e:
             logger.error(f"Error in start command: {e}")
-            await update.message.reply_text("Welcome! Send me a photo to enhance it with AI.")
+            fallback_msg = L.get("msg.welcome_fallback", L.get_user_language(update.effective_user))
+            await update.message.reply_text(fallback_msg)
     
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /help command."""
+        user_lang = L.get_user_language(update.effective_user)
+        
         help_text = (
-            "🤖 *Style Transfer Bot Help*\n\n"
-            "*How to use:*\n"
-            "1. Send me any photo\n"
-            "2. Choose enhancement type\n"
-            "3. Select specific style/effect\n"
-            "4. Wait for AI processing\n\n"
-            "*Features:*\n"
-            "🎨 Style Transfer - Apply artistic styles\n"
-            "👗 Object Edit - Modify objects/clothing\n"
-            "✏️ Text Edit - Change text in images\n"
-            "🌆 Background Swap - Replace backgrounds\n"
-            "🧑 Face Enhancement - Improve portraits\n"
-            "📽 Animation - Bring images to life\n\n"
-            "*Premium Benefits:*\n"
-            "💎 Access to premium effects\n"
-            "🚀 Priority processing\n"
-            "✨ Higher quality results\n"
-            "🎬 Longer animations\n\n"
-            "Use /premium to upgrade!"
+            f"{L.get('help.title', user_lang)}\n\n"
+            f"{L.get('help.how_to_use', user_lang)}\n\n"
+            f"{L.get('help.features', user_lang)}\n\n"
+            f"{L.get('help.premium_benefits', user_lang)}\n\n"
+            f"{L.get('help.upgrade_note', user_lang)}"
         )
         
         await update.message.reply_text(help_text, parse_mode='Markdown')
@@ -129,12 +107,12 @@ class StyleTransferBot:
     async def premium_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /premium command."""
         user_id = update.effective_user.id
+        user_lang = L.get_user_language(update.effective_user)
         is_premium = redis_client.is_user_premium(user_id)
         
         if is_premium:
             await update.message.reply_text(
-                "✨ You already have Premium access!\n"
-                "Enjoy unlimited features and priority processing."
+                L.get("premium.already_active", user_lang)
             )
         else:
             await self._show_premium_options(update, context)
@@ -142,14 +120,17 @@ class StyleTransferBot:
     async def status_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /status command."""
         user_id = update.effective_user.id
+        user_lang = L.get_user_language(update.effective_user)
         is_premium = redis_client.is_user_premium(user_id)
         
-        status_text = f"👤 *User Status*\n\n"
-        status_text += f"🆔 ID: `{user_id}`\n"
-        status_text += f"💎 Premium: {'✅ Active' if is_premium else '❌ Not Active'}\n"
+        status_text = f"{L.get('status.title', user_lang)}\n\n"
+        status_text += f"{L.get('status.user_id', user_lang, user_id=user_id)}\n"
         
-        if not is_premium:
-            status_text += f"\n💡 Upgrade to Premium for unlimited access!"
+        if is_premium:
+            status_text += L.get('status.premium_active', user_lang)
+        else:
+            status_text += L.get('status.premium_inactive', user_lang)
+            status_text += L.get('status.upgrade_note', user_lang)
         
         await update.message.reply_text(status_text, parse_mode='Markdown')
     
@@ -169,7 +150,7 @@ class StyleTransferBot:
             keyboard = self._get_enhancement_keyboard(user_lang, user_id)
             
             await update.message.reply_text(
-                "🎨 Great photo! What would you like to do with it?",
+                L.get("msg.photo_received", user_lang),
                 reply_markup=keyboard
             )
             
@@ -177,11 +158,13 @@ class StyleTransferBot:
             
         except Exception as e:
             logger.error(f"Error handling photo: {e}")
-            await update.message.reply_text("Error processing photo. Please try again.")
+            user_lang = L.get_user_language(update.effective_user)
+            await update.message.reply_text(L.get("msg.error_photo", user_lang))
     
     async def handle_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle text messages."""
         text = update.message.text.lower()
+        user_lang = L.get_user_language(update.effective_user)
         
         if "help" in text:
             await self.help_command(update, context)
@@ -189,7 +172,7 @@ class StyleTransferBot:
             await self.premium_command(update, context)
         else:
             await update.message.reply_text(
-                "Send me a photo to start enhancing it with AI! 📸"
+                L.get("msg.photo_upload_prompt", user_lang)
             )
     
     async def handle_callback_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -218,7 +201,7 @@ class StyleTransferBot:
             elif data.startswith("animate_"):
                 await self._handle_animation_request(update, context, data)
             else:
-                await query.edit_message_text("Unknown option selected.")
+                await query.edit_message_text(L.get("msg.unknown_option", user_lang))
                 
         except Exception as e:
             logger.error(f"Error handling callback query: {e}")
@@ -237,11 +220,12 @@ class StyleTransferBot:
         """Get main menu keyboard."""
         is_premium = redis_client.is_user_premium(user_id)
         
+        premium_text = L.get("btn.premium_features", lang) if is_premium else L.get("btn.upgrade_to_premium", lang)
+        
         keyboard = [
-            [InlineKeyboardButton("📸 Upload Photo", callback_data="upload_prompt")],
-            [InlineKeyboardButton("💎 Premium Features" if is_premium else "💎 Upgrade to Premium", 
-                                callback_data="premium_info")],
-            [InlineKeyboardButton("ℹ️ Help", callback_data="help")],
+            [InlineKeyboardButton(L.get("btn.upload_photo", lang), callback_data="upload_prompt")],
+            [InlineKeyboardButton(premium_text, callback_data="premium_info")],
+            [InlineKeyboardButton(L.get("btn.help", lang), callback_data="help")],
         ]
         
         return InlineKeyboardMarkup(keyboard)
@@ -260,7 +244,7 @@ class StyleTransferBot:
         ]
         
         if not is_premium:
-            keyboard.append([InlineKeyboardButton("💎 Unlock All Features", callback_data="premium_info")])
+            keyboard.append([InlineKeyboardButton(L.get("btn.unlock_all_features", lang), callback_data="premium_info")])
         
         return InlineKeyboardMarkup(keyboard)
     
@@ -270,27 +254,24 @@ class StyleTransferBot:
         keyboard = self._get_main_menu_keyboard(user_lang, update.effective_user.id)
         
         await update.callback_query.edit_message_text(
-            "🎨 Style Transfer Bot - Main Menu",
+            L.get("msg.main_menu", user_lang),
             reply_markup=keyboard
         )
     
     async def _show_premium_options(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show premium subscription options."""
+        user_lang = L.get_user_language(update.effective_user)
+        
         premium_text = (
-            "💎 *Premium Subscription*\n\n"
-            "*Premium Features:*\n"
-            "✨ All style effects unlocked\n"
-            "🎬 Extended animations\n"
-            "🚀 Priority processing\n"
-            "🎨 Higher quality results\n"
-            "👑 Exclusive premium styles\n\n"
-            "*Choose your plan:*"
+            f"{L.get('premium.title', user_lang)}\n\n"
+            f"{L.get('premium.features', user_lang)}\n\n"
+            f"{L.get('premium.choose_plan', user_lang)}"
         )
         
         keyboard = [
-            [InlineKeyboardButton("📅 Monthly - $9.99", callback_data="upgrade_monthly")],
-            [InlineKeyboardButton("📅 Yearly - $59.99 (Save 50%!)", callback_data="upgrade_yearly")],
-            [InlineKeyboardButton("🔙 Back", callback_data="main_menu")]
+            [InlineKeyboardButton(L.get("btn.monthly_plan", user_lang), callback_data="upgrade_monthly")],
+            [InlineKeyboardButton(L.get("btn.yearly_plan", user_lang), callback_data="upgrade_yearly")],
+            [InlineKeyboardButton(L.get("btn.back", user_lang), callback_data="main_menu")]
         ]
         
         if update.callback_query:
@@ -310,13 +291,14 @@ class StyleTransferBot:
         """Handle category selection."""
         category = data.replace("category_", "")
         user_id = update.effective_user.id
+        user_lang = L.get_user_language(update.effective_user)
         is_premium = redis_client.is_user_premium(user_id)
         
         # Get available options for category
         options = config.get_category_options(category, is_premium)
         
         if not options:
-            await update.callback_query.edit_message_text("No options available for this category.")
+            await update.callback_query.edit_message_text(L.get("msg.no_options", user_lang))
             return
         
         # Store category in context
@@ -330,10 +312,13 @@ class StyleTransferBot:
                 callback_data=f"option_{category}_{hash(option['label'])}"
             )])
         
-        keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="back_to_enhancements")])
+        keyboard.append([InlineKeyboardButton(L.get("btn.back", user_lang), callback_data="back_to_enhancements")])
+        
+        # Get localized category name
+        category_name = L.get(f"category.{category}", user_lang)
         
         await update.callback_query.edit_message_text(
-            f"Choose your {category.replace('_', ' ')} option:",
+            L.get("msg.category_selection", user_lang, category=category_name),
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
     
@@ -346,17 +331,18 @@ class StyleTransferBot:
             
             category = parts[1]
             user_id = update.effective_user.id
+            user_lang = L.get_user_language(update.effective_user)
             
             # Get photo from context
             photo_file_id = context.user_data.get('current_photo')
             if not photo_file_id:
                 await update.callback_query.edit_message_text(
-                    "Please upload a photo first!"
+                    L.get("msg.upload_photo_first", user_lang)
                 )
                 return
             
             # Show processing message
-            await update.callback_query.edit_message_text("🔄 Processing your image... This may take a moment!")
+            await update.callback_query.edit_message_text(L.get("msg.processing", user_lang))
             
             # Get photo URL
             photo_file = await context.bot.get_file(photo_file_id)
@@ -374,19 +360,20 @@ class StyleTransferBot:
                 await context.bot.send_photo(
                     chat_id=update.effective_chat.id,
                     photo=result_url,
-                    caption="✨ Your enhanced image is ready!"
+                    caption=L.get("msg.success", user_lang)
                 )
             else:
                 await context.bot.send_message(
                     chat_id=update.effective_chat.id,
-                    text="❌ Processing failed. Please try again."
+                    text=L.get("msg.error", user_lang)
                 )
                 
         except Exception as e:
             logger.error(f"Error processing option selection: {e}")
+            user_lang = L.get_user_language(update.effective_user)
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="❌ An error occurred during processing."
+                text=L.get("msg.error_occurred", user_lang)
             )
     
     async def _handle_animation_request(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:
