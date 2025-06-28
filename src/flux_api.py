@@ -21,7 +21,9 @@ class FluxAPI:
         image_url: str,
         prompt: str,
         model_type: str = "pro",
-        strength: float = 0.6,
+        aspect_ratio: str = "match_input_image",
+        output_format: str = "jpg",
+        safety_tolerance: int = 2,
         seed: Optional[int] = None
     ) -> Optional[str]:
         """
@@ -31,7 +33,9 @@ class FluxAPI:
             image_url: URL or base64 encoded image
             prompt: Enhancement prompt
             model_type: 'pro' or 'max'
-            strength: Edit strength (0-1)
+            aspect_ratio: Aspect ratio or "match_input_image"
+            output_format: Output format (jpg, png, webp)
+            safety_tolerance: Safety tolerance (0-6, max 2 with input images)
             seed: Optional seed for determinism
             
         Returns:
@@ -53,9 +57,10 @@ class FluxAPI:
             
             input_params = {
                 "prompt": prompt,
-                "image": image_url,
-                "model_version": f"flux-kontext-{model_type}",
-                "strength": strength
+                "input_image": image_url,
+                "aspect_ratio": aspect_ratio,
+                "output_format": output_format,
+                "safety_tolerance": safety_tolerance
             }
             
             if seed is not None:
@@ -98,24 +103,24 @@ class FluxAPI:
     
     def get_prompt_template(self, category: str, style_or_effect: str) -> str:
         """
-        Generate prompt based on category and desired effect.
+        Generate prompt based on category and desired effect using FLUX best practices.
         
         Args:
             category: Enhancement category
             style_or_effect: Desired style or effect
             
         Returns:
-            Formatted prompt
+            Formatted prompt following FLUX Kontext best practices
         """
         templates = {
-            "style_transfer": f"{style_or_effect} painting, keep composition",
-            "object_edit": f"Replace object with {style_or_effect} while preserving lighting",
-            "text_edit": f"replace text with '{style_or_effect}'",
-            "background_swap": f"Change background to {style_or_effect}, keep subject position",
-            "face_enhance": f"Add {style_or_effect} to the face, preserve identity"
+            "style_transfer": f"Convert this to a {style_or_effect} style while maintaining the original composition and subject positioning",
+            "object_edit": f"Change the main object to {style_or_effect} while preserving the lighting, background, and overall scene composition",
+            "text_edit": f"Replace the text with '{style_or_effect}' while keeping the same font style and text placement",
+            "background_swap": f"Change the background to {style_or_effect} while keeping the person in the exact same position and maintaining original lighting",
+            "face_enhance": f"Apply {style_or_effect} to enhance the face while preserving the person's identity and facial features"
         }
         
-        template = templates.get(category, style_or_effect)
+        template = templates.get(category, f"Apply {style_or_effect} enhancement while maintaining the original composition")
         logger.debug(f"Generated prompt template for {category}: {template}")
         return template
     
@@ -123,52 +128,52 @@ class FluxAPI:
         self, 
         image_url: str, 
         style: str, 
-        strength: float = 0.6
+        safety_tolerance: int = 2
     ) -> Optional[str]:
         """Apply style transfer to image."""
         prompt = self.get_prompt_template("style_transfer", style)
-        return await self.process_image(image_url, prompt, strength=strength)
+        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
     
     async def edit_object(
         self, 
         image_url: str, 
         object_description: str, 
-        strength: float = 0.7
+        safety_tolerance: int = 2
     ) -> Optional[str]:
         """Edit objects in image."""
         prompt = self.get_prompt_template("object_edit", object_description)
-        return await self.process_image(image_url, prompt, strength=strength)
+        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
     
     async def edit_text(
         self, 
         image_url: str, 
         old_text: str, 
         new_text: str, 
-        strength: float = 0.8
+        safety_tolerance: int = 2
     ) -> Optional[str]:
         """Edit text in image."""
-        prompt = f"replace '{old_text}' with '{new_text}'"
-        return await self.process_image(image_url, prompt, strength=strength)
+        prompt = f"Replace '{old_text}' with '{new_text}' while keeping the same font style and text placement"
+        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
     
     async def swap_background(
         self, 
         image_url: str, 
         background_description: str, 
-        strength: float = 0.7
+        safety_tolerance: int = 2
     ) -> Optional[str]:
         """Swap image background."""
         prompt = self.get_prompt_template("background_swap", background_description)
-        return await self.process_image(image_url, prompt, strength=strength)
+        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
     
     async def enhance_face(
         self, 
         image_url: str, 
         enhancement: str, 
-        strength: float = 0.5
+        safety_tolerance: int = 1
     ) -> Optional[str]:
         """Enhance faces in image."""
         prompt = self.get_prompt_template("face_enhance", enhancement)
-        return await self.process_image(image_url, prompt, strength=strength)
+        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
     
     def validate_image_url(self, url: str) -> bool:
         """Validate image URL format."""
