@@ -46,9 +46,13 @@ class StyleTransferBot:
         """Set up all bot handlers."""
         # Command handlers
         self.app.add_handler(CommandHandler("start", self.start_command))
-        self.app.add_handler(CommandHandler("help", self.help_command))
         self.app.add_handler(CommandHandler("premium", self.premium_command))
         self.app.add_handler(CommandHandler("status", self.status_command))
+        self.app.add_handler(CommandHandler("settings", self.settings_command))
+        self.app.add_handler(CommandHandler("feedback", self.feedback_command))
+        self.app.add_handler(CommandHandler("about", self.about_command))
+        self.app.add_handler(CommandHandler("invite", self.invite_command))
+        self.app.add_handler(CommandHandler("support", self.support_command))
         
         # Debug commands (only in debug mode)
         if self.debug:
@@ -92,20 +96,7 @@ class StyleTransferBot:
             fallback_msg = L.get("msg.welcome_fallback", L.get_user_language(update.effective_user))
             await update.message.reply_text(fallback_msg)
     
-    async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle /help command."""
-        user_lang = L.get_user_language(update.effective_user)
-        
-        help_text = (
-            f"{L.get('help.title', user_lang)}\n\n"
-            f"{L.get('help.how_to_use', user_lang)}\n\n"
-            f"{L.get('help.features', user_lang)}\n\n"
-            f"{L.get('help.premium_benefits', user_lang)}\n\n"
-            f"{L.get('help.upgrade_note', user_lang)}"
-        )
-        
-        await update.message.reply_text(help_text, parse_mode='Markdown')
-    
+
     async def premium_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /premium command."""
         user_id = update.effective_user.id
@@ -135,6 +126,163 @@ class StyleTransferBot:
             status_text += L.get('status.upgrade_note', user_lang)
         
         await update.message.reply_text(status_text, parse_mode='Markdown')
+    
+    async def settings_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /settings command."""
+        user_id = update.effective_user.id
+        user_lang = L.get_user_language(update.effective_user)
+        
+        settings_text = (
+            "⚙️ **Personal Settings**\n\n"
+            f"🌐 Language: {L.get('lang_name', user_lang)}\n"
+            f"👤 User ID: `{user_id}`\n"
+            f"📊 Status: {'💎 Premium' if redis_client.is_user_premium(user_id) else '🆓 Free'}\n\n"
+            "Use the buttons below to modify your settings:"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("🇺🇸 English", callback_data="lang_en")],
+            [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+        ]
+        
+        try:
+            await update.message.reply_text(
+                settings_text,
+                reply_markup=InlineKeyboardMarkup(keyboard),
+                parse_mode='Markdown'
+            )
+        except Exception as e:
+            logger.error(f"Error in settings command: {e}")
+            await update.message.reply_text("Settings will be available soon!")
+    
+    async def feedback_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /feedback command."""
+        user_lang = L.get_user_language(update.effective_user)
+        
+        feedback_text = (
+            "💬 **Send Us Your Feedback**\n\n"
+            "We value your opinion! Help us improve the bot by sharing:\n\n"
+            "• 🐛 Bug reports\n"
+            "• 💡 Feature suggestions\n"
+            "• 📈 Performance feedback\n"
+            "• 🎨 Style requests\n\n"
+            "Simply reply to this message with your feedback, "
+            "or contact us at @StyleTransferSupport"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("📧 Contact Support", url="https://t.me/StyleTransferSupport")],
+            [InlineKeyboardButton("⭐ Rate Us", url="https://t.me/share/url?url=Check%20out%20this%20amazing%20style%20transfer%20bot!")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+        ]
+        
+        await update.message.reply_text(
+            feedback_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+    
+    async def about_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /about command."""
+        user_lang = L.get_user_language(update.effective_user)
+        
+        about_text = (
+            "ℹ️ **About Style Transfer Bot**\n\n"
+            "🎨 Transform your photos with AI-powered style transfer!\n\n"
+            "**Features:**\n"
+            "• 🖼️ Style Transfer - 15 unique artistic styles\n"
+            "• 🌅 Background Swap - 21 stunning backgrounds\n"
+            "• ✨ Object Editing - Smart object modifications\n"
+            "• 📝 Text Editing - Add/remove text from images\n"
+            "• 👤 Face Enhancement - Professional photo touch-ups\n"
+            "• 🎬 Animation - Bring your photos to life\n\n"
+            "**Technology:**\n"
+            "• Powered by FLUX Kontext Pro AI\n"
+            "• Kling AI for animations\n"
+            "• High-quality image processing\n\n"
+            "**Version:** 2.0\n"
+            "**Last Update:** December 2024"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("🚀 Try Premium", callback_data="premium_info")],
+            [InlineKeyboardButton("🤝 Invite Friends", callback_data="invite_friends")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+        ]
+        
+        await update.message.reply_text(
+            about_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+    
+    async def invite_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /invite command."""
+        user_lang = L.get_user_language(update.effective_user)
+        bot_username = "StyleTransferBot"  # Replace with actual bot username
+        
+        invite_text = (
+            "🤝 **Invite Friends & Earn Rewards**\n\n"
+            "Share the magic of AI-powered photo transformation!\n\n"
+            "**Your Referral Benefits:**\n"
+            "• 🎁 Get 1 week free premium for each friend\n"
+            "• 🏆 Unlock exclusive styles at 5 referrals\n"
+            "• 💎 Permanent premium at 10 referrals\n\n"
+            f"**Your Invite Link:**\n"
+            f"`https://t.me/{bot_username}?start=ref_{update.effective_user.id}`\n\n"
+            "**Share Message:**\n"
+            "_Transform your photos with AI! Check out this amazing style transfer bot 🎨_"
+        )
+        
+        share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=ref_{update.effective_user.id}&text=Transform%20your%20photos%20with%20AI!%20Check%20out%20this%20amazing%20style%20transfer%20bot%20🎨"
+        
+        keyboard = [
+            [InlineKeyboardButton("📤 Share Invite Link", url=share_url)],
+            [InlineKeyboardButton("📊 My Referrals", callback_data="referral_stats")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+        ]
+        
+        await update.message.reply_text(
+            invite_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+    
+    async def support_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /support command."""
+        user_lang = L.get_user_language(update.effective_user)
+        
+        support_text = (
+            "🛠️ **Support & Help Center**\n\n"
+            "Need assistance? We're here to help!\n\n"
+            "**Quick Help:**\n"
+            "• 📸 Upload any photo to start\n"
+            "• 🎨 Choose from 50+ style options\n"
+            "• ⏱️ Processing takes 30-60 seconds\n"
+            "• 💾 Results are saved for 24 hours\n\n"
+            "**Troubleshooting:**\n"
+            "• Photo not processing? Try a smaller file\n"
+            "• Styles locked? Upgrade to premium\n"
+            "• Bot not responding? Contact support\n\n"
+            "**Contact Options:**\n"
+            "• 💬 Telegram: @StyleTransferSupport\n"
+            "• 📧 Email: support@styletransfer.bot\n"
+            "• ⏰ Response time: Under 2 hours"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("💬 Live Chat", url="https://t.me/StyleTransferSupport")],
+            [InlineKeyboardButton("📚 FAQ", callback_data="show_faq")],
+            [InlineKeyboardButton("🐛 Report Bug", callback_data="report_bug")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+        ]
+        
+        await update.message.reply_text(
+            support_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
     
     async def debug_premium_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Debug command to grant premium status."""
@@ -208,9 +356,7 @@ class StyleTransferBot:
         text = update.message.text.lower()
         user_lang = L.get_user_language(update.effective_user)
         
-        if "help" in text:
-            await self.help_command(update, context)
-        elif "premium" in text:
+        if "premium" in text:
             await self.premium_command(update, context)
         else:
             await update.message.reply_text(
@@ -239,6 +385,18 @@ class StyleTransferBot:
                 await self._show_upload_prompt(update, context)
             elif data == "help":
                 await self._show_help_message(update, context)
+            elif data == "lang_en":
+                await self._handle_language_change(update, context, 'en')
+            elif data == "lang_ru":
+                await self._handle_language_change(update, context, 'ru')
+            elif data == "invite_friends":
+                await self._handle_invite_callback(update, context)
+            elif data == "referral_stats":
+                await self._show_referral_stats(update, context)
+            elif data == "show_faq":
+                await self._show_faq(update, context)
+            elif data == "report_bug":
+                await self._show_bug_report(update, context)
             elif data.startswith("upgrade_"):
                 plan_type = data.replace("upgrade_", "")
                 await payment_processor.create_premium_invoice(update, context, plan_type)
@@ -630,6 +788,112 @@ class StyleTransferBot:
         """Handle animation requests."""
         # Implementation for animation handling
         pass
+    
+    async def _handle_language_change(self, update: Update, context: ContextTypes.DEFAULT_TYPE, lang: str) -> None:
+        """Handle language change requests."""
+        user_id = update.effective_user.id
+        redis_client.set_user_language(user_id, lang)
+        
+        # Get new language text
+        new_lang_text = "Language changed to English! 🇺🇸" if lang == 'en' else "Язык изменен на русский! 🇷🇺"
+        
+        keyboard = [
+            [InlineKeyboardButton("🏠 Main Menu" if lang == 'en' else "🏠 Главное меню", callback_data="main_menu")]
+        ]
+        
+        await update.callback_query.edit_message_text(
+            new_lang_text,
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    
+    async def _handle_invite_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle invite callback from about page."""
+        await self.invite_command(update, context)
+    
+    async def _show_referral_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Show referral statistics."""
+        user_id = update.effective_user.id
+        user_lang = L.get_user_language(update.effective_user)
+        
+        # Mock data for now - implement actual referral tracking later
+        referral_count = 0
+        rewards_earned = 0
+        
+        stats_text = (
+            "📊 **Your Referral Statistics**\n\n"
+            f"👥 Friends Invited: {referral_count}\n"
+            f"🎁 Rewards Earned: {rewards_earned} days premium\n"
+            f"🏆 Next Reward: {'5 referrals for exclusive styles' if referral_count < 5 else '10 referrals for permanent premium'}\n\n"
+            "Keep sharing to unlock more rewards! 🚀"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("📤 Share More", callback_data="invite_friends")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+        ]
+        
+        await update.callback_query.edit_message_text(
+            stats_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+    
+    async def _show_faq(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Show frequently asked questions."""
+        user_lang = L.get_user_language(update.effective_user)
+        
+        faq_text = (
+            "📚 **Frequently Asked Questions**\n\n"
+            "**Q: How long does processing take?**\n"
+            "A: Usually 30-60 seconds depending on complexity.\n\n"
+            "**Q: What file formats are supported?**\n"
+            "A: JPEG, PNG up to 10MB.\n\n"
+            "**Q: How do I get premium features?**\n"
+            "A: Use /premium command to see subscription options.\n\n"
+            "**Q: Can I use my own prompts?**\n"
+            "A: Currently we use pre-defined styles for best results.\n\n"
+            "**Q: Is my data safe?**\n"
+            "A: Yes, all images are processed securely and deleted after 24 hours."
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("💬 Ask Support", url="https://t.me/StyleTransferSupport")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+        ]
+        
+        await update.callback_query.edit_message_text(
+            faq_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+    
+    async def _show_bug_report(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Show bug report information."""
+        user_lang = L.get_user_language(update.effective_user)
+        user_id = update.effective_user.id
+        
+        bug_text = (
+            "🐛 **Report a Bug**\n\n"
+            "Help us improve by reporting any issues you encounter!\n\n"
+            "**To report a bug, please include:**\n"
+            "• 📝 What you were trying to do\n"
+            "• ❌ What went wrong\n"
+            "• 📱 Your device type\n"
+            "• 🆔 Your User ID (for reference)\n\n"
+            f"**Your User ID:** `{user_id}`\n\n"
+            "Send your bug report to @StyleTransferSupport"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("📧 Report Bug", url="https://t.me/StyleTransferSupport")],
+            [InlineKeyboardButton("🏠 Main Menu", callback_data="main_menu")]
+        ]
+        
+        await update.callback_query.edit_message_text(
+            bug_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
     
     def run(self) -> None:
         """Start the bot."""
