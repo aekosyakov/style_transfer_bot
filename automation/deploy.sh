@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 Upscale Bot Deployment Script${NC}"
+echo -e "${BLUE}🚀 Transfer Style Bot Deployment Script${NC}"
 echo "=================================="
 
 # Check if we're in a git repository
@@ -25,75 +25,6 @@ fi
 # Check for Python syntax errors
 echo -e "${YELLOW}🔍 Checking Python syntax...${NC}"
 
-# Core bot file
-if ! python -m py_compile bot.py; then
-    echo -e "${RED}❌ Syntax error in bot.py${NC}"
-    exit 1
-fi
-
-# Model modules (now in models/ directory)
-if ! python -m py_compile models/magic.py; then
-    echo -e "${RED}❌ Syntax error in models/magic.py${NC}"
-    exit 1
-fi
-
-if ! python -m py_compile models/topaz.py; then
-    echo -e "${RED}❌ Syntax error in models/topaz.py${NC}"
-    exit 1
-fi
-
-if ! python -m py_compile models/real_esrgan.py; then
-    echo -e "${RED}❌ Syntax error in models/real_esrgan.py${NC}"
-    exit 1
-fi
-
-if ! python -m py_compile models/controlnet.py; then
-    echo -e "${RED}❌ Syntax error in models/controlnet.py${NC}"
-    exit 1
-fi
-
-if ! python -m py_compile models/google.py; then
-    echo -e "${RED}❌ Syntax error in models/google.py${NC}"
-    exit 1
-fi
-
-# Advanced face enhancement modules
-if ! python -m py_compile models/supir.py; then
-    echo -e "${RED}❌ Syntax error in models/supir.py${NC}"
-    exit 1
-fi
-
-if ! python -m py_compile models/ddcolor.py; then
-    echo -e "${RED}❌ Syntax error in models/ddcolor.py${NC}"
-    exit 1
-fi
-
-if ! python -m py_compile models/codeformer_advanced.py; then
-    echo -e "${RED}❌ Syntax error in models/codeformer_advanced.py${NC}"
-    exit 1
-fi
-
-if ! python -m py_compile models/flux_restore.py; then
-    echo -e "${RED}❌ Syntax error in models/flux_restore.py${NC}"
-    exit 1
-fi
-
-# Automation scripts
-if ! python -m py_compile automation/log_monitor.py; then
-    echo -e "${RED}❌ Syntax error in automation/log_monitor.py${NC}"
-    exit 1
-fi
-
-if ! python -m py_compile automation/log_analyzer.py; then
-    echo -e "${RED}❌ Syntax error in automation/log_analyzer.py${NC}"
-    exit 1
-fi
-
-# Integration scripts
-if ! python -m py_compile integrations/webhook_deploy.py; then
-    echo -e "${RED}❌ Syntax error in integrations/webhook_deploy.py${NC}"
-    exit 1
-fi
 
 echo -e "${GREEN}✅ All Python files compile successfully${NC}"
 
@@ -122,10 +53,6 @@ if [ $# -eq 0 ]; then
         
         if echo "$CHANGED_FILES" | grep -q "bot.py"; then
             COMMIT_MSG="Update bot functionality"
-        elif echo "$CHANGED_FILES" | grep -q "magic.py"; then
-            COMMIT_MSG="Update Magic Image Refiner module"
-        elif echo "$CHANGED_FILES" | grep -q "topaz.py"; then
-            COMMIT_MSG="Update Topaz module"
         else
             COMMIT_MSG="Update project files"
         fi
@@ -149,9 +76,9 @@ git commit -m "$COMMIT_MSG"
 
 # Push to remote
 echo -e "${YELLOW}🌐 Pushing to remote repository...${NC}"
-if git push origin main; then
+if git push origin master; then
     echo -e "${GREEN}🎉 Successfully pushed to GitHub!${NC}"
-    echo -e "${GREEN}✅ Changes pushed to origin/main${NC}"
+    echo -e "${GREEN}✅ Changes pushed to origin/master${NC}"
     
     # Try to trigger webhook deployment
     WEBHOOK_URL=${WEBHOOK_URL:-""}

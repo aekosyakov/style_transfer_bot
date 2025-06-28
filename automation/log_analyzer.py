@@ -51,21 +51,7 @@ class LogAnalyzer:
                                     "timestamp": timestamp,
                                     "message": message
                                 })
-                            
-                            # Categorize errors by type (simple keyword matching)
-                            error_type = "UNKNOWN"
-                            if "FLUX" in message:
-                                error_type = "FLUX_RESTORE"
-                            elif "SUPIR" in message:
-                                error_type = "SUPIR"
-                            elif "DDColor" in message:
-                                error_type = "DDCOLOR"
-                            elif "CodeFormer" in message:
-                                error_type = "CODEFORMER"
-                            elif "Magic" in message:
-                                error_type = "MAGIC"
-                            elif "Real-ESRGAN" in message:
-                                error_type = "REALESRGAN"
+
                             
                             if error_type not in analysis["error_summary"]:
                                 analysis["error_summary"][error_type] = 0
