@@ -68,5 +68,7 @@
   "category.text_edit": "text edit",
   "category.background_swap": "background swap",
   "category.face_enhance": "face enhance",
-  "category.animate": "animation"
+  "category.animate": "animation",
+
+  "lang_name": "English"
 } 
