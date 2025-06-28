@@ -1,14 +1,14 @@
 {
   "style_transfer": {
     "free": [
-      {"label": "✏️ Pencil Sketch", "prompt": "detailed pencil sketch with realistic shading"},
-      {"label": "🎨 Digital Art", "prompt": "modern digital art illustration"}
+      {"label": "✏️ Pencil Sketch", "prompt": "Make this a pencil sketch"},
+      {"label": "🎨 Digital Art", "prompt": "Make this digital art"}
     ],
     "premium": [
-      {"label": "🌸 Anime Style 💎", "prompt": "Japanese anime art style with large expressive eyes"},
-      {"label": "💥 Comic Book 💎", "prompt": "superhero comic book illustration with bold outlines"},
-      {"label": "🎞️ 90s Cartoon 💎", "prompt": "1990s animated cartoon style with thick black outlines"},
-      {"label": "🌌 Sci-Fi Art 💎", "prompt": "futuristic sci-fi digital art with neon effects"}
+      {"label": "🌸 Anime Style 💎", "prompt": "Make this anime style"},
+      {"label": "💥 Comic Book 💎", "prompt": "Make this a comic book"},
+      {"label": "🎞️ 90s Cartoon 💎", "prompt": "Make this a 90s cartoon"},
+      {"label": "🌌 Sci-Fi Art 💎", "prompt": "Make this sci-fi art"}
     ]
   },
   "animate": {

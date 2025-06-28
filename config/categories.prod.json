@@ -1,23 +1,23 @@
 {
   "style_transfer": {
     "free": [
-      {"label": "✏️ Pencil Sketch", "prompt": "detailed pencil sketch with realistic shading"},
-      {"label": "🎨 Digital Art", "prompt": "modern digital art illustration"},
-      {"label": "🖼️ Pop Art", "prompt": "vibrant pop art style with bold colors"}
+      {"label": "✏️ Pencil Sketch", "prompt": "Make this a pencil sketch"},
+      {"label": "🎨 Digital Art", "prompt": "Make this digital art"},
+      {"label": "🖼️ Pop Art", "prompt": "Make this pop art"}
     ],
     "premium": [
-      {"label": "🌸 Anime Style 💎", "prompt": "Japanese anime art style with large expressive eyes"},
-      {"label": "💥 Comic Book 💎", "prompt": "superhero comic book illustration with bold outlines"},
-      {"label": "🎞️ 90s Cartoon 💎", "prompt": "1990s animated cartoon style with thick black outlines"},
-      {"label": "🖼️ Impressionist 💎", "prompt": "French impressionist oil painting with visible brushstrokes"},
-      {"label": "📷 Vintage Photo 💎", "prompt": "sepia-toned vintage 1940s photograph"},
-      {"label": "🌌 Sci-Fi Art 💎", "prompt": "futuristic sci-fi digital art with neon effects"},
-      {"label": "🎭 Art Nouveau 💎", "prompt": "elegant Art Nouveau style with flowing organic lines"},
-      {"label": "🌈 Psychedelic 💎", "prompt": "vibrant psychedelic art with swirling patterns"},
-      {"label": "🏛️ Renaissance 💎", "prompt": "classical Renaissance oil painting style"},
-      {"label": "🎮 Pixel Art 💎", "prompt": "8-bit pixel art retro gaming style"},
-      {"label": "🌸 Ukiyo-e 💎", "prompt": "traditional Japanese woodblock print style"},
-      {"label": "🖤 Film Noir 💎", "prompt": "dramatic black and white film noir style with high contrast"}
+      {"label": "🌸 Anime Style 💎", "prompt": "Make this anime style"},
+      {"label": "💥 Comic Book 💎", "prompt": "Make this a comic book"},
+      {"label": "🎞️ 90s Cartoon 💎", "prompt": "Make this a 90s cartoon"},
+      {"label": "🖼️ Impressionist 💎", "prompt": "Make this an impressionist painting"},
+      {"label": "📷 Vintage Photo 💎", "prompt": "Make this a vintage photo"},
+      {"label": "🌌 Sci-Fi Art 💎", "prompt": "Make this sci-fi art"},
+      {"label": "🎭 Art Nouveau 💎", "prompt": "Make this Art Nouveau style"},
+      {"label": "🌈 Psychedelic 💎", "prompt": "Make this psychedelic art"},
+      {"label": "🏛️ Renaissance 💎", "prompt": "Make this a Renaissance painting"},
+      {"label": "🎮 Pixel Art 💎", "prompt": "Make this pixel art"},
+      {"label": "🌸 Ukiyo-e 💎", "prompt": "Make this a Japanese woodblock print"},
+      {"label": "🖤 Film Noir 💎", "prompt": "Make this film noir style"}
     ]
   },
   "object_edit": {

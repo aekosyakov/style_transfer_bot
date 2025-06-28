@@ -101,28 +101,19 @@ class FluxAPI:
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
     
-    def get_prompt_template(self, category: str, style_or_effect: str) -> str:
+    def get_simple_prompt(self, category: str, prompt: str) -> str:
         """
-        Generate prompt based on category and desired effect using FLUX best practices.
+        Return the prompt as-is for simple, direct instructions.
         
         Args:
-            category: Enhancement category
-            style_or_effect: Desired style or effect
+            category: Enhancement category (for logging only)
+            prompt: Direct prompt like "Make this a 90s cartoon"
             
         Returns:
-            Formatted prompt following FLUX Kontext best practices
+            The same prompt, unchanged
         """
-        templates = {
-            "style_transfer": f"Convert this to a {style_or_effect} style while maintaining the original composition and subject positioning",
-            "object_edit": f"Change the main object to {style_or_effect} while preserving the lighting, background, and overall scene composition",
-            "text_edit": f"Replace the text with '{style_or_effect}' while keeping the same font style and text placement",
-            "background_swap": f"Change the background to {style_or_effect} while keeping the person in the exact same position and maintaining original lighting",
-            "face_enhance": f"Apply {style_or_effect} to enhance the face while preserving the person's identity and facial features"
-        }
-        
-        template = templates.get(category, f"Apply {style_or_effect} enhancement while maintaining the original composition")
-        logger.debug(f"Generated prompt template for {category}: {template}")
-        return template
+        logger.debug(f"Using direct prompt for {category}: {prompt}")
+        return prompt
     
     async def style_transfer(
         self, 
@@ -131,8 +122,8 @@ class FluxAPI:
         safety_tolerance: int = 2
     ) -> Optional[str]:
         """Apply style transfer to image."""
-        prompt = self.get_prompt_template("style_transfer", style)
-        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
+        # Use the style prompt directly - it should already be in format like "Make this a 90s cartoon"
+        return await self.process_image(image_url, style, safety_tolerance=safety_tolerance)
     
     async def edit_object(
         self, 
@@ -141,8 +132,8 @@ class FluxAPI:
         safety_tolerance: int = 2
     ) -> Optional[str]:
         """Edit objects in image."""
-        prompt = self.get_prompt_template("object_edit", object_description)
-        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
+        # Use simple direct prompts
+        return await self.process_image(image_url, object_description, safety_tolerance=safety_tolerance)
     
     async def edit_text(
         self, 
@@ -152,7 +143,7 @@ class FluxAPI:
         safety_tolerance: int = 2
     ) -> Optional[str]:
         """Edit text in image."""
-        prompt = f"Replace '{old_text}' with '{new_text}' while keeping the same font style and text placement"
+        prompt = f"Replace '{old_text}' with '{new_text}'"
         return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
     
     async def swap_background(
@@ -162,8 +153,8 @@ class FluxAPI:
         safety_tolerance: int = 2
     ) -> Optional[str]:
         """Swap image background."""
-        prompt = self.get_prompt_template("background_swap", background_description)
-        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
+        # Use simple direct prompts
+        return await self.process_image(image_url, background_description, safety_tolerance=safety_tolerance)
     
     async def enhance_face(
         self, 
@@ -172,8 +163,8 @@ class FluxAPI:
         safety_tolerance: int = 1
     ) -> Optional[str]:
         """Enhance faces in image."""
-        prompt = self.get_prompt_template("face_enhance", enhancement)
-        return await self.process_image(image_url, prompt, safety_tolerance=safety_tolerance)
+        # Use simple direct prompts
+        return await self.process_image(image_url, enhancement, safety_tolerance=safety_tolerance)
     
     def validate_image_url(self, url: str) -> bool:
         """Validate image URL format."""

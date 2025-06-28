@@ -32,19 +32,19 @@ async def test_flux_api_config():
     for model_type, model_id in config.flux_models.items():
         logger.info(f"Model {model_type}: {model_id}")
     
-    # Test prompt generation with new exciting styles
+    # Test prompt generation with simple direct prompts
     test_prompts = [
-        ("style_transfer", "Japanese anime art style with large expressive eyes"),
-        ("style_transfer", "superhero comic book illustration with bold outlines"),
-        ("style_transfer", "futuristic sci-fi digital art with neon effects"),
-        ("object_edit", "red sports car"),
+        ("style_transfer", "Make this anime style"),
+        ("style_transfer", "Make this a comic book"),
+        ("style_transfer", "Make this a 90s cartoon"),
+        ("object_edit", "Change to red sports car"),
         ("text_edit", "Hello World"),
-        ("background_swap", "mountain landscape"),
-        ("face_enhance", "natural skin smoothing")
+        ("background_swap", "Change background to mountains"),
+        ("face_enhance", "Enhance face naturally")
     ]
     
     for category, effect in test_prompts:
-        prompt = flux_api.get_prompt_template(category, effect)
+        prompt = flux_api.get_simple_prompt(category, effect)
         logger.info(f"{category}: {prompt}")
     
     return True
@@ -59,7 +59,7 @@ async def test_flux_api_call():
     
     # Test parameters
     test_params = {
-        "prompt": "Convert this to a Japanese anime art style with large expressive eyes while maintaining the original composition and subject positioning",
+        "prompt": "Make this a 90s cartoon",
         "input_image": sample_image_url,
         "aspect_ratio": "match_input_image",
         "output_format": "jpg",
