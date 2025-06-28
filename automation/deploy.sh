@@ -76,9 +76,9 @@ git commit -m "$COMMIT_MSG"
 
 # Push to remote
 echo -e "${YELLOW}🌐 Pushing to remote repository...${NC}"
-if git push origin main; then
+if git push origin master; then
     echo -e "${GREEN}🎉 Successfully pushed to GitHub!${NC}"
-    echo -e "${GREEN}✅ Changes pushed to origin/main${NC}"
+    echo -e "${GREEN}✅ Changes pushed to origin/master${NC}"
     
     # Try to trigger webhook deployment
     WEBHOOK_URL=${WEBHOOK_URL:-""}
