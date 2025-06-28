@@ -323,12 +323,22 @@ class StyleTransferBot:
         """Handle specific option selection and process image."""
         try:
             logger.info(f"Processing option selection: {data}")
-            parts = data.split("_", 2)
-            if len(parts) < 3:
+            
+            # Extract category from callback data format "option_{category}_{hash}"
+            if not data.startswith("option_"):
                 logger.error(f"Invalid option data format: {data}")
                 return
             
-            category = parts[1]
+            # Remove "option_" prefix
+            data_without_prefix = data[7:]  # "option_" is 7 characters
+            
+            # Find the last underscore (separates category from hash)
+            last_underscore = data_without_prefix.rfind("_")
+            if last_underscore == -1:
+                logger.error(f"Invalid option data format: {data}")
+                return
+            
+            category = data_without_prefix[:last_underscore]
             user_id = update.effective_user.id
             user_lang = L.get_user_language(update.effective_user)
             
@@ -364,11 +374,25 @@ class StyleTransferBot:
             # Process based on category
             result_url = None
             try:
-                logger.info(f"Starting {category} processing with FLUX API")
+                logger.info(f"Starting {category} processing")
+                
                 if category == "style_transfer":
+                    logger.info("Using FLUX API for style transfer")
                     result_url = await flux_api.style_transfer(photo_url, "watercolor painting")
+                elif category == "object_edit":
+                    logger.info("Using FLUX API for object editing")
+                    result_url = await flux_api.edit_object(photo_url, "enhanced object")
+                elif category == "text_edit":
+                    logger.info("Using FLUX API for text editing")
+                    result_url = await flux_api.edit_text(photo_url, "old text", "new text")
+                elif category == "background_swap":
+                    logger.info("Using FLUX API for background swap")
+                    result_url = await flux_api.swap_background(photo_url, "beautiful landscape")
+                elif category == "face_enhance":
+                    logger.info("Using FLUX API for face enhancement")
+                    result_url = await flux_api.enhance_face(photo_url, "natural enhancement")
                 elif category == "animate":
-                    logger.info(f"Starting animation processing with Kling AI")
+                    logger.info("Using Kling AI for animation")
                     result_url = await kling_api.animate_with_breeze(photo_url)
                 else:
                     logger.warning(f"Unknown category: {category}")
