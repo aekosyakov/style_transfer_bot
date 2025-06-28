@@ -30,6 +30,15 @@ alias bot-check='echo "🤖 Bot Status:" && sudo systemctl status style-transfer
 
 # Quick deployment test
 alias test-webhook='curl -X POST http://localhost:9000/health && echo ""'
+
+# Debug bot with detailed logs
+alias bot-debug='sudo journalctl -u style-transfer-bot.service -f --lines=100'
+
+# Show recent errors only
+alias bot-errors='sudo journalctl -u style-transfer-bot.service --lines=50 | grep -i error'
+
+# Show last 20 log entries
+alias bot-recent='sudo journalctl -u style-transfer-bot.service --lines=20 --no-pager'
 EOF
 
 echo ""
