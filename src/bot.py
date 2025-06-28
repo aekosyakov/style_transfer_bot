@@ -72,11 +72,26 @@ class StyleTransferBot:
         
         logger.info("Bot handlers configured")
     
+    def _get_user_language(self, telegram_user) -> str:
+        """Get user's preferred language, checking Redis first, then Telegram detection."""
+        user_id = telegram_user.id
+        
+        # First check Redis for stored language preference
+        stored_lang = redis_client.get_user_language(user_id)
+        if stored_lang and stored_lang in L.get_available_languages():
+            logger.debug(f"Using stored language preference for user {user_id}: {stored_lang}")
+            return stored_lang
+        
+        # Fall back to Telegram's language detection
+        detected_lang = L.get_user_language(telegram_user)
+        logger.debug(f"Using detected language for user {user_id}: {detected_lang}")
+        return detected_lang
+    
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /start command."""
         try:
             user = update.effective_user
-            user_lang = L.get_user_language(user)
+            user_lang = self._get_user_language(user)
             
             # Store user language preference
             redis_client.set_user_language(user.id, user_lang)
@@ -93,14 +108,14 @@ class StyleTransferBot:
             
         except Exception as e:
             logger.error(f"Error in start command: {e}")
-            fallback_msg = L.get("msg.welcome_fallback", L.get_user_language(update.effective_user))
+            fallback_msg = L.get("msg.welcome_fallback", self._get_user_language(update.effective_user))
             await update.message.reply_text(fallback_msg)
     
 
     async def premium_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /premium command."""
         user_id = update.effective_user.id
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         is_premium = redis_client.is_user_premium(user_id)
         
         if is_premium:
@@ -113,7 +128,7 @@ class StyleTransferBot:
     async def status_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /status command."""
         user_id = update.effective_user.id
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         is_premium = redis_client.is_user_premium(user_id)
         
         status_text = f"{L.get('status.title', user_lang)}\n\n"
@@ -130,7 +145,7 @@ class StyleTransferBot:
     async def settings_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /settings command."""
         user_id = update.effective_user.id
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         settings_text = (
             "⚙️ **Personal Settings**\n\n"
@@ -158,7 +173,7 @@ class StyleTransferBot:
     
     async def feedback_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /feedback command."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         feedback_text = (
             "💬 **Send Us Your Feedback**\n\n"
@@ -185,7 +200,7 @@ class StyleTransferBot:
     
     async def about_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /about command."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         about_text = (
             "ℹ️ **About Style Transfer Bot**\n\n"
@@ -219,7 +234,7 @@ class StyleTransferBot:
     
     async def invite_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /invite command."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         bot_username = "StyleTransferBot"  # Replace with actual bot username
         
         invite_text = (
@@ -251,7 +266,7 @@ class StyleTransferBot:
     
     async def support_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /support command."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         support_text = (
             "🛠️ **Support & Help Center**\n\n"
@@ -290,7 +305,7 @@ class StyleTransferBot:
             return
         
         user_id = update.effective_user.id
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         # Grant premium for 30 days
         success = redis_client.set_user_premium(user_id, True, 30)
@@ -314,7 +329,7 @@ class StyleTransferBot:
             return
         
         user_id = update.effective_user.id
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         # Revoke premium
         success = redis_client.set_user_premium(user_id, False)
@@ -328,7 +343,7 @@ class StyleTransferBot:
         """Handle photo messages."""
         try:
             user_id = update.effective_user.id
-            user_lang = L.get_user_language(update.effective_user)
+            user_lang = self._get_user_language(update.effective_user)
             
             # Get the largest photo
             photo = update.message.photo[-1]
@@ -348,13 +363,13 @@ class StyleTransferBot:
             
         except Exception as e:
             logger.error(f"Error handling photo: {e}")
-            user_lang = L.get_user_language(update.effective_user)
+            user_lang = self._get_user_language(update.effective_user)
             await update.message.reply_text(L.get("msg.error_photo", user_lang))
     
     async def handle_text(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle text messages."""
         text = update.message.text.lower()
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         if "premium" in text:
             await self.premium_command(update, context)
@@ -371,7 +386,7 @@ class StyleTransferBot:
             
             data = query.data
             user_id = update.effective_user.id
-            user_lang = L.get_user_language(update.effective_user)
+            user_lang = self._get_user_language(update.effective_user)
             
             logger.debug(f"Callback query from user {user_id}: {data}")
             
@@ -462,7 +477,7 @@ class StyleTransferBot:
     
     async def _show_main_menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show main menu."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         keyboard = self._get_main_menu_keyboard(user_lang, update.effective_user.id)
         
         await update.callback_query.edit_message_text(
@@ -472,7 +487,7 @@ class StyleTransferBot:
     
     async def _show_premium_options(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show premium subscription options."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         premium_text = (
             f"{L.get('premium.title', user_lang)}\n\n"
@@ -501,7 +516,7 @@ class StyleTransferBot:
     
     async def _show_enhancement_menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show enhancement options menu."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         user_id = update.effective_user.id
         keyboard = self._get_enhancement_keyboard(user_lang, user_id)
         
@@ -512,7 +527,7 @@ class StyleTransferBot:
     
     async def _show_upload_prompt(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show upload photo prompt."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         await update.callback_query.edit_message_text(
             L.get("msg.photo_upload_prompt", user_lang)
@@ -520,7 +535,7 @@ class StyleTransferBot:
     
     async def _show_help_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show help message."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         help_text = (
             f"{L.get('help.title', user_lang)}\n\n"
@@ -544,7 +559,7 @@ class StyleTransferBot:
         """Handle category selection."""
         category = data.replace("category_", "")
         user_id = update.effective_user.id
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         is_premium = redis_client.is_user_premium(user_id)
         
         # Get available options for category (always show all options for better UX)
@@ -597,7 +612,7 @@ class StyleTransferBot:
             category = data_without_prefix[:last_underscore]
             option_hash = data_without_prefix[last_underscore + 1:]
             user_id = update.effective_user.id
-            user_lang = L.get_user_language(update.effective_user)
+            user_lang = self._get_user_language(update.effective_user)
             is_premium = redis_client.is_user_premium(user_id)
             
             logger.info(f"User {user_id} selected category: {category}, option hash: {option_hash}")
@@ -698,7 +713,7 @@ class StyleTransferBot:
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
-            user_lang = L.get_user_language(update.effective_user)
+            user_lang = self._get_user_language(update.effective_user)
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=L.get("msg.error_occurred", user_lang)
@@ -859,17 +874,32 @@ class StyleTransferBot:
         user_id = update.effective_user.id
         redis_client.set_user_language(user_id, lang)
         
-        # Get new language text
-        new_lang_text = "Language changed to English! 🇺🇸" if lang == 'en' else "Язык изменен на русский! 🇷🇺"
+        logger.info(f"User {user_id} changed language to {lang}")
+        
+        # Show updated settings page in the new language
+        settings_text = (
+            "⚙️ **Personal Settings**\n\n"
+            f"🌐 Language: {L.get('lang_name', lang)}\n"
+            f"👤 User ID: `{user_id}`\n"
+            f"📊 Status: {'💎 Premium' if redis_client.is_user_premium(user_id) else '🆓 Free'}\n\n"
+            "Use the buttons below to modify your settings:"
+        )
         
         keyboard = [
-            [InlineKeyboardButton("🏠 Main Menu" if lang == 'en' else "🏠 Главное меню", callback_data="main_menu")]
+            [InlineKeyboardButton("🇺🇸 English", callback_data="lang_en")],
+            [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru")],
+            [InlineKeyboardButton(L.get("btn.back", lang), callback_data="main_menu")]
         ]
         
         await update.callback_query.edit_message_text(
-            new_lang_text,
-            reply_markup=InlineKeyboardMarkup(keyboard)
+            settings_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
         )
+        
+        # Also show a quick confirmation
+        confirmation_text = "Language changed to English! 🇺🇸" if lang == 'en' else "Язык изменен на русский! 🇷🇺"
+        await update.callback_query.answer(confirmation_text)
     
     async def _handle_invite_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle invite callback from about page."""
@@ -878,7 +908,7 @@ class StyleTransferBot:
     async def _show_referral_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show referral statistics."""
         user_id = update.effective_user.id
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         # Mock data for now - implement actual referral tracking later
         referral_count = 0
@@ -905,7 +935,7 @@ class StyleTransferBot:
     
     async def _show_faq(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show frequently asked questions."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         
         faq_text = (
             "📚 **Frequently Asked Questions**\n\n"
@@ -934,7 +964,7 @@ class StyleTransferBot:
     
     async def _show_bug_report(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Show bug report information."""
-        user_lang = L.get_user_language(update.effective_user)
+        user_lang = self._get_user_language(update.effective_user)
         user_id = update.effective_user.id
         
         bug_text = (
@@ -964,7 +994,7 @@ class StyleTransferBot:
         """Handle retry button - repeat the same processing."""
         try:
             user_id = update.effective_user.id
-            user_lang = L.get_user_language(update.effective_user)
+            user_lang = self._get_user_language(update.effective_user)
             
             # Get last processing parameters
             last_processing = context.user_data.get('last_processing')
@@ -1001,7 +1031,7 @@ class StyleTransferBot:
         """Handle restart button - show categories menu."""
         try:
             user_id = update.effective_user.id
-            user_lang = L.get_user_language(update.effective_user)
+            user_lang = self._get_user_language(update.effective_user)
             
             logger.info(f"User {user_id} requested restart")
             
@@ -1023,7 +1053,7 @@ class StyleTransferBot:
         """Handle animate result button - apply idle animation to the result image."""
         try:
             user_id = update.effective_user.id
-            user_lang = L.get_user_language(update.effective_user)
+            user_lang = self._get_user_language(update.effective_user)
             
             # Get last result URL
             last_result = context.user_data.get('last_result')
