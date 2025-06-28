@@ -13,7 +13,7 @@ class TestConfig:
     def test_config_initialization(self):
         """Test config initialization with valid environment."""
         with patch.dict(os.environ, {
-            'TELEGRAM_BOT_TOKEN': 'test_bot_token',
+            'STYLE_TRANSFER_BOT_TOKEN': 'test_bot_token',
             'REPLICATE_API_TOKEN': 'test_replicate_token',
             'REDIS_URL': 'redis://localhost:6379/0'
         }):
@@ -32,7 +32,7 @@ class TestConfig:
     def test_load_categories(self):
         """Test loading categories from JSON file."""
         with patch.dict(os.environ, {
-            'TELEGRAM_BOT_TOKEN': 'test_token',
+            'STYLE_TRANSFER_BOT_TOKEN': 'test_token',
             'REPLICATE_API_TOKEN': 'test_token'
         }):
             config = Config()
@@ -41,7 +41,7 @@ class TestConfig:
     def test_get_category_options_free(self):
         """Test getting free category options."""
         with patch.dict(os.environ, {
-            'TELEGRAM_BOT_TOKEN': 'test_token',
+            'STYLE_TRANSFER_BOT_TOKEN': 'test_token',
             'REPLICATE_API_TOKEN': 'test_token'
         }):
             config = Config()
@@ -59,7 +59,7 @@ class TestConfig:
     def test_get_category_options_premium(self):
         """Test getting premium category options."""
         with patch.dict(os.environ, {
-            'TELEGRAM_BOT_TOKEN': 'test_token',
+            'STYLE_TRANSFER_BOT_TOKEN': 'test_token',
             'REPLICATE_API_TOKEN': 'test_token'
         }):
             config = Config()
@@ -78,7 +78,7 @@ class TestConfig:
     def test_flux_models(self):
         """Test FLUX model configuration."""
         with patch.dict(os.environ, {
-            'TELEGRAM_BOT_TOKEN': 'test_token',
+            'STYLE_TRANSFER_BOT_TOKEN': 'test_token',
             'REPLICATE_API_TOKEN': 'test_token'
         }):
             config = Config()
@@ -90,7 +90,7 @@ class TestConfig:
     def test_kling_models(self):
         """Test Kling model configuration."""
         with patch.dict(os.environ, {
-            'TELEGRAM_BOT_TOKEN': 'test_token',
+            'STYLE_TRANSFER_BOT_TOKEN': 'test_token',
             'REPLICATE_API_TOKEN': 'test_token'
         }):
             config = Config()

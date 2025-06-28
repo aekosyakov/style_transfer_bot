@@ -51,7 +51,7 @@ if [ -f ".env" ]; then
 else
     echo "❌ .env file missing!"
     echo "Please create .env file with:"
-    echo "TELEGRAM_BOT_TOKEN=your_token"
+    echo "STYLE_TRANSFER_BOT_TOKEN=your_token"
     echo "REPLICATE_API_TOKEN=your_token"
     echo "PROVIDER_TOKEN=your_token"
     echo "REDIS_URL=redis://localhost:6379/0"

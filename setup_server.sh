@@ -58,7 +58,7 @@ if [ ! -f ".env" ]; then
     echo -e "${YELLOW}📝 Creating .env file from example...${NC}"
     cp .env.example .env
     echo -e "${YELLOW}⚠️  Please edit .env file with your actual API tokens:${NC}"
-    echo -e "${BLUE}   • TELEGRAM_BOT_TOKEN=your_bot_token${NC}"
+    echo -e "${BLUE}   • STYLE_TRANSFER_BOT_TOKEN=your_bot_token${NC}"
     echo -e "${BLUE}   • REPLICATE_API_TOKEN=your_replicate_token${NC}"
     echo -e "${BLUE}   • PROVIDER_TOKEN=your_stripe_provider_token${NC}"
     echo -e "${BLUE}   • REDIS_URL=redis://localhost:6379/0${NC}"

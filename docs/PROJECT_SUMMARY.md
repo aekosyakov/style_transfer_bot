@@ -74,7 +74,7 @@ pip install -r requirements.txt
 ### 2. Environment Variables
 Edit `.env` file:
 ```env
-TELEGRAM_BOT_TOKEN=your_bot_token_from_botfather
+STYLE_TRANSFER_BOT_TOKEN=your_bot_token_from_botfather
 PROVIDER_TOKEN=your_stripe_provider_token
 REPLICATE_API_TOKEN=your_replicate_api_token
 REDIS_URL=redis://localhost:6379/0

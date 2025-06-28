@@ -24,7 +24,7 @@ class Config:
             logger.setLevel(logging.DEBUG)
             
         # Load environment variables
-        self.bot_token = os.getenv("STYLE_TRANSFER_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN")
+        self.bot_token = os.getenv("STYLE_TRANSFER_BOT_TOKEN") or os.getenv("STYLE_TRANSFER_BOT_TOKEN")
         self.provider_token = os.getenv("PROVIDER_TOKEN")
         self.replicate_token = os.getenv("REPLICATE_API_TOKEN")
         self.redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
@@ -43,7 +43,7 @@ class Config:
     def _validate_env_vars(self) -> None:
         """Validate that required environment variables are set."""
         required_vars = {
-            "STYLE_TRANSFER_BOT_TOKEN or TELEGRAM_BOT_TOKEN": self.bot_token,
+            "STYLE_TRANSFER_BOT_TOKEN": self.bot_token,
             "REPLICATE_API_TOKEN": self.replicate_token,
         }
         
