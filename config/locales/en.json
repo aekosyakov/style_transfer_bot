@@ -70,5 +70,9 @@
   "category.face_enhance": "face enhance",
   "category.animate": "animation",
 
+  "btn.retry": "🔄 Retry",
+  "btn.restart": "🏠 Restart", 
+  "btn.animate_result": "📽 Animate",
+
   "lang_name": "English"
 } 

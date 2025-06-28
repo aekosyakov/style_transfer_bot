@@ -70,5 +70,9 @@
   "category.face_enhance": "улучшения лиц",
   "category.animate": "анимации",
 
+  "btn.retry": "🔄 Повторить",
+  "btn.restart": "🏠 Заново",
+  "btn.animate_result": "📽 Анимировать",
+
   "lang_name": "Русский"
 } 

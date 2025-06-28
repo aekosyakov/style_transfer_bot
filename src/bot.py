@@ -397,6 +397,12 @@ class StyleTransferBot:
                 await self._show_faq(update, context)
             elif data == "report_bug":
                 await self._show_bug_report(update, context)
+            elif data == "retry":
+                await self._handle_retry(update, context)
+            elif data == "restart":
+                await self._handle_restart(update, context)
+            elif data == "animate_result":
+                await self._handle_animate_result(update, context)
             elif data.startswith("upgrade_"):
                 plan_type = data.replace("upgrade_", "")
                 await payment_processor.create_premium_invoice(update, context, plan_type)
@@ -661,6 +667,15 @@ class StyleTransferBot:
             
             logger.info(f"Processing photo {photo_file_id} for user {user_id}")
             
+            # Store processing parameters for retry functionality
+            context.user_data['last_processing'] = {
+                'photo_file_id': photo_file_id,
+                'category': category,
+                'selected_option': selected_option,
+                'user_id': user_id,
+                'user_lang': user_lang
+            }
+            
             # Show processing message
             await update.callback_query.edit_message_text(L.get("msg.processing", user_lang))
             
@@ -672,7 +687,8 @@ class StyleTransferBot:
                 category,
                 selected_option,
                 user_id,
-                user_lang
+                user_lang,
+                context
             ))
             
             logger.info(f"Started background processing for user {user_id}, category {category}")
@@ -696,7 +712,8 @@ class StyleTransferBot:
         category: str, 
         selected_option: dict, 
         user_id: int, 
-        user_lang: str
+        user_lang: str,
+        context: ContextTypes.DEFAULT_TYPE
     ) -> None:
         """Process image in background without blocking main bot handler."""
         try:
@@ -760,10 +777,24 @@ class StyleTransferBot:
             # Send result
             if result_url:
                 logger.info(f"✅ Successfully processed image, sending result to user {user_id}")
+                
+                # Store result URL in context for animation
+                context.user_data['last_result'] = result_url
+                
+                # Create result action buttons
+                keyboard = [
+                    [
+                        InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="retry"),
+                        InlineKeyboardButton(L.get("btn.restart", user_lang), callback_data="restart")
+                    ],
+                    [InlineKeyboardButton(L.get("btn.animate_result", user_lang), callback_data="animate_result")]
+                ]
+                
                 await bot.send_photo(
                     chat_id=chat_id,
                     photo=result_url,
-                    caption=L.get("msg.success", user_lang)
+                    caption=L.get("msg.success", user_lang),
+                    reply_markup=InlineKeyboardMarkup(keyboard)
                 )
             else:
                 logger.error(f"❌ Processing failed for user {user_id}, category {category}")
@@ -895,6 +926,140 @@ class StyleTransferBot:
             reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode='Markdown'
         )
+    
+    async def _handle_retry(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle retry button - repeat the same processing."""
+        try:
+            user_id = update.effective_user.id
+            user_lang = L.get_user_language(update.effective_user)
+            
+            # Get last processing parameters
+            last_processing = context.user_data.get('last_processing')
+            if not last_processing:
+                await update.callback_query.answer("⚠️ No previous processing to retry", show_alert=True)
+                return
+            
+            logger.info(f"User {user_id} requested retry for {last_processing['category']}")
+            
+            # Show processing message
+            await update.callback_query.edit_message_caption(
+                caption=L.get("msg.processing", user_lang)
+            )
+            
+            # Start background processing (non-blocking)
+            asyncio.create_task(self._process_image_background(
+                update.effective_chat.id,
+                context.bot,
+                last_processing['photo_file_id'],
+                last_processing['category'],
+                last_processing['selected_option'],
+                user_id,
+                user_lang,
+                context
+            ))
+            
+            await update.callback_query.answer("🔄 Retrying...")
+            
+        except Exception as e:
+            logger.error(f"Error in retry handler: {e}")
+            await update.callback_query.answer("❌ Error occurred", show_alert=True)
+    
+    async def _handle_restart(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle restart button - show categories menu."""
+        try:
+            user_id = update.effective_user.id
+            user_lang = L.get_user_language(update.effective_user)
+            
+            logger.info(f"User {user_id} requested restart")
+            
+            # Show enhancement menu
+            keyboard = self._get_enhancement_keyboard(user_lang, user_id)
+            
+            await update.callback_query.edit_message_caption(
+                caption=L.get("msg.photo_received", user_lang),
+                reply_markup=keyboard
+            )
+            
+            await update.callback_query.answer("🏠 Restarted!")
+            
+        except Exception as e:
+            logger.error(f"Error in restart handler: {e}")
+            await update.callback_query.answer("❌ Error occurred", show_alert=True)
+    
+    async def _handle_animate_result(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle animate result button - apply idle animation to the result image."""
+        try:
+            user_id = update.effective_user.id
+            user_lang = L.get_user_language(update.effective_user)
+            
+            # Get last result URL
+            last_result = context.user_data.get('last_result')
+            if not last_result:
+                await update.callback_query.answer("⚠️ No result image to animate", show_alert=True)
+                return
+            
+            logger.info(f"User {user_id} requested animation of result image")
+            
+            # Show processing message
+            await update.callback_query.edit_message_caption(
+                caption="🎬 Creating idle animation... This may take a moment!"
+            )
+            
+            # Start animation processing
+            asyncio.create_task(self._animate_result_background(
+                update.effective_chat.id,
+                context.bot,
+                last_result,
+                user_id,
+                user_lang
+            ))
+            
+            await update.callback_query.answer("📽 Animating...")
+            
+        except Exception as e:
+            logger.error(f"Error in animate result handler: {e}")
+            await update.callback_query.answer("❌ Error occurred", show_alert=True)
+    
+    async def _animate_result_background(
+        self, 
+        chat_id: int, 
+        bot, 
+        result_image_url: str, 
+        user_id: int, 
+        user_lang: str
+    ) -> None:
+        """Animate result image in background."""
+        try:
+            logger.info(f"🎬 Starting idle animation for user {user_id}")
+            
+            # Apply idle animation (empty prompt)
+            animation_result = await kling_api.animate_by_prompt(result_image_url, "", duration=5)
+            
+            if animation_result:
+                logger.info(f"✅ Animation completed for user {user_id}")
+                await bot.send_video(
+                    chat_id=chat_id,
+                    video=animation_result,
+                    caption="🎬 Your animated result is ready!"
+                )
+            else:
+                logger.error(f"❌ Animation failed for user {user_id}")
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text="❌ Animation failed. Please try again later."
+                )
+                
+        except Exception as e:
+            logger.error(f"Error in background animation for user {user_id}: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            try:
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text="❌ Animation failed due to an error."
+                )
+            except Exception as send_error:
+                logger.error(f"Failed to send error message: {send_error}")
     
     def run(self) -> None:
         """Start the bot."""
