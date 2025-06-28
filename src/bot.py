@@ -790,12 +790,45 @@ class StyleTransferBot:
                     [InlineKeyboardButton(L.get("btn.animate_result", user_lang), callback_data="animate_result")]
                 ]
                 
-                await bot.send_photo(
-                    chat_id=chat_id,
-                    photo=result_url,
-                    caption=L.get("msg.success", user_lang),
-                    reply_markup=InlineKeyboardMarkup(keyboard)
-                )
+                # Send result based on category type
+                if category == "animate":
+                    # Animation results should be sent as video/animation
+                    logger.info(f"Sending animation result as video: {result_url}")
+                    try:
+                        # Try sending as animation first (MP4/GIF)
+                        await bot.send_animation(
+                            chat_id=chat_id,
+                            animation=result_url,
+                            caption=L.get("msg.success", user_lang),
+                            reply_markup=InlineKeyboardMarkup(keyboard)
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to send animation result as animation, trying as video: {e}")
+                        try:
+                            # Fallback: try as video
+                            await bot.send_video(
+                                chat_id=chat_id,
+                                video=result_url,
+                                caption=L.get("msg.success", user_lang),
+                                reply_markup=InlineKeyboardMarkup(keyboard)
+                            )
+                        except Exception as e2:
+                            logger.error(f"Failed to send animation result as video, sending as document: {e2}")
+                            # Final fallback: send as document
+                            await bot.send_document(
+                                chat_id=chat_id,
+                                document=result_url,
+                                caption=L.get("msg.success", user_lang) + " (Download to view)",
+                                reply_markup=InlineKeyboardMarkup(keyboard)
+                            )
+                else:
+                    # Regular image results
+                    await bot.send_photo(
+                        chat_id=chat_id,
+                        photo=result_url,
+                        caption=L.get("msg.success", user_lang),
+                        reply_markup=InlineKeyboardMarkup(keyboard)
+                    )
             else:
                 logger.error(f"❌ Processing failed for user {user_id}, category {category}")
                 await bot.send_message(
@@ -1037,11 +1070,32 @@ class StyleTransferBot:
             
             if animation_result:
                 logger.info(f"✅ Animation completed for user {user_id}")
-                await bot.send_video(
-                    chat_id=chat_id,
-                    video=animation_result,
-                    caption="🎬 Your animated result is ready!"
-                )
+                logger.info(f"Sending video URL: {animation_result}")
+                
+                try:
+                    # Try sending as animation first (MP4/GIF) which works better with URLs
+                    await bot.send_animation(
+                        chat_id=chat_id,
+                        animation=animation_result,
+                        caption="🎬 Your animated result is ready!"
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to send as animation, trying as video: {e}")
+                    try:
+                        # Fallback: try as video
+                        await bot.send_video(
+                            chat_id=chat_id,
+                            video=animation_result,
+                            caption="🎬 Your animated result is ready!"
+                        )
+                    except Exception as e2:
+                        logger.error(f"Failed to send video, sending as document: {e2}")
+                        # Final fallback: send as document
+                        await bot.send_document(
+                            chat_id=chat_id,
+                            document=animation_result,
+                            caption="🎬 Your animated result is ready! (Download to view)"
+                        )
             else:
                 logger.error(f"❌ Animation failed for user {user_id}")
                 await bot.send_message(
