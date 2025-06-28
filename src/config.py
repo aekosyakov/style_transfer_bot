@@ -35,10 +35,22 @@ class Config:
         # Determine environment
         self.is_test = os.getenv("ENV") == "test"
         
+        # ========================================
+        # 🚨 TESTING FLAG - PREMIUM FEATURES FREE
+        # ========================================
+        # Set this to False when you want to re-enable premium restrictions
+        # When True: ALL users get access to premium features for testing
+        self.premium_features_free = True
+        # ========================================
+        
         # Load categories
         self.categories = self._load_categories()
         
         logger.info(f"Configuration loaded - Test mode: {self.is_test}")
+        
+        if self.premium_features_free:
+            logger.warning("🎉 TESTING MODE ACTIVE: Premium features are FREE for ALL users!")
+            logger.warning("🎉 All style transfer options will be available to everyone")
     
     def _validate_env_vars(self) -> None:
         """Validate that required environment variables are set."""

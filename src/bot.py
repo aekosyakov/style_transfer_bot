@@ -412,7 +412,13 @@ class StyleTransferBot:
             option_label = selected_option['label']
             is_premium_option = config.is_premium_option(category, option_label)
             
-            if is_premium_option and not is_premium:
+            # Check if premium features are temporarily free for testing
+            user_has_premium_access = is_premium or config.premium_features_free
+            
+            if config.premium_features_free and is_premium_option and not is_premium:
+                logger.info(f"🎉 TESTING MODE: Granting free access to premium option {option_label} for user {user_id}")
+            
+            if is_premium_option and not user_has_premium_access:
                 # User selected premium option but doesn't have premium access
                 logger.info(f"User {user_id} tried to use premium option {option_label} without premium access")
                 
