@@ -13,8 +13,8 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 Transfer Style Bot Deployment Script${NC}"
-echo "=================================="
+echo -e "${BLUE}🚀 Style Transfer Bot Deployment Script${NC}"
+echo "======================================="
 
 # Check if we're in a git repository
 if [ ! -d ".git" ]; then
@@ -76,9 +76,9 @@ git commit -m "$COMMIT_MSG"
 
 # Push to remote
 echo -e "${YELLOW}🌐 Pushing to remote repository...${NC}"
-if git push origin master; then
+if git push origin main; then
     echo -e "${GREEN}🎉 Successfully pushed to GitHub!${NC}"
-    echo -e "${GREEN}✅ Changes pushed to origin/master${NC}"
+    echo -e "${GREEN}✅ Changes pushed to origin/main${NC}"
     
     # Try to trigger webhook deployment
     WEBHOOK_URL=${WEBHOOK_URL:-""}
@@ -97,8 +97,8 @@ if git push origin master; then
     else
         echo ""
         echo -e "${YELLOW}📋 Manual server update required:${NC}"
-        echo -e "${BLUE}   git pull && sudo systemctl restart upscale-bot.service${NC}"
-        echo -e "${BLUE}   journalctl -u upscale-bot.service -f${NC}"
+        echo -e "${BLUE}   git pull && sudo systemctl restart style-transfer-bot.service${NC}"
+        echo -e "${BLUE}   journalctl -u style-transfer-bot.service -f${NC}"
         echo ""
         echo -e "${BLUE}💡 To enable automatic deployment:${NC}"
         echo -e "${BLUE}   export WEBHOOK_URL=http://your-server:9000${NC}"

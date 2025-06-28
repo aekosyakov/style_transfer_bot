@@ -1,0 +1,16 @@
+[Unit]
+Description=Upscale Bot Deployment Webhook Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/upscale_bot
+Environment=WEBHOOK_SECRET=your-secret-key-here
+Environment=WEBHOOK_PORT=9000
+ExecStart=/root/upscale_bot/venv/bin/python /root/upscale_bot/webhook_deploy.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target 
