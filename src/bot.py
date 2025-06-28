@@ -16,9 +16,6 @@ from telegram.ext import (
     filters, ContextTypes, PreCheckoutQueryHandler
 )
 
-# Add src to path for imports
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 from config import config
 from localization import L
 from redis_client import redis_client

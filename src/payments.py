@@ -4,9 +4,9 @@ import logging
 from typing import Dict, Any, Optional
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice
 from telegram.ext import ContextTypes
-from src.config import config
-from src.redis_client import redis_client
-from src.localization import L
+from config import config
+from redis_client import redis_client
+from localization import L
 
 logger = logging.getLogger(__name__)
 

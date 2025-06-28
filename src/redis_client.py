@@ -4,7 +4,7 @@ import json
 import logging
 from typing import Optional, Dict, Any
 import redis
-from src.config import config
+from config import config
 
 logger = logging.getLogger(__name__)
 
