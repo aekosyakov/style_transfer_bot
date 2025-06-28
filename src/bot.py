@@ -339,10 +339,29 @@ class StyleTransferBot:
                 return
             
             category = data_without_prefix[:last_underscore]
+            option_hash = data_without_prefix[last_underscore + 1:]
             user_id = update.effective_user.id
             user_lang = L.get_user_language(update.effective_user)
+            is_premium = redis_client.is_user_premium(user_id)
             
-            logger.info(f"User {user_id} selected category: {category}")
+            logger.info(f"User {user_id} selected category: {category}, option hash: {option_hash}")
+            
+            # Get the selected option details
+            options = config.get_category_options(category, is_premium)
+            selected_option = None
+            for option in options:
+                if str(hash(option['label'])) == option_hash:
+                    selected_option = option
+                    break
+            
+            if not selected_option:
+                logger.error(f"Could not find selected option for hash {option_hash}")
+                await update.callback_query.edit_message_text(
+                    L.get("msg.error_occurred", user_lang)
+                )
+                return
+            
+            logger.info(f"Selected option: {selected_option}")
             
             # Get photo from context
             photo_file_id = context.user_data.get('current_photo')
@@ -377,22 +396,28 @@ class StyleTransferBot:
                 logger.info(f"Starting {category} processing")
                 
                 if category == "style_transfer":
-                    logger.info("Using FLUX API for style transfer")
-                    result_url = await flux_api.style_transfer(photo_url, "watercolor painting")
+                    logger.info(f"Using FLUX API for style transfer: {selected_option['label']}")
+                    style_prompt = selected_option['prompt']
+                    result_url = await flux_api.style_transfer(photo_url, style_prompt)
                 elif category == "object_edit":
-                    logger.info("Using FLUX API for object editing")
-                    result_url = await flux_api.edit_object(photo_url, "enhanced object")
+                    logger.info(f"Using FLUX API for object editing: {selected_option['label']}")
+                    edit_prompt = selected_option['prompt']
+                    result_url = await flux_api.edit_object(photo_url, edit_prompt)
                 elif category == "text_edit":
-                    logger.info("Using FLUX API for text editing")
+                    logger.info(f"Using FLUX API for text editing: {selected_option['label']}")
+                    text_prompt = selected_option['prompt']
                     result_url = await flux_api.edit_text(photo_url, "old text", "new text")
                 elif category == "background_swap":
-                    logger.info("Using FLUX API for background swap")
-                    result_url = await flux_api.swap_background(photo_url, "beautiful landscape")
+                    logger.info(f"Using FLUX API for background swap: {selected_option['label']}")
+                    bg_prompt = selected_option.get('bg_file', selected_option.get('prompt', 'beautiful landscape'))
+                    result_url = await flux_api.swap_background(photo_url, bg_prompt)
                 elif category == "face_enhance":
-                    logger.info("Using FLUX API for face enhancement")
-                    result_url = await flux_api.enhance_face(photo_url, "natural enhancement")
+                    logger.info(f"Using FLUX API for face enhancement: {selected_option['label']}")
+                    face_prompt = selected_option['prompt']
+                    result_url = await flux_api.enhance_face(photo_url, face_prompt)
                 elif category == "animate":
-                    logger.info("Using Kling AI for animation")
+                    logger.info(f"Using Kling AI for animation: {selected_option['label']}")
+                    animation_prompt = selected_option.get('kling_prompt', 'gentle animation')
                     result_url = await kling_api.animate_with_breeze(photo_url)
                 else:
                     logger.warning(f"Unknown category: {category}")

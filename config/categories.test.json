@@ -1,7 +1,15 @@
 {
   "style_transfer": {
-    "free": [{"label": "🖌️ Watercolor", "prompt": "watercolor painting"}],
-    "premium": [{"label": "✏️ Pencil Sketch 💎", "prompt": "pencil sketch"}]
+    "free": [
+      {"label": "✏️ Pencil Sketch", "prompt": "detailed pencil sketch with realistic shading"},
+      {"label": "🎨 Digital Art", "prompt": "modern digital art illustration"}
+    ],
+    "premium": [
+      {"label": "🌸 Anime Style 💎", "prompt": "Japanese anime art style with large expressive eyes"},
+      {"label": "💥 Comic Book 💎", "prompt": "superhero comic book illustration with bold outlines"},
+      {"label": "🎞️ 90s Cartoon 💎", "prompt": "1990s animated cartoon style with thick black outlines"},
+      {"label": "🌌 Sci-Fi Art 💎", "prompt": "futuristic sci-fi digital art with neon effects"}
+    ]
   },
   "animate": {
     "free": [{"label": "🍃 Breeze", "kling_prompt": "gentle breeze"}],

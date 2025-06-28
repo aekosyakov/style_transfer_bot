@@ -32,9 +32,11 @@ async def test_flux_api_config():
     for model_type, model_id in config.flux_models.items():
         logger.info(f"Model {model_type}: {model_id}")
     
-    # Test prompt generation
+    # Test prompt generation with new exciting styles
     test_prompts = [
-        ("style_transfer", "watercolor"),
+        ("style_transfer", "Japanese anime art style with large expressive eyes"),
+        ("style_transfer", "superhero comic book illustration with bold outlines"),
+        ("style_transfer", "futuristic sci-fi digital art with neon effects"),
         ("object_edit", "red sports car"),
         ("text_edit", "Hello World"),
         ("background_swap", "mountain landscape"),
@@ -57,7 +59,7 @@ async def test_flux_api_call():
     
     # Test parameters
     test_params = {
-        "prompt": "Convert this to a watercolor painting style while maintaining the original composition",
+        "prompt": "Convert this to a Japanese anime art style with large expressive eyes while maintaining the original composition and subject positioning",
         "input_image": sample_image_url,
         "aspect_ratio": "match_input_image",
         "output_format": "jpg",

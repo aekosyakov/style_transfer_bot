@@ -1,13 +1,23 @@
 {
   "style_transfer": {
     "free": [
-      {"label": "🖌️ Watercolor", "prompt": "watercolor painting"}
+      {"label": "✏️ Pencil Sketch", "prompt": "detailed pencil sketch with realistic shading"},
+      {"label": "🎨 Digital Art", "prompt": "modern digital art illustration"},
+      {"label": "🖼️ Pop Art", "prompt": "vibrant pop art style with bold colors"}
     ],
     "premium": [
-      {"label": "✏️ Pencil Sketch 💎", "prompt": "pencil sketch, detailed shading"},
-      {"label": "🖼️ Impressionist 💎", "prompt": "impressionist oil painting"},
-      {"label": "📷 Vintage Photo 💎", "prompt": "vintage 1960s photo"},
-      {"label": "🎞️ 90s Cartoon 💎", "prompt": "1990s cartoon, bold outlines"}
+      {"label": "🌸 Anime Style 💎", "prompt": "Japanese anime art style with large expressive eyes"},
+      {"label": "💥 Comic Book 💎", "prompt": "superhero comic book illustration with bold outlines"},
+      {"label": "🎞️ 90s Cartoon 💎", "prompt": "1990s animated cartoon style with thick black outlines"},
+      {"label": "🖼️ Impressionist 💎", "prompt": "French impressionist oil painting with visible brushstrokes"},
+      {"label": "📷 Vintage Photo 💎", "prompt": "sepia-toned vintage 1940s photograph"},
+      {"label": "🌌 Sci-Fi Art 💎", "prompt": "futuristic sci-fi digital art with neon effects"},
+      {"label": "🎭 Art Nouveau 💎", "prompt": "elegant Art Nouveau style with flowing organic lines"},
+      {"label": "🌈 Psychedelic 💎", "prompt": "vibrant psychedelic art with swirling patterns"},
+      {"label": "🏛️ Renaissance 💎", "prompt": "classical Renaissance oil painting style"},
+      {"label": "🎮 Pixel Art 💎", "prompt": "8-bit pixel art retro gaming style"},
+      {"label": "🌸 Ukiyo-e 💎", "prompt": "traditional Japanese woodblock print style"},
+      {"label": "🖤 Film Noir 💎", "prompt": "dramatic black and white film noir style with high contrast"}
     ]
   },
   "object_edit": {
