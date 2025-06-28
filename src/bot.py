@@ -50,6 +50,11 @@ class StyleTransferBot:
         self.app.add_handler(CommandHandler("premium", self.premium_command))
         self.app.add_handler(CommandHandler("status", self.status_command))
         
+        # Debug commands (only in debug mode)
+        if self.debug:
+            self.app.add_handler(CommandHandler("debug_premium", self.debug_premium_command))
+            self.app.add_handler(CommandHandler("debug_revoke", self.debug_revoke_command))
+        
         # Message handlers
         self.app.add_handler(MessageHandler(filters.PHOTO, self.handle_photo))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_text))
@@ -130,6 +135,46 @@ class StyleTransferBot:
             status_text += L.get('status.upgrade_note', user_lang)
         
         await update.message.reply_text(status_text, parse_mode='Markdown')
+    
+    async def debug_premium_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Debug command to grant premium status."""
+        if not self.debug:
+            return
+        
+        user_id = update.effective_user.id
+        user_lang = L.get_user_language(update.effective_user)
+        
+        # Grant premium for 30 days
+        success = redis_client.set_user_premium(user_id, True, 30)
+        
+        if success:
+            await update.message.reply_text(
+                "🎉 DEBUG: Premium status granted for 30 days!\n"
+                "You now have access to all premium style transfer options including:\n"
+                "• 🌸 Anime Style\n"
+                "• 💥 Comic Book\n"
+                "• 🌌 Sci-Fi Art\n"
+                "• 🎮 Pixel Art\n"
+                "• And many more!"
+            )
+        else:
+            await update.message.reply_text("❌ DEBUG: Failed to grant premium status")
+    
+    async def debug_revoke_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Debug command to revoke premium status."""
+        if not self.debug:
+            return
+        
+        user_id = update.effective_user.id
+        user_lang = L.get_user_language(update.effective_user)
+        
+        # Revoke premium
+        success = redis_client.set_user_premium(user_id, False)
+        
+        if success:
+            await update.message.reply_text("🔒 DEBUG: Premium status revoked. You now have free tier access only.")
+        else:
+            await update.message.reply_text("❌ DEBUG: Failed to revoke premium status")
     
     async def handle_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle photo messages."""
@@ -473,8 +518,15 @@ def main():
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     args = parser.parse_args()
     
+    # Also check environment variable for debug mode
+    debug_mode = args.debug or os.getenv("DEBUG", "false").lower() == "true"
+    
     try:
-        bot = StyleTransferBot(debug=args.debug)
+        bot = StyleTransferBot(debug=debug_mode)
+        if debug_mode:
+            logger.info("🐛 DEBUG MODE ENABLED - Debug commands available:")
+            logger.info("  /debug_premium - Grant premium status")
+            logger.info("  /debug_revoke - Revoke premium status")
         bot.run()
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
