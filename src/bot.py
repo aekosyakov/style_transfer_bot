@@ -322,44 +322,75 @@ class StyleTransferBot:
     async def _handle_option_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:
         """Handle specific option selection and process image."""
         try:
+            logger.info(f"Processing option selection: {data}")
             parts = data.split("_", 2)
             if len(parts) < 3:
+                logger.error(f"Invalid option data format: {data}")
                 return
             
             category = parts[1]
             user_id = update.effective_user.id
             user_lang = L.get_user_language(update.effective_user)
             
+            logger.info(f"User {user_id} selected category: {category}")
+            
             # Get photo from context
             photo_file_id = context.user_data.get('current_photo')
             if not photo_file_id:
+                logger.warning(f"No photo found in context for user {user_id}")
                 await update.callback_query.edit_message_text(
                     L.get("msg.upload_photo_first", user_lang)
                 )
                 return
             
+            logger.info(f"Processing photo {photo_file_id} for user {user_id}")
+            
             # Show processing message
             await update.callback_query.edit_message_text(L.get("msg.processing", user_lang))
             
             # Get photo URL
-            photo_file = await context.bot.get_file(photo_file_id)
-            photo_url = photo_file.file_path
+            try:
+                photo_file = await context.bot.get_file(photo_file_id)
+                photo_url = photo_file.file_path
+                logger.info(f"Got photo URL: {photo_url}")
+            except Exception as e:
+                logger.error(f"Failed to get photo file: {e}")
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=L.get("msg.error_occurred", user_lang)
+                )
+                return
             
             # Process based on category
             result_url = None
-            if category == "style_transfer":
-                result_url = await flux_api.style_transfer(photo_url, "watercolor painting")
-            elif category == "animate":
-                result_url = await kling_api.animate_with_breeze(photo_url)
-            # Add other categories as needed
+            try:
+                logger.info(f"Starting {category} processing with FLUX API")
+                if category == "style_transfer":
+                    result_url = await flux_api.style_transfer(photo_url, "watercolor painting")
+                elif category == "animate":
+                    logger.info(f"Starting animation processing with Kling AI")
+                    result_url = await kling_api.animate_with_breeze(photo_url)
+                else:
+                    logger.warning(f"Unknown category: {category}")
+                
+                logger.info(f"Processing result for {category}: {result_url}")
+                
+            except Exception as e:
+                logger.error(f"Error during {category} processing: {e}")
+                logger.error(f"Exception type: {type(e).__name__}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                result_url = None
             
             if result_url:
+                logger.info(f"Successfully processed image, sending result to user {user_id}")
                 await context.bot.send_photo(
                     chat_id=update.effective_chat.id,
                     photo=result_url,
                     caption=L.get("msg.success", user_lang)
                 )
             else:
+                logger.error(f"Processing failed for user {user_id}, category {category}")
                 await context.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text=L.get("msg.error", user_lang)
@@ -367,6 +398,9 @@ class StyleTransferBot:
                 
         except Exception as e:
             logger.error(f"Error processing option selection: {e}")
+            logger.error(f"Exception type: {type(e).__name__}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             user_lang = L.get_user_language(update.effective_user)
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,

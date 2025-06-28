@@ -38,7 +38,18 @@ class FluxAPI:
             URL of processed image or None if failed
         """
         try:
+            logger.info(f"Starting FLUX processing - Model: {model_type}, Prompt: '{prompt[:100]}...'")
+            logger.info(f"Image URL: {image_url}")
+            
+            # Check if we have a valid API token
+            if not config.replicate_token:
+                logger.error("REPLICATE_API_TOKEN is not configured!")
+                return None
+            
+            logger.info(f"REPLICATE_API_TOKEN configured: {config.replicate_token[:10]}...")
+            
             model_id = config.flux_models.get(model_type, self.default_model)
+            logger.info(f"Using FLUX model: {model_id}")
             
             input_params = {
                 "prompt": prompt,
@@ -54,14 +65,25 @@ class FluxAPI:
             logger.debug(f"FLUX input parameters: {input_params}")
             
             # Run in thread pool to avoid blocking
+            logger.info("Calling Replicate API...")
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None, 
-                lambda: self.client.run(model_id, input=input_params)
-            )
+            try:
+                result = await loop.run_in_executor(
+                    None, 
+                    lambda: self.client.run(model_id, input=input_params)
+                )
+                logger.info(f"Replicate API call completed. Result type: {type(result)}")
+                logger.info(f"Result content: {result}")
+            except Exception as e:
+                logger.error(f"Replicate API call failed: {e}")
+                logger.error(f"Exception type: {type(e).__name__}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                return None
             
             if result:
                 logger.info("FLUX processing completed successfully")
+                logger.info(f"Result URL: {result}")
                 return result
             else:
                 logger.warning("FLUX returned empty result")
@@ -69,6 +91,9 @@ class FluxAPI:
                 
         except Exception as e:
             logger.error(f"FLUX processing failed: {e}")
+            logger.error(f"Exception type: {type(e).__name__}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
     
     def get_prompt_template(self, category: str, style_or_effect: str) -> str:
