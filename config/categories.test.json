@@ -24,7 +24,15 @@
     ]
   },
   "animate": {
-    "free": [{"label": "🍃 Breeze", "kling_prompt": "gentle breeze"}],
-    "premium": [{"label": "✨ Sparkle 💎", "kling_prompt": "sparkle"}]
+    "free": [
+      {"label": "🧘 Idle", "kling_prompt": ""},
+      {"label": "🍃 Gentle Breeze", "kling_prompt": "gentle breeze animating hair and clothing"}
+    ],
+    "premium": [
+      {"label": "✨ Sparkle Effects 💎", "kling_prompt": "sparkling magical effects around the subject"},
+      {"label": "🎞️ Cinematic Zoom 💎", "kling_prompt": "slow cinematic zoom in with subtle camera movement"},
+      {"label": "💨 Wind Effects 💎", "kling_prompt": "strong wind effects with dramatic movement"},
+      {"label": "🌟 Mystical Glow 💎", "kling_prompt": "mystical glowing aura around the subject"}
+    ]
   }
 } 

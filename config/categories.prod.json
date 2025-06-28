@@ -71,11 +71,25 @@
     ]
   },
   "animate": {
-    "free": [{"label": "🍃 Breeze", "kling_prompt": "gentle breeze"}],
+    "free": [
+      {"label": "🧘 Idle", "kling_prompt": ""},
+      {"label": "🍃 Gentle Breeze", "kling_prompt": "gentle breeze animating hair and clothing"},
+      {"label": "👁️ Portrait Life", "kling_prompt": "subtle facial expressions and eye movement"}
+    ],
     "premium": [
-      {"label": "✨ Sparkle 💎", "kling_prompt": "sparkle effect"},
-      {"label": "🎞️ Zoom 💎", "kling_prompt": "slow cinematic zoom"},
-      {"label": "💡 Lights 💎", "kling_prompt": "moving light reflections"}
+      {"label": "✨ Sparkle Effects 💎", "kling_prompt": "sparkling magical effects around the subject"},
+      {"label": "🎞️ Cinematic Zoom 💎", "kling_prompt": "slow cinematic zoom in with subtle camera movement"},
+      {"label": "💡 Moving Lights 💎", "kling_prompt": "moving light reflections and ambient lighting changes"},
+      {"label": "🌊 Water Ripples 💎", "kling_prompt": "water ripples and reflections"},
+      {"label": "🔥 Fire Effects 💎", "kling_prompt": "flickering fire effects and warm lighting"},
+      {"label": "❄️ Snow Fall 💎", "kling_prompt": "gentle snowfall with natural particle movement"},
+      {"label": "☁️ Moving Clouds 💎", "kling_prompt": "moving clouds in the background"},
+      {"label": "🌿 Nature Alive 💎", "kling_prompt": "leaves rustling and natural environment movement"},
+      {"label": "💃 Dance Movement 💎", "kling_prompt": "subtle dancing movement and rhythm"},
+      {"label": "💨 Wind Effects 💎", "kling_prompt": "strong wind effects with dramatic movement"},
+      {"label": "🌟 Mystical Glow 💎", "kling_prompt": "mystical glowing aura around the subject"},
+      {"label": "🌊 Ocean Waves 💎", "kling_prompt": "ocean waves and water movement in background"},
+      {"label": "🎈 Floating Objects 💎", "kling_prompt": "objects floating and levitating gently"}
     ]
   }
 } 

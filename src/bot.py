@@ -742,8 +742,9 @@ class StyleTransferBot:
                     result_url = await flux_api.enhance_face(photo_url, face_prompt)
                 elif category == "animate":
                     logger.info(f"Using Kling AI for animation: {selected_option['label']}")
-                    animation_prompt = selected_option.get('kling_prompt', 'gentle animation')
-                    result_url = await kling_api.animate_with_breeze(photo_url)
+                    animation_prompt = selected_option.get('kling_prompt', '')
+                    logger.info(f"Animation prompt: '{animation_prompt}' (empty=idle)")
+                    result_url = await kling_api.animate_by_prompt(photo_url, animation_prompt)
                 else:
                     logger.warning(f"Unknown category: {category}")
                 

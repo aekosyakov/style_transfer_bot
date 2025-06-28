@@ -19,20 +19,24 @@ class KlingAPI:
     async def animate_image(
         self,
         image_url: str,
-        animation_prompt: str,
+        animation_prompt: str = "",
         model_type: str = "pro",
         duration_seconds: int = 5,
-        fps: int = 24
+        cfg_scale: float = 0.5,
+        negative_prompt: str = "",
+        aspect_ratio: str = "16:9"
     ) -> Optional[str]:
         """
         Animate image with Kling AI.
         
         Args:
             image_url: URL of source image
-            animation_prompt: Description of desired animation
+            animation_prompt: Description of desired animation (empty for idle animation)
             model_type: 'lite' or 'pro'
-            duration_seconds: Animation duration
-            fps: Frames per second
+            duration_seconds: Animation duration (5 or 10 seconds)
+            cfg_scale: Flexibility in video generation (0.1-1.0)
+            negative_prompt: Things you don't want to see
+            aspect_ratio: Aspect ratio (ignored when start_image provided)
             
         Returns:
             URL of animated video or None if failed
@@ -40,17 +44,24 @@ class KlingAPI:
         try:
             model_id = config.kling_models.get(model_type, self.default_model)
             
+            # Base parameters according to API docs
             input_params = {
                 "prompt": animation_prompt,
                 "start_image": image_url,
-                "seconds": duration_seconds
+                "duration": duration_seconds,
+                "cfg_scale": cfg_scale
             }
             
-            # Add FPS if supported by model
-            if model_type == "pro":
-                input_params["fps"] = fps
+            # Add optional parameters if provided
+            if negative_prompt:
+                input_params["negative_prompt"] = negative_prompt
             
-            logger.info(f"Animating image with Kling {model_type}, prompt: '{animation_prompt[:50]}...'")
+            # Note: aspect_ratio is ignored when start_image is provided according to docs
+            # but we can include it for completeness
+            input_params["aspect_ratio"] = aspect_ratio
+            
+            logger.info(f"Animating image with Kling {model_type}")
+            logger.info(f"Prompt: '{animation_prompt}' (empty = idle animation)" if animation_prompt else "Idle animation (no prompt)")
             logger.debug(f"Kling input parameters: {input_params}")
             
             # Run in thread pool to avoid blocking
@@ -62,6 +73,7 @@ class KlingAPI:
             
             if result:
                 logger.info("Kling animation completed successfully")
+                logger.info(f"Result URL: {result}")
                 return result
             else:
                 logger.warning("Kling returned empty result")
@@ -69,6 +81,9 @@ class KlingAPI:
                 
         except Exception as e:
             logger.error(f"Kling animation failed: {e}")
+            logger.error(f"Error type: {type(e).__name__}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
     
     def get_animation_prompt(self, animation_type: str, custom_prompt: Optional[str] = None) -> str:
@@ -80,12 +95,13 @@ class KlingAPI:
             custom_prompt: Custom animation description
             
         Returns:
-            Formatted animation prompt
+            Formatted animation prompt (empty string for idle animation)
         """
-        if custom_prompt:
+        if custom_prompt is not None:
             return custom_prompt
         
         animation_prompts = {
+            "idle": "",  # Empty prompt for idle animation
             "gentle_breeze": "gentle breeze animating hair and clothing",
             "sparkle": "sparkling magical effects around the subject",
             "zoom": "slow cinematic zoom in with subtle camera movement", 
@@ -95,37 +111,57 @@ class KlingAPI:
             "snow": "gentle snowfall with natural particle movement",
             "clouds": "moving clouds in the background",
             "portrait": "subtle facial expressions and eye movement",
-            "nature": "leaves rustling and natural environment movement"
+            "nature": "leaves rustling and natural environment movement",
+            "dance": "subtle dancing movement and rhythm",
+            "wind": "strong wind effects with dramatic movement",
+            "glow": "mystical glowing aura around the subject",
+            "waves": "ocean waves and water movement in background",
+            "floating": "objects floating and levitating gently"
         }
         
-        prompt = animation_prompts.get(animation_type, f"{animation_type} animation effect")
-        logger.debug(f"Generated animation prompt for {animation_type}: {prompt}")
+        prompt = animation_prompts.get(animation_type, animation_type)
+        logger.debug(f"Generated animation prompt for {animation_type}: '{prompt}' (empty=idle)")
         return prompt
     
-    async def animate_with_breeze(self, image_url: str, model_type: str = "pro") -> Optional[str]:
+    async def animate_idle(self, image_url: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
+        """Animate image with idle movement (empty prompt)."""
+        prompt = self.get_animation_prompt("idle")
+        return await self.animate_image(image_url, prompt, model_type=model_type, duration_seconds=duration)
+    
+    async def animate_with_breeze(self, image_url: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
         """Animate image with gentle breeze effect."""
         prompt = self.get_animation_prompt("gentle_breeze")
-        return await self.animate_image(image_url, prompt, model_type=model_type)
+        return await self.animate_image(image_url, prompt, model_type=model_type, duration_seconds=duration)
     
-    async def animate_with_sparkle(self, image_url: str, model_type: str = "pro") -> Optional[str]:
+    async def animate_with_sparkle(self, image_url: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
         """Animate image with sparkle effects."""
         prompt = self.get_animation_prompt("sparkle")
-        return await self.animate_image(image_url, prompt, model_type=model_type)
+        return await self.animate_image(image_url, prompt, model_type=model_type, duration_seconds=duration)
     
-    async def animate_with_zoom(self, image_url: str, model_type: str = "pro") -> Optional[str]:
+    async def animate_with_zoom(self, image_url: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
         """Animate image with cinematic zoom."""
         prompt = self.get_animation_prompt("zoom")
-        return await self.animate_image(image_url, prompt, model_type=model_type)
+        return await self.animate_image(image_url, prompt, model_type=model_type, duration_seconds=duration)
     
-    async def animate_with_lights(self, image_url: str, model_type: str = "pro") -> Optional[str]:
+    async def animate_with_lights(self, image_url: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
         """Animate image with moving lights."""
         prompt = self.get_animation_prompt("lights")
-        return await self.animate_image(image_url, prompt, model_type=model_type)
+        return await self.animate_image(image_url, prompt, model_type=model_type, duration_seconds=duration)
     
-    async def animate_portrait(self, image_url: str, model_type: str = "pro") -> Optional[str]:
+    async def animate_portrait(self, image_url: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
         """Animate portrait with subtle expressions."""
         prompt = self.get_animation_prompt("portrait")
-        return await self.animate_image(image_url, prompt, model_type=model_type)
+        return await self.animate_image(image_url, prompt, model_type=model_type, duration_seconds=duration)
+    
+    async def animate_with_wind(self, image_url: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
+        """Animate image with wind effects."""
+        prompt = self.get_animation_prompt("wind")
+        return await self.animate_image(image_url, prompt, model_type=model_type, duration_seconds=duration)
+    
+    async def animate_with_glow(self, image_url: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
+        """Animate image with mystical glow."""
+        prompt = self.get_animation_prompt("glow")
+        return await self.animate_image(image_url, prompt, model_type=model_type, duration_seconds=duration)
     
     async def custom_animation(
         self, 
@@ -142,9 +178,23 @@ class KlingAPI:
             duration_seconds=duration
         )
     
+    async def animate_by_prompt(self, image_url: str, kling_prompt: str, model_type: str = "pro", duration: int = 5) -> Optional[str]:
+        """
+        Animate image using the prompt from categories configuration.
+        This method is called from the bot when user selects an animation option.
+        """
+        logger.info(f"Animating with kling_prompt: '{kling_prompt}'")
+        return await self.animate_image(
+            image_url, 
+            kling_prompt, 
+            model_type=model_type,
+            duration_seconds=duration
+        )
+    
     def get_animation_types(self, is_premium: bool = False) -> list:
-        """Get available animation types based on user tier."""
+        """Get available animation types based on user tier (deprecated - use categories.json)."""
         free_animations = [
+            {"type": "idle", "label": "🧘 Idle", "description": "Subtle natural movement"},
             {"type": "gentle_breeze", "label": "🍃 Gentle Breeze", "description": "Subtle movement"},
         ]
         
@@ -155,6 +205,8 @@ class KlingAPI:
             {"type": "water", "label": "🌊 Water Effects", "description": "Ripples and reflections"},
             {"type": "fire", "label": "🔥 Fire Effects", "description": "Flickering flames"},
             {"type": "snow", "label": "❄️ Snow Fall", "description": "Gentle snowfall"},
+            {"type": "wind", "label": "💨 Wind Effects", "description": "Strong wind movement"},
+            {"type": "glow", "label": "🌟 Mystical Glow", "description": "Glowing aura"},
         ]
         
         animations = free_animations.copy()
