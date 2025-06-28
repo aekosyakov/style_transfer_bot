@@ -576,7 +576,7 @@ class StyleTransferBot:
                     result_url = await flux_api.edit_text(photo_url, "old text", "new text")
                 elif category == "background_swap":
                     logger.info(f"Using FLUX API for background swap: {selected_option['label']}")
-                    bg_prompt = selected_option.get('bg_file', selected_option.get('prompt', 'beautiful landscape'))
+                    bg_prompt = selected_option.get('prompt', 'Change background to beautiful landscape')
                     result_url = await flux_api.swap_background(photo_url, bg_prompt)
                 elif category == "face_enhance":
                     logger.info(f"Using FLUX API for face enhancement: {selected_option['label']}")

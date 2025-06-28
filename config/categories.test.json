@@ -11,6 +11,18 @@
       {"label": "🌌 Sci-Fi Art 💎", "prompt": "Make this sci-fi art"}
     ]
   },
+  "background_swap": {
+    "free": [
+      {"label": "🏖️ Beach", "prompt": "Change background to a tropical beach"},
+      {"label": "🌳 Forest", "prompt": "Change background to a lush forest"}
+    ],
+    "premium": [
+      {"label": "🌌 Space 💎", "prompt": "Change background to outer space with stars"},
+      {"label": "🏰 Medieval Castle 💎", "prompt": "Change background to medieval castle"},
+      {"label": "🌈 Fantasy Realm 💎", "prompt": "Change background to magical fantasy landscape"},
+      {"label": "🌆 Cyberpunk City 💎", "prompt": "Change background to neon cyberpunk city"}
+    ]
+  },
   "animate": {
     "free": [{"label": "🍃 Breeze", "kling_prompt": "gentle breeze"}],
     "premium": [{"label": "✨ Sparkle 💎", "kling_prompt": "sparkle"}]

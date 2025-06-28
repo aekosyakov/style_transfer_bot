@@ -36,11 +36,30 @@
     ]
   },
   "background_swap": {
-    "free": [{"label": "🏖️ Beach", "bg_file": "beach.jpg"}],
+    "free": [
+      {"label": "🏖️ Beach", "prompt": "Change background to a tropical beach"},
+      {"label": "🌳 Forest", "prompt": "Change background to a lush forest"},
+      {"label": "🏙️ City", "prompt": "Change background to a modern city"}
+    ],
     "premium": [
-      {"label": "🏙️ City 💎", "bg_file": "city.jpg"},
-      {"label": "🏞️ Mountains 💎", "bg_file": "mountains.jpg"},
-      {"label": "🌌 Space 💎", "bg_file": "space.jpg"}
+      {"label": "🌌 Space 💎", "prompt": "Change background to outer space with stars"},
+      {"label": "🏔️ Snow Mountains 💎", "prompt": "Change background to snowy mountain peaks"},
+      {"label": "🌸 Cherry Blossoms 💎", "prompt": "Change background to cherry blossom park"},
+      {"label": "🏰 Medieval Castle 💎", "prompt": "Change background to medieval castle"},
+      {"label": "🌊 Ocean Underwater 💎", "prompt": "Change background to underwater coral reef"},
+      {"label": "🔥 Volcano 💎", "prompt": "Change background to active volcano"},
+      {"label": "🌈 Fantasy Realm 💎", "prompt": "Change background to magical fantasy landscape"},
+      {"label": "🏜️ Desert Sunset 💎", "prompt": "Change background to desert at sunset"},
+      {"label": "🌺 Tropical Paradise 💎", "prompt": "Change background to tropical paradise"},
+      {"label": "🏛️ Ancient Ruins 💎", "prompt": "Change background to ancient Greek ruins"},
+      {"label": "🌙 Moonlit Night 💎", "prompt": "Change background to moonlit landscape"},
+      {"label": "☁️ Clouds Sky 💎", "prompt": "Change background to fluffy clouds in sky"},
+      {"label": "🎪 Carnival 💎", "prompt": "Change background to colorful carnival"},
+      {"label": "🏞️ Autumn Forest 💎", "prompt": "Change background to autumn forest"},
+      {"label": "❄️ Winter Wonderland 💎", "prompt": "Change background to snowy winter scene"},
+      {"label": "🌆 Cyberpunk City 💎", "prompt": "Change background to neon cyberpunk city"},
+      {"label": "🚀 Space Station 💎", "prompt": "Change background to futuristic space station"},
+      {"label": "🏝️ Private Island 💎", "prompt": "Change background to private tropical island"}
     ]
   },
   "face_enhance": {
