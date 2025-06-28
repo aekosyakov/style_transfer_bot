@@ -70,17 +70,31 @@ class Config:
             logger.error(f"Invalid JSON in categories file: {e}")
             raise
     
-    def get_category_options(self, category: str, is_premium: bool = False) -> list:
-        """Get available options for a category based on user tier."""
+    def get_category_options(self, category: str, is_premium: bool = False, show_all: bool = True) -> list:
+        """Get available options for a category. Always shows all options for better UX."""
         if category not in self.categories:
             logger.warning(f"Unknown category: {category}")
             return []
         
-        options = self.categories[category].get("free", [])
-        if is_premium:
+        options = []
+        
+        # Always add free options
+        options.extend(self.categories[category].get("free", []))
+        
+        # Always add premium options for better UX (show_all=True by default)
+        # Premium check will be handled during processing
+        if show_all or is_premium:
             options.extend(self.categories[category].get("premium", []))
         
         return options
+    
+    def is_premium_option(self, category: str, option_label: str) -> bool:
+        """Check if a specific option is premium."""
+        if category not in self.categories:
+            return False
+        
+        premium_options = self.categories[category].get("premium", [])
+        return any(option["label"] == option_label for option in premium_options)
     
     @property
     def flux_models(self) -> Dict[str, str]:

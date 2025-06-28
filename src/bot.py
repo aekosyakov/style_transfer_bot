@@ -336,8 +336,8 @@ class StyleTransferBot:
         user_lang = L.get_user_language(update.effective_user)
         is_premium = redis_client.is_user_premium(user_id)
         
-        # Get available options for category
-        options = config.get_category_options(category, is_premium)
+        # Get available options for category (always show all options for better UX)
+        options = config.get_category_options(category, is_premium, show_all=True)
         
         if not options:
             await update.callback_query.edit_message_text(L.get("msg.no_options", user_lang))
@@ -407,6 +407,37 @@ class StyleTransferBot:
                 return
             
             logger.info(f"Selected option: {selected_option}")
+            
+            # Check if this is a premium option and user has premium access
+            option_label = selected_option['label']
+            is_premium_option = config.is_premium_option(category, option_label)
+            
+            if is_premium_option and not is_premium:
+                # User selected premium option but doesn't have premium access
+                logger.info(f"User {user_id} tried to use premium option {option_label} without premium access")
+                
+                upgrade_text = (
+                    f"🔒 **{option_label}** is a premium feature!\n\n"
+                    f"Upgrade to premium to unlock:\n"
+                    f"• 🌸 Anime Style\n"
+                    f"• 💥 Comic Book\n"
+                    f"• 🎞️ 90s Cartoon\n"
+                    f"• 🌌 Sci-Fi Art\n"
+                    f"• And many more exciting styles!\n\n"
+                    f"✨ Get unlimited access to all premium features!"
+                )
+                
+                keyboard = [
+                    [InlineKeyboardButton("🚀 Upgrade to Premium", callback_data="premium_info")],
+                    [InlineKeyboardButton("⬅️ Back to Styles", callback_data="category_style_transfer")]
+                ]
+                
+                await update.callback_query.edit_message_text(
+                    upgrade_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                return
             
             # Get photo from context
             photo_file_id = context.user_data.get('current_photo')
