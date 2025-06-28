@@ -233,6 +233,12 @@ class StyleTransferBot:
                 await self._show_main_menu(update, context)
             elif data == "premium_info":
                 await self._show_premium_options(update, context)
+            elif data == "back_to_enhancements":
+                await self._show_enhancement_menu(update, context)
+            elif data == "upload_prompt":
+                await self._show_upload_prompt(update, context)
+            elif data == "help":
+                await self._show_help_message(update, context)
             elif data.startswith("upgrade_"):
                 plan_type = data.replace("upgrade_", "")
                 await payment_processor.create_premium_invoice(update, context, plan_type)
@@ -328,6 +334,47 @@ class StyleTransferBot:
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 parse_mode='Markdown'
             )
+    
+    async def _show_enhancement_menu(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Show enhancement options menu."""
+        user_lang = L.get_user_language(update.effective_user)
+        user_id = update.effective_user.id
+        keyboard = self._get_enhancement_keyboard(user_lang, user_id)
+        
+        await update.callback_query.edit_message_text(
+            L.get("msg.photo_received", user_lang),
+            reply_markup=keyboard
+        )
+    
+    async def _show_upload_prompt(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Show upload photo prompt."""
+        user_lang = L.get_user_language(update.effective_user)
+        
+        await update.callback_query.edit_message_text(
+            L.get("msg.photo_upload_prompt", user_lang)
+        )
+    
+    async def _show_help_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Show help message."""
+        user_lang = L.get_user_language(update.effective_user)
+        
+        help_text = (
+            f"{L.get('help.title', user_lang)}\n\n"
+            f"{L.get('help.how_to_use', user_lang)}\n\n"
+            f"{L.get('help.features', user_lang)}\n\n"
+            f"{L.get('help.premium_benefits', user_lang)}\n\n"
+            f"{L.get('help.upgrade_note', user_lang)}"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton(L.get("btn.back", user_lang), callback_data="main_menu")]
+        ]
+        
+        await update.callback_query.edit_message_text(
+            help_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
     
     async def _handle_category_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:
         """Handle category selection."""
@@ -459,15 +506,53 @@ class StyleTransferBot:
             # Show processing message
             await update.callback_query.edit_message_text(L.get("msg.processing", user_lang))
             
+            # Start background processing (non-blocking)
+            asyncio.create_task(self._process_image_background(
+                update.effective_chat.id,
+                context.bot,
+                photo_file_id,
+                category,
+                selected_option,
+                user_id,
+                user_lang
+            ))
+            
+            logger.info(f"Started background processing for user {user_id}, category {category}")
+                
+        except Exception as e:
+            logger.error(f"Error processing option selection: {e}")
+            logger.error(f"Exception type: {type(e).__name__}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            user_lang = L.get_user_language(update.effective_user)
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=L.get("msg.error_occurred", user_lang)
+            )
+    
+    async def _process_image_background(
+        self, 
+        chat_id: int, 
+        bot, 
+        photo_file_id: str, 
+        category: str, 
+        selected_option: dict, 
+        user_id: int, 
+        user_lang: str
+    ) -> None:
+        """Process image in background without blocking main bot handler."""
+        try:
+            logger.info(f"🚀 Background processing started for user {user_id}, category {category}")
+            
             # Get photo URL
             try:
-                photo_file = await context.bot.get_file(photo_file_id)
+                photo_file = await bot.get_file(photo_file_id)
                 photo_url = photo_file.file_path
                 logger.info(f"Got photo URL: {photo_url}")
             except Exception as e:
                 logger.error(f"Failed to get photo file: {e}")
-                await context.bot.send_message(
-                    chat_id=update.effective_chat.id,
+                await bot.send_message(
+                    chat_id=chat_id,
                     text=L.get("msg.error_occurred", user_lang)
                 )
                 return
@@ -513,30 +598,33 @@ class StyleTransferBot:
                 logger.error(f"Full traceback: {traceback.format_exc()}")
                 result_url = None
             
+            # Send result
             if result_url:
-                logger.info(f"Successfully processed image, sending result to user {user_id}")
-                await context.bot.send_photo(
-                    chat_id=update.effective_chat.id,
+                logger.info(f"✅ Successfully processed image, sending result to user {user_id}")
+                await bot.send_photo(
+                    chat_id=chat_id,
                     photo=result_url,
                     caption=L.get("msg.success", user_lang)
                 )
             else:
-                logger.error(f"Processing failed for user {user_id}, category {category}")
-                await context.bot.send_message(
-                    chat_id=update.effective_chat.id,
+                logger.error(f"❌ Processing failed for user {user_id}, category {category}")
+                await bot.send_message(
+                    chat_id=chat_id,
                     text=L.get("msg.error", user_lang)
                 )
                 
         except Exception as e:
-            logger.error(f"Error processing option selection: {e}")
+            logger.error(f"Error in background processing for user {user_id}: {e}")
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
-            user_lang = L.get_user_language(update.effective_user)
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=L.get("msg.error_occurred", user_lang)
-            )
+            try:
+                await bot.send_message(
+                    chat_id=chat_id,
+                    text=L.get("msg.error_occurred", user_lang)
+                )
+            except Exception as send_error:
+                logger.error(f"Failed to send error message: {send_error}")
     
     async def _handle_animation_request(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:
         """Handle animation requests."""
