@@ -735,15 +735,28 @@ class StyleTransferBot:
         
         # Create keyboard with options
         keyboard = []
-        for option in options:
-            # Use translation key if available, fallback to label
-            label_text = L.get(option.get('label_key', option.get('label', 'Unknown')), user_lang)
-            # Create unique identifier for the option
-            option_id = option.get('label_key', option.get('label', 'unknown'))
-            keyboard.append([InlineKeyboardButton(
-                label_text, 
-                callback_data=f"option_{category}_{hash(option_id)}"
-            )])
+        
+        # Check if this is a submenu category
+        if config.is_submenu_category(category):
+            # Handle submenu options (they have callback_data instead of hash-based identifiers)
+            for option in options:
+                label_text = L.get(option.get('label_key', option.get('label', 'Unknown')), user_lang)
+                callback_data = option.get('callback_data', f"category_{option.get('label_key', 'unknown')}")
+                keyboard.append([InlineKeyboardButton(
+                    label_text, 
+                    callback_data=callback_data
+                )])
+        else:
+            # Handle regular options
+            for option in options:
+                # Use translation key if available, fallback to label
+                label_text = L.get(option.get('label_key', option.get('label', 'Unknown')), user_lang)
+                # Create unique identifier for the option
+                option_id = option.get('label_key', option.get('label', 'unknown'))
+                keyboard.append([InlineKeyboardButton(
+                    label_text, 
+                    callback_data=f"option_{category}_{hash(option_id)}"
+                )])
         
         keyboard.append([InlineKeyboardButton(L.get("btn.back", user_lang), callback_data="back_to_enhancements")])
         
@@ -1044,19 +1057,66 @@ class StyleTransferBot:
                     else:
                         result_url = await flux_api.style_transfer(photo_url, style_prompt)
                         
-                elif category == "new_look":
-                    # Handle dress/outfit changes
+                elif category == "new_look_women":
+                    # Handle women's dress/outfit changes
                     edit_prompt = selected_option['prompt']
                     
                     # Handle special dress prompts
                     if self._is_dress_option(selected_option):
                         edit_prompt = self._generate_dress_prompt(selected_option, is_retry)
-                        logger.info(f"Generated dress prompt: {edit_prompt}")
+                        logger.info(f"Generated women's dress prompt: {edit_prompt}")
                     
                     api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
                     
-                    logger.info(f"Using FLUX API for outfit editing: {option_identifier}")
-                    log_api_call("flux_outfit_edit", request_id, user_id, api_params)
+                    logger.info(f"Using FLUX API for women's outfit editing: {option_identifier}")
+                    log_api_call("flux_womens_outfit_edit", request_id, user_id, api_params)
+                    
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
+                    else:
+                        result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                        
+                elif category == "new_look_men":
+                    # Handle men's outfit changes
+                    edit_prompt = selected_option['prompt']
+                    
+                    # Handle special men's outfit prompts
+                    if self._is_mens_outfit_option(selected_option):
+                        edit_prompt = self._generate_mens_outfit_prompt(selected_option, is_retry)
+                        logger.info(f"Generated men's outfit prompt: {edit_prompt}")
+                    
+                    api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for men's outfit editing: {option_identifier}")
+                    log_api_call("flux_mens_outfit_edit", request_id, user_id, api_params)
+                    
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
+                    else:
+                        result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                        
+                elif category == "new_look_random":
+                    # Handle random gender outfit changes
+                    edit_prompt = selected_option['prompt']
+                    
+                    # Handle random outfit generation (mix of men's and women's)
+                    if 'RANDOM_ANY_OUTFIT' in edit_prompt or 'SURPRISE_OUTFIT' in edit_prompt:
+                        import random
+                        from src.dresses import dress_generator
+                        from src.mens_outfits import mens_outfit_generator
+                        
+                        # Randomly choose between men's and women's outfits
+                        if random.choice([True, False]):
+                            edit_prompt = dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
+                            logger.info(f"Generated random women's outfit: {edit_prompt}")
+                        else:
+                            edit_prompt = mens_outfit_generator.get_random_outfit(include_color=True, include_material=True, include_effects=False)
+                            logger.info(f"Generated random men's outfit: {edit_prompt}")
+                    
+                    api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for random outfit editing: {option_identifier}")
+                    log_api_call("flux_random_outfit_edit", request_id, user_id, api_params)
                     
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
@@ -1298,6 +1358,11 @@ class StyleTransferBot:
         option_identifier = option.get('label_key', '')
         return option_identifier.startswith('dress.')
     
+    def _is_mens_outfit_option(self, option: dict) -> bool:
+        """Check if an option is a men's outfit-related option."""
+        option_identifier = option.get('label_key', '')
+        return option_identifier.startswith('mens.')
+    
     def _is_style_option(self, option: dict) -> bool:
         """Check if an option is a style-related option."""
         option_identifier = option.get('label_key', '')
@@ -1385,6 +1450,55 @@ class StyleTransferBot:
             # Fallback for other dress options
             fallback_prompt = "change outfit to elegant dress, preserve original face and body proportions exactly"
             logger.info(f"Using fallback dress: {fallback_prompt}")
+            return fallback_prompt
+    
+    def _generate_mens_outfit_prompt(self, option: dict, is_retry: bool = False) -> str:
+        """Generate men's outfit prompt using MensOutfitGenerator."""
+        from src.mens_outfits import mens_outfit_generator
+        
+        option_identifier = option.get('label_key', '')
+        original_prompt = option.get('prompt', '')
+        
+        logger.info(f"Generating men's outfit prompt for {option_identifier}, original: {original_prompt}")
+        
+        if option_identifier == 'mens.random' or 'RANDOM_MENS_OUTFIT' in original_prompt:
+            # Random men's outfit generation
+            generated_prompt = mens_outfit_generator.get_random_outfit(include_color=True, include_material=True, include_effects=False)
+            logger.info(f"Generated random men's outfit: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'mens.casual_outfit' or 'CASUAL_MENS_OUTFIT' in original_prompt:
+            # Casual men's outfit change
+            generated_prompt = mens_outfit_generator.get_casual_outfit()
+            logger.info(f"Generated casual men's outfit: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'mens.modern_outfit' or 'MODERN_MENS_OUTFIT' in original_prompt:
+            generated_prompt = mens_outfit_generator.get_outfit_by_category("modern_trendy", include_color=True, include_material=True)
+            logger.info(f"Generated modern men's outfit: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'mens.classic_outfit' or 'CLASSIC_MENS_OUTFIT' in original_prompt:
+            generated_prompt = mens_outfit_generator.get_outfit_by_category("classic_timeless", include_color=True, include_material=True)
+            logger.info(f"Generated classic men's outfit: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'mens.edgy_outfit' or 'EDGY_MENS_OUTFIT' in original_prompt:
+            generated_prompt = mens_outfit_generator.get_outfit_by_category("edgy_statement", include_color=True, include_material=True)
+            logger.info(f"Generated edgy men's outfit: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'mens.evening_outfit' or 'EVENING_MENS_OUTFIT' in original_prompt:
+            generated_prompt = mens_outfit_generator.get_outfit_by_category("evening_occasion", include_color=True, include_material=True)
+            logger.info(f"Generated evening men's outfit: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'mens.cultural_outfit' or 'CULTURAL_MENS_OUTFIT' in original_prompt:
+            generated_prompt = mens_outfit_generator.get_outfit_by_category("cultural_traditional", include_color=True, include_material=True)
+            logger.info(f"Generated cultural men's outfit: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'mens.anime_outfit' or 'ANIME_MENS_OUTFIT' in original_prompt:
+            generated_prompt = mens_outfit_generator.get_outfit_by_category("anime_inspired", include_color=True, include_material=True)
+            logger.info(f"Generated anime men's outfit: {generated_prompt}")
+            return generated_prompt
+        else:
+            # Fallback for other men's outfit options
+            fallback_prompt = "change outfit to casual shirt and jeans, preserve original face and body proportions exactly"
+            logger.info(f"Using fallback men's outfit: {fallback_prompt}")
             return fallback_prompt
     
     def _is_hairstyle_option(self, option: dict) -> bool:

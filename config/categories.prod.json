@@ -22,6 +22,14 @@
     ]
   },
   "new_look": {
+    "submenu": true,
+    "options": [
+      {"label_key": "outfit.men", "callback_data": "new_look_men"},
+      {"label_key": "outfit.women", "callback_data": "new_look_women"},
+      {"label_key": "outfit.random", "callback_data": "new_look_random"}
+    ]
+  },
+  "new_look_women": {
     "free": [
       {"label_key": "dress.random", "prompt": "RANDOM_DRESS"},
       {"label_key": "dress.casual_outfit", "prompt": "CASUAL_OUTFIT"}
@@ -33,6 +41,28 @@
       {"label_key": "dress.evening_dress", "prompt": "EVENING_DRESS"},
       {"label_key": "dress.cultural_dress", "prompt": "CULTURAL_DRESS"},
       {"label_key": "dress.anime_dress", "prompt": "ANIME_DRESS"}
+    ]
+  },
+  "new_look_men": {
+    "free": [
+      {"label_key": "mens.random", "prompt": "RANDOM_MENS_OUTFIT"},
+      {"label_key": "mens.casual_outfit", "prompt": "CASUAL_MENS_OUTFIT"}
+    ],
+    "premium": [
+      {"label_key": "mens.modern_outfit", "prompt": "MODERN_MENS_OUTFIT"},
+      {"label_key": "mens.classic_outfit", "prompt": "CLASSIC_MENS_OUTFIT"},
+      {"label_key": "mens.edgy_outfit", "prompt": "EDGY_MENS_OUTFIT"},
+      {"label_key": "mens.evening_outfit", "prompt": "EVENING_MENS_OUTFIT"},
+      {"label_key": "mens.cultural_outfit", "prompt": "CULTURAL_MENS_OUTFIT"},
+      {"label_key": "mens.anime_outfit", "prompt": "ANIME_MENS_OUTFIT"}
+    ]
+  },
+  "new_look_random": {
+    "free": [
+      {"label_key": "outfit.random_any", "prompt": "RANDOM_ANY_OUTFIT"}
+    ],
+    "premium": [
+      {"label_key": "outfit.surprise_me", "prompt": "SURPRISE_OUTFIT"}
     ]
   },
   "new_hairstyle": {

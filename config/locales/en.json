@@ -93,6 +93,12 @@
   "style.ukiyo_e": "🌸 Ukiyo-e 💎",
   "style.film_noir": "🖤 Film Noir 💎",
 
+  "outfit.men": "👔 Men's Outfits",
+  "outfit.women": "👗 Women's Outfits", 
+  "outfit.random": "🎲 Random Gender",
+  "outfit.random_any": "🎲 Surprise Me",
+  "outfit.surprise_me": "🎉 Total Surprise 💎",
+
   "dress.random": "🎲 Random Look",
   "dress.casual_outfit": "👕 Casual Outfit",
   "dress.modern_dress": "✨ Modern Trendy 💎",
@@ -101,6 +107,15 @@
   "dress.evening_dress": "🌟 Evening Occasion 💎",
   "dress.cultural_dress": "🌍 Cultural Traditional 💎",
   "dress.anime_dress": "🎌 Anime Inspired 💎",
+
+  "mens.random": "🎲 Random Men's Look",
+  "mens.casual_outfit": "👕 Casual Outfit",
+  "mens.modern_outfit": "✨ Modern Trendy 💎",
+  "mens.classic_outfit": "🤵 Classic Formal 💎", 
+  "mens.edgy_outfit": "💥 Edgy Statement 💎",
+  "mens.evening_outfit": "🌟 Evening Formal 💎",
+  "mens.cultural_outfit": "🌍 Cultural Traditional 💎",
+  "mens.anime_outfit": "🎌 Anime Inspired 💎",
 
   "hair.random": "🎲 Random Hairstyle",
   "hair.color_only": "💇 Hair Color Only",

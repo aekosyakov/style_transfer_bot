@@ -88,17 +88,30 @@ class Config:
             logger.warning(f"Unknown category: {category}")
             return []
         
+        category_data = self.categories[category]
+        
+        # Check if this is a submenu category
+        if category_data.get("submenu", False):
+            # Return submenu options
+            return category_data.get("options", [])
+        
         options = []
         
         # Always add free options
-        options.extend(self.categories[category].get("free", []))
+        options.extend(category_data.get("free", []))
         
         # Always add premium options for better UX (show_all=True by default)
         # Premium check will be handled during processing
         if show_all or is_premium:
-            options.extend(self.categories[category].get("premium", []))
+            options.extend(category_data.get("premium", []))
         
         return options
+    
+    def is_submenu_category(self, category: str) -> bool:
+        """Check if a category has a submenu."""
+        if category not in self.categories:
+            return False
+        return self.categories[category].get("submenu", False)
     
     def is_premium_option(self, category: str, option_identifier: str) -> bool:
         """Check if a specific option is premium."""
