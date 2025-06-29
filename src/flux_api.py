@@ -174,6 +174,44 @@ class FluxAPI:
         except Exception:
             return False
 
+    async def process_image_with_variation(
+        self,
+        image_url: str,
+        prompt: str,
+        model_type: str = "pro",
+        aspect_ratio: str = "match_input_image",
+        output_format: str = "jpg",
+        safety_tolerance: int = 2,
+        use_random_seed: bool = True
+    ) -> Optional[str]:
+        """Process image with optional random seed for variation on repeat."""
+        try:
+            from src.prompt_variations import prompt_variation_generator
+            
+            seed = prompt_variation_generator.get_random_seed() if use_random_seed else None
+            logger.info(f"Processing with variation - Seed: {seed}, Prompt: '{prompt[:50]}...'")
+            
+            return await self.process_image(
+                image_url=image_url,
+                prompt=prompt,
+                model_type=model_type,
+                aspect_ratio=aspect_ratio,
+                output_format=output_format,
+                safety_tolerance=safety_tolerance,
+                seed=seed
+            )
+        except Exception as e:
+            logger.error(f"Error in process_image_with_variation: {e}")
+            # Fallback to regular processing without seed
+            return await self.process_image(
+                image_url=image_url,
+                prompt=prompt,
+                model_type=model_type,
+                aspect_ratio=aspect_ratio,
+                output_format=output_format,
+                safety_tolerance=safety_tolerance
+            )
+
 
 # Global FLUX API instance
 flux_api = FluxAPI() 

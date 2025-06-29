@@ -754,7 +754,8 @@ class StyleTransferBot:
         selected_option: dict, 
         user_id: int, 
         user_lang: str,
-        context: ContextTypes.DEFAULT_TYPE
+        context: ContextTypes.DEFAULT_TYPE,
+        is_retry: bool = False
     ) -> None:
         """Process image in background without blocking main bot handler."""
         try:
@@ -785,23 +786,38 @@ class StyleTransferBot:
                 if category == "style_transfer":
                     logger.info(f"Using FLUX API for style transfer: {option_identifier}")
                     style_prompt = selected_option['prompt']
-                    result_url = await flux_api.style_transfer(photo_url, style_prompt)
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, style_prompt)
+                    else:
+                        result_url = await flux_api.style_transfer(photo_url, style_prompt)
                 elif category == "object_edit":
                     logger.info(f"Using FLUX API for object editing: {option_identifier}")
                     edit_prompt = selected_option['prompt']
-                    result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
+                    else:
+                        result_url = await flux_api.edit_object(photo_url, edit_prompt)
                 elif category == "text_edit":
                     logger.info(f"Using FLUX API for text editing: {option_identifier}")
                     text_prompt = selected_option['prompt']
-                    result_url = await flux_api.edit_text(photo_url, "old text", "new text")
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, text_prompt)
+                    else:
+                        result_url = await flux_api.edit_text(photo_url, "old text", "new text")
                 elif category == "background_swap":
                     logger.info(f"Using FLUX API for background swap: {option_identifier}")
                     bg_prompt = selected_option.get('prompt', 'Change background to beautiful landscape')
-                    result_url = await flux_api.swap_background(photo_url, bg_prompt)
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, bg_prompt)
+                    else:
+                        result_url = await flux_api.swap_background(photo_url, bg_prompt)
                 elif category == "face_enhance":
                     logger.info(f"Using FLUX API for face enhancement: {option_identifier}")
                     face_prompt = selected_option['prompt']
-                    result_url = await flux_api.enhance_face(photo_url, face_prompt)
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, face_prompt)
+                    else:
+                        result_url = await flux_api.enhance_face(photo_url, face_prompt)
                 elif category == "animate":
                     logger.info(f"Using Kling AI for animation: {option_identifier}")
                     animation_prompt = selected_option.get('kling_prompt', '')
@@ -1029,7 +1045,7 @@ class StyleTransferBot:
         )
     
     async def _handle_retry(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle retry button - repeat the same processing."""
+        """Handle retry button - repeat with similar but varied processing."""
         try:
             user_id = update.effective_user.id
             user_lang = self._get_user_language(update.effective_user)
@@ -1042,24 +1058,31 @@ class StyleTransferBot:
             
             logger.info(f"User {user_id} requested retry for {last_processing['category']}")
             
+            # Create varied version of the selected option
+            varied_option = self._create_varied_option(
+                last_processing['category'],
+                last_processing['selected_option']
+            )
+            
             # Show processing message
             await update.callback_query.edit_message_caption(
                 caption=L.get("msg.processing", user_lang)
             )
             
-            # Start background processing (non-blocking)
+            # Start background processing with variation (non-blocking)
             asyncio.create_task(self._process_image_background(
                 update.effective_chat.id,
                 context.bot,
                 last_processing['photo_file_id'],
                 last_processing['category'],
-                last_processing['selected_option'],
+                varied_option,  # Use varied option instead of original
                 user_id,
                 user_lang,
-                context
+                context,
+                is_retry=True  # Flag to indicate this is a retry with variations
             ))
             
-            await update.callback_query.answer("🔄 Retrying...")
+            await update.callback_query.answer("🔄 Creating new variation...")
             
         except Exception as e:
             logger.error(f"Error in retry handler: {e}")
@@ -1087,6 +1110,41 @@ class StyleTransferBot:
             logger.error(f"Error in restart handler: {e}")
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
     
+    def _create_varied_option(self, category: str, original_option: dict) -> dict:
+        """Create a varied version of the selected option for repeat functionality."""
+        try:
+            from src.prompt_variations import prompt_variation_generator
+            
+            # Copy the original option
+            varied_option = original_option.copy()
+            
+            label_key = varied_option.get('label_key', '')
+            
+            # Handle animation category (uses kling_prompt)
+            if category == "animate":
+                original_kling_prompt = varied_option.get('kling_prompt', '')
+                varied_kling_prompt = prompt_variation_generator.get_varied_prompt(
+                    category, label_key, original_kling_prompt, is_kling=True
+                )
+                varied_option['kling_prompt'] = varied_kling_prompt
+                logger.info(f"Varied kling_prompt: '{original_kling_prompt}' → '{varied_kling_prompt}'")
+            
+            # Handle other categories (use prompt)
+            else:
+                original_prompt = varied_option.get('prompt', '')
+                varied_prompt = prompt_variation_generator.get_varied_prompt(
+                    category, label_key, original_prompt, is_kling=False
+                )
+                varied_option['prompt'] = varied_prompt
+                logger.info(f"Varied prompt: '{original_prompt}' → '{varied_prompt}'")
+            
+            return varied_option
+            
+        except Exception as e:
+            logger.error(f"Error creating varied option: {e}")
+            # Return original option as fallback
+            return original_option
+
     async def _handle_animate_result(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle animate result button - apply idle animation to the result image."""
         try:
