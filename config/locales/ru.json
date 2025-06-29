@@ -65,6 +65,9 @@
 
   "category.style_transfer": "стилизации",
   "category.new_look": "нового образа",
+  "category.new_look_women": "женской одежды",
+  "category.new_look_men": "мужской одежды",
+  "category.new_look_random": "случайной одежды",
   "category.new_hairstyle": "новой прически",
   "category.change_background": "изменения фона",
   "category.replace_text": "замены текста",

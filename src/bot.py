@@ -568,6 +568,9 @@ class StyleTransferBot:
                 await payment_processor.create_premium_invoice(update, context, plan_type)
             elif data.startswith("category_"):
                 await self._handle_category_selection(update, context, data)
+            elif data in ["new_look_men", "new_look_women", "new_look_random"]:
+                # Handle submenu navigation - treat as category selection
+                await self._handle_category_selection(update, context, f"category_{data}")
             elif data.startswith("option_"):
                 await self._handle_option_selection(update, context, data)
             elif data.startswith("animate_"):

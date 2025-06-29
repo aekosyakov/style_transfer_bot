@@ -65,6 +65,9 @@
 
   "category.style_transfer": "stylize",
   "category.new_look": "new look",
+  "category.new_look_women": "women's outfits",
+  "category.new_look_men": "men's outfits",
+  "category.new_look_random": "random gender outfits",
   "category.new_hairstyle": "new hairstyle",
   "category.change_background": "change background", 
   "category.replace_text": "replace text",
