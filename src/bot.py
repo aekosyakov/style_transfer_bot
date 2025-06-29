@@ -6,7 +6,8 @@ import sys
 import logging
 import asyncio
 import argparse
-from typing import Dict, Any, Optional
+import random
+from typing import Dict, Any, Optional, Final
 import uuid
 from datetime import datetime
 
@@ -30,6 +31,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Success effect IDs for random selection
+SUCCESS_EFFECT_IDS: Final[list[str]] = [
+    "5104841245755180586",  # 🔥
+    "5107584321108051014",  # 👍
+    "5044134455711629726",  # ❤️
+    "5046509860389126442",  # 🎉
+]
+
 
 class StyleTransferBot:
     """Main bot class handling all operations."""
@@ -41,6 +50,10 @@ class StyleTransferBot:
         
         self.app = Application.builder().token(config.bot_token).build()
         self._setup_handlers()
+    
+    def _get_random_success_effect_id(self) -> str:
+        """Get a random success effect ID."""
+        return random.choice(SUCCESS_EFFECT_IDS)
     
     def _setup_handlers(self) -> None:
         """Set up all bot handlers."""
@@ -820,7 +833,8 @@ class StyleTransferBot:
                             animation=result_url,
                             caption=L.get("msg.success", user_lang),
                             reply_markup=InlineKeyboardMarkup(keyboard),
-                            message_effect_id="5104841245755180586"  # 🎉 Party effect for animations
+                            message_effect_id=self._get_random_success_effect_id(),
+                            has_spoiler=True
                         )
                     except Exception as e:
                         logger.warning(f"Failed to send animation result as animation, trying as video: {e}")
@@ -831,8 +845,9 @@ class StyleTransferBot:
                                 video=result_url,
                                 caption=L.get("msg.success", user_lang),
                                 reply_markup=InlineKeyboardMarkup(keyboard),
-                            message_effect_id="5104841245755180586"  # 🎉 Party effect
-                        )
+                                message_effect_id=self._get_random_success_effect_id(),
+                                has_spoiler=True
+                            )
                         except Exception as e2:
                             logger.error(f"Failed to send animation result as video, sending as document: {e2}")
                             # Final fallback: send as document
@@ -843,13 +858,14 @@ class StyleTransferBot:
                                 reply_markup=InlineKeyboardMarkup(keyboard)
                             )
                 else:
-                    # Regular image results with fireworks effect
+                    # Regular image results with random success effect
                     await bot.send_photo(
                         chat_id=chat_id,
                         photo=result_url,
                         caption=L.get("msg.success", user_lang),
                         reply_markup=InlineKeyboardMarkup(keyboard),
-                        message_effect_id="5046509860389126442"  # 🎆 Fireworks effect for success
+                        message_effect_id=self._get_random_success_effect_id(),
+                        has_spoiler=True
                     )
             else:
                 logger.error(f"❌ Processing failed for user {user_id}, category {category}")
@@ -1117,7 +1133,8 @@ class StyleTransferBot:
                         chat_id=chat_id,
                         animation=animation_result,
                         caption="🎬 Your animated result is ready!",
-                        message_effect_id="5104841245755180586"  # 🎉 Party effect for animations
+                        message_effect_id=self._get_random_success_effect_id(),
+                        has_spoiler=True
                     )
                 except Exception as e:
                     logger.warning(f"Failed to send as animation, trying as video: {e}")
@@ -1127,8 +1144,9 @@ class StyleTransferBot:
                             chat_id=chat_id,
                             video=animation_result,
                             caption="🎬 Your animated result is ready!",
-                        message_effect_id="5104841245755180586"  # 🎉 Party effect
-                    )
+                            message_effect_id=self._get_random_success_effect_id(),
+                            has_spoiler=True
+                        )
                     except Exception as e2:
                         logger.error(f"Failed to send video, sending as document: {e2}")
                         # Final fallback: send as document
