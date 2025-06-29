@@ -905,29 +905,45 @@ class StyleTransferBot:
                     else:
                         result_url = await flux_api.style_transfer(photo_url, style_prompt)
                         
-                elif category == "object_edit":
+                elif category == "new_look":
+                    # Handle dress/outfit changes
                     edit_prompt = selected_option['prompt']
                     
-                    # Handle special hairstyle prompts
-                    if self._is_hairstyle_option(selected_option):
-                        edit_prompt = self._generate_hairstyle_prompt(selected_option, is_retry)
-                        logger.info(f"Generated hairstyle prompt: {edit_prompt}")
                     # Handle special dress prompts
-                    elif self._is_dress_option(selected_option):
+                    if self._is_dress_option(selected_option):
                         edit_prompt = self._generate_dress_prompt(selected_option, is_retry)
                         logger.info(f"Generated dress prompt: {edit_prompt}")
                     
                     api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
                     
-                    logger.info(f"Using FLUX API for object editing: {option_identifier}")
-                    log_api_call("flux_object_edit", request_id, user_id, api_params)
+                    logger.info(f"Using FLUX API for outfit editing: {option_identifier}")
+                    log_api_call("flux_outfit_edit", request_id, user_id, api_params)
                     
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
                     else:
                         result_url = await flux_api.edit_object(photo_url, edit_prompt)
                         
-                elif category == "text_edit":
+                elif category == "new_hairstyle":
+                    # Handle hairstyle changes
+                    edit_prompt = selected_option['prompt']
+                    
+                    # Handle special hairstyle prompts
+                    if self._is_hairstyle_option(selected_option):
+                        edit_prompt = self._generate_hairstyle_prompt(selected_option, is_retry)
+                        logger.info(f"Generated hairstyle prompt: {edit_prompt}")
+                    
+                    api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for hairstyle editing: {option_identifier}")
+                    log_api_call("flux_hairstyle_edit", request_id, user_id, api_params)
+                    
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
+                    else:
+                        result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                        
+                elif category == "replace_text":
                     text_prompt = selected_option['prompt']
                     api_params = {"photo_url": photo_url, "prompt": text_prompt, "is_retry": is_retry}
                     
@@ -939,11 +955,11 @@ class StyleTransferBot:
                     else:
                         result_url = await flux_api.edit_text(photo_url, "old text", "new text")
                         
-                elif category == "background_swap":
+                elif category == "change_background":
                     bg_prompt = selected_option.get('prompt', 'Change background to beautiful landscape')
                     api_params = {"photo_url": photo_url, "prompt": bg_prompt, "is_retry": is_retry}
                     
-                    logger.info(f"Using FLUX API for background swap: {option_identifier}")
+                    logger.info(f"Using FLUX API for background change: {option_identifier}")
                     log_api_call("flux_background_swap", request_id, user_id, api_params)
                     
                     if is_retry:
@@ -951,17 +967,7 @@ class StyleTransferBot:
                     else:
                         result_url = await flux_api.swap_background(photo_url, bg_prompt)
                         
-                elif category == "face_enhance":
-                    face_prompt = selected_option['prompt']
-                    api_params = {"photo_url": photo_url, "prompt": face_prompt, "is_retry": is_retry}
-                    
-                    logger.info(f"Using FLUX API for face enhancement: {option_identifier}")
-                    log_api_call("flux_face_enhance", request_id, user_id, api_params)
-                    
-                    if is_retry:
-                        result_url = await flux_api.process_image_with_variation(photo_url, face_prompt)
-                    else:
-                        result_url = await flux_api.enhance_face(photo_url, face_prompt)
+
                         
                 elif category == "animate":
                     animation_prompt = selected_option.get('kling_prompt', '')
