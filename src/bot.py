@@ -99,13 +99,12 @@ def log_processing_step(step: str, request_id: str, user_id: int, details: Dict[
     else:
         logger.error(f"⚙️  PROCESSING_ERROR: {json.dumps(log_data)}")
 
-# Success effect IDs for random selection
-SUCCESS_EFFECT_IDS: Final[list[str]] = [
-    "5104841245755180586",  # 🔥
-    # "5107584321108051014",  # 👍 - REMOVED: Invalid effect ID
-    "5044134455711629726",  # ❤️
-    "5046509860389126442",  # 🎉
-]
+# Success effect IDs for random selection - DISABLED due to invalid IDs causing crashes
+# SUCCESS_EFFECT_IDS: Final[list[str]] = [
+#     "5104841245755180586",  # 🔥
+#     "5044134455711629726",  # ❤️
+#     "5046509860389126442",  # 🎉
+# ]
 
 
 class StyleTransferBot:
@@ -120,8 +119,8 @@ class StyleTransferBot:
         self._setup_handlers()
     
     def _get_random_success_effect_id(self) -> str:
-        """Get a random success effect ID."""
-        return random.choice(SUCCESS_EFFECT_IDS)
+        """Get a random success effect ID - DISABLED to prevent crashes."""
+        return None  # Disabled to prevent Effect_id_invalid crashes
     
     def _setup_handlers(self) -> None:
         """Set up all bot handlers."""
@@ -182,8 +181,8 @@ class StyleTransferBot:
             
             await update.message.reply_text(
                 welcome_msg,
-                reply_markup=keyboard,
-                message_effect_id="5046509860389126442"  # 🎆 Fireworks effect for welcome
+                reply_markup=keyboard
+                # Removed effect ID to prevent "Effect_id_invalid" crashes
             )
             
             logger.info(f"User {user.id} started the bot")
@@ -400,8 +399,8 @@ class StyleTransferBot:
                 "• 💥 Comic Book\n"
                 "• 🌌 Sci-Fi Art\n"
                 "• 🎮 Pixel Art\n"
-                "• And many more!",
-                message_effect_id="5104841245755180586"  # 🎉 Party effect for premium activation
+                "• And many more!"
+                # Removed effect ID to prevent "Effect_id_invalid" crashes
             )
         else:
             await update.message.reply_text("❌ DEBUG: Failed to grant premium status")
@@ -1019,8 +1018,8 @@ class StyleTransferBot:
                             animation=result_url,
                             caption=L.get("msg.success", user_lang),
                             reply_markup=InlineKeyboardMarkup(keyboard),
-                            message_effect_id=self._get_random_success_effect_id(),
                             has_spoiler=True
+                            # Removed effect ID to prevent "Effect_id_invalid" crashes
                         )
                     except Exception as e:
                         logger.warning(f"Failed to send animation result as animation, trying as video: {e}")
@@ -1031,8 +1030,8 @@ class StyleTransferBot:
                                 video=result_url,
                                 caption=L.get("msg.success", user_lang),
                                 reply_markup=InlineKeyboardMarkup(keyboard),
-                                message_effect_id=self._get_random_success_effect_id(),
                                 has_spoiler=True
+                                # Removed effect ID to prevent "Effect_id_invalid" crashes
                             )
                         except Exception as e2:
                             logger.error(f"Failed to send animation result as video, sending as document: {e2}")
@@ -1050,8 +1049,8 @@ class StyleTransferBot:
                         photo=result_url,
                         caption=L.get("msg.success", user_lang),
                         reply_markup=InlineKeyboardMarkup(keyboard),
-                        message_effect_id=self._get_random_success_effect_id(),
                         has_spoiler=True
+                        # Removed effect ID to prevent "Effect_id_invalid" crashes
                     )
             else:
                 logger.error(f"❌ Processing failed for user {user_id}, category {category}")
@@ -1361,8 +1360,8 @@ class StyleTransferBot:
                         chat_id=chat_id,
                         animation=animation_result,
                         caption="🎬 Your animated result is ready!",
-                        message_effect_id=self._get_random_success_effect_id(),
                         has_spoiler=True
+                        # Removed effect ID to prevent "Effect_id_invalid" crashes
                     )
                 except Exception as e:
                     logger.warning(f"Failed to send as animation, trying as video: {e}")
@@ -1372,8 +1371,8 @@ class StyleTransferBot:
                             chat_id=chat_id,
                             video=animation_result,
                             caption="🎬 Your animated result is ready!",
-                            message_effect_id=self._get_random_success_effect_id(),
                             has_spoiler=True
+                            # Removed effect ID to prevent "Effect_id_invalid" crashes
                         )
                     except Exception as e2:
                         logger.error(f"Failed to send video, sending as document: {e2}")
