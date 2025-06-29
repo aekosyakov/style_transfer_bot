@@ -8,7 +8,10 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from redis_client import redis_client
 from localization import L
-from config.billing_config import get_billing_config, get_pass_config, get_payg_config
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config'))
+from billing_config import get_billing_config, get_pass_config, get_payg_config
 
 logger = logging.getLogger(__name__)
 
