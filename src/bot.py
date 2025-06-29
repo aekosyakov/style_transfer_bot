@@ -2526,6 +2526,8 @@ class StyleTransferBot:
 
 def main():
     """Main entry point."""
+    global bot_instance
+    
     parser = argparse.ArgumentParser(description="Style Transfer Telegram Bot")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
     args = parser.parse_args()
@@ -2534,17 +2536,21 @@ def main():
     debug_mode = args.debug or os.getenv("DEBUG", "false").lower() == "true"
     
     try:
-        bot = StyleTransferBot(debug=debug_mode)
+        bot_instance = StyleTransferBot(debug=debug_mode)
         if debug_mode:
             logger.info("🐛 DEBUG MODE ENABLED - Debug commands available:")
             logger.info("  /debug_premium - Grant premium status")
             logger.info("  /debug_revoke - Revoke premium status")
-        bot.run()
+        bot_instance.run()
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
     except Exception as e:
         logger.error(f"Bot crashed: {e}")
         sys.exit(1)
+
+
+# Global bot instance for access from other modules
+bot_instance = None
 
 
 if __name__ == "__main__":

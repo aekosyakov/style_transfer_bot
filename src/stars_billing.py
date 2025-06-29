@@ -821,10 +821,14 @@ class StarsBillingManager:
                 return None
             
             # Parse the stored data
+            selected_option_str = interrupted_data.get("selected_option", "{}")
+            if isinstance(selected_option_str, bytes):
+                selected_option_str = selected_option_str.decode('utf-8')
+            
             context = {
                 "photo_file_id": interrupted_data.get("photo_file_id"),
                 "category": interrupted_data.get("category"),
-                "selected_option": json.loads(interrupted_data.get("selected_option", "{}")),
+                "selected_option": json.loads(selected_option_str),
                 "user_lang": interrupted_data.get("user_lang"),
                 "service_type": interrupted_data.get("service_type"),
                 "timestamp": interrupted_data.get("timestamp")
@@ -873,13 +877,40 @@ class StarsBillingManager:
             
             await update.message.reply_text("⚡ Processing your image now...")
             
-            # Import and start background processing immediately
+            # Actually start the background processing
             import asyncio
-            # We need to import the bot's process function - let's use a different approach
-            # Store the context for immediate processing
-            context.user_data['immediate_resume'] = True
+            from src.bot import StyleTransferBot
             
-            logger.info(f"✅ Auto-resume processing set up for user {user_id}")
+            # Get the bot instance and start processing
+            # We need to create a temporary bot instance to access the processing method
+            try:
+                # Import the global bot instance if available
+                import src.bot as bot_module
+                if hasattr(bot_module, 'bot_instance'):
+                    bot_instance = bot_module.bot_instance
+                else:
+                    # Create a temporary instance for processing
+                    bot_instance = StyleTransferBot()
+                
+                # Start background processing with the interrupted context
+                asyncio.create_task(bot_instance._process_image_background(
+                    update.effective_chat.id,
+                    context.bot,
+                    interrupted_context['photo_file_id'],
+                    interrupted_context['category'],
+                    interrupted_context['selected_option'],
+                    user_id,
+                    interrupted_context['user_lang'],
+                    context
+                ))
+                
+                logger.info(f"✅ Auto-resume background processing started for user {user_id}")
+                
+            except Exception as processing_error:
+                logger.error(f"Failed to start background processing for auto-resume: {processing_error}")
+                # Refund quota since processing failed to start
+                self.refund_quota(user_id, service_type)
+                await update.message.reply_text("❌ Failed to start processing. Please try again.")
             
         except Exception as e:
             logger.error(f"Error setting up auto-resume: {e}")
