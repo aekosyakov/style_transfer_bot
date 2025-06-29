@@ -1,38 +1,38 @@
 {
   "style_transfer": {
     "free": [
-      {"label": "✏️ Pencil Sketch", "prompt": "Make this a pencil sketch"},
-      {"label": "🎨 Digital Art", "prompt": "Make this digital art"}
+      {"label_key": "style.pencil_sketch", "prompt": "Make this a pencil sketch"},
+      {"label_key": "style.digital_art", "prompt": "Make this digital art"}
     ],
     "premium": [
-      {"label": "🌸 Anime Style 💎", "prompt": "Make this anime style"},
-      {"label": "💥 Comic Book 💎", "prompt": "Make this a comic book"},
-      {"label": "🎞️ 90s Cartoon 💎", "prompt": "Make this a 90s cartoon"},
-      {"label": "🌌 Sci-Fi Art 💎", "prompt": "Make this sci-fi art"}
+      {"label_key": "style.anime_style", "prompt": "Make this anime style"},
+      {"label_key": "style.comic_book", "prompt": "Make this a comic book"},
+      {"label_key": "style.cartoon_90s", "prompt": "Make this a 90s cartoon"},
+      {"label_key": "style.sci_fi_art", "prompt": "Make this sci-fi art"}
     ]
   },
   "background_swap": {
     "free": [
-      {"label": "🏖️ Beach", "prompt": "Change background to a tropical beach"},
-      {"label": "🌳 Forest", "prompt": "Change background to a lush forest"}
+      {"label_key": "bg.beach", "prompt": "Change background to a tropical beach"},
+      {"label_key": "bg.forest", "prompt": "Change background to a lush forest"}
     ],
     "premium": [
-      {"label": "🌌 Space 💎", "prompt": "Change background to outer space with stars"},
-      {"label": "🏰 Medieval Castle 💎", "prompt": "Change background to medieval castle"},
-      {"label": "🌈 Fantasy Realm 💎", "prompt": "Change background to magical fantasy landscape"},
-      {"label": "🌆 Cyberpunk City 💎", "prompt": "Change background to neon cyberpunk city"}
+      {"label_key": "bg.space", "prompt": "Change background to outer space with stars"},
+      {"label_key": "bg.medieval_castle", "prompt": "Change background to medieval castle"},
+      {"label_key": "bg.fantasy_realm", "prompt": "Change background to magical fantasy landscape"},
+      {"label_key": "bg.cyberpunk_city", "prompt": "Change background to neon cyberpunk city"}
     ]
   },
   "animate": {
     "free": [
-      {"label": "🧘 Idle", "kling_prompt": ""},
-      {"label": "🍃 Gentle Breeze", "kling_prompt": "gentle breeze animating hair and clothing"}
+      {"label_key": "anim.idle", "kling_prompt": ""},
+      {"label_key": "anim.gentle_breeze", "kling_prompt": "gentle breeze animating hair and clothing"}
     ],
     "premium": [
-      {"label": "✨ Sparkle Effects 💎", "kling_prompt": "sparkling magical effects around the subject"},
-      {"label": "🎞️ Cinematic Zoom 💎", "kling_prompt": "slow cinematic zoom in with subtle camera movement"},
-      {"label": "💨 Wind Effects 💎", "kling_prompt": "strong wind effects with dramatic movement"},
-      {"label": "🌟 Mystical Glow 💎", "kling_prompt": "mystical glowing aura around the subject"}
+      {"label_key": "anim.sparkle_effects", "kling_prompt": "sparkling magical effects around the subject"},
+      {"label_key": "anim.cinematic_zoom", "kling_prompt": "slow cinematic zoom in with subtle camera movement"},
+      {"label_key": "anim.wind_effects", "kling_prompt": "strong wind effects with dramatic movement"},
+      {"label_key": "anim.mystical_glow", "kling_prompt": "mystical glowing aura around the subject"}
     ]
   }
 } 

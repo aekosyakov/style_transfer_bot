@@ -1,95 +1,95 @@
 {
   "style_transfer": {
     "free": [
-      {"label": "✏️ Pencil Sketch", "prompt": "Make this a pencil sketch"},
-      {"label": "🎨 Digital Art", "prompt": "Make this digital art"},
-      {"label": "🖼️ Pop Art", "prompt": "Make this pop art"}
+      {"label_key": "style.pencil_sketch", "prompt": "Make this a pencil sketch"},
+      {"label_key": "style.digital_art", "prompt": "Make this digital art"},
+      {"label_key": "style.pop_art", "prompt": "Make this pop art"}
     ],
     "premium": [
-      {"label": "🌸 Anime Style 💎", "prompt": "Make this anime style"},
-      {"label": "💥 Comic Book 💎", "prompt": "Make this a comic book"},
-      {"label": "🎞️ 90s Cartoon 💎", "prompt": "Make this a 90s cartoon"},
-      {"label": "🖼️ Impressionist 💎", "prompt": "Make this an impressionist painting"},
-      {"label": "📷 Vintage Photo 💎", "prompt": "Make this a vintage photo"},
-      {"label": "🌌 Sci-Fi Art 💎", "prompt": "Make this sci-fi art"},
-      {"label": "🎭 Art Nouveau 💎", "prompt": "Make this Art Nouveau style"},
-      {"label": "🌈 Psychedelic 💎", "prompt": "Make this psychedelic art"},
-      {"label": "🏛️ Renaissance 💎", "prompt": "Make this a Renaissance painting"},
-      {"label": "🎮 Pixel Art 💎", "prompt": "Make this pixel art"},
-      {"label": "🌸 Ukiyo-e 💎", "prompt": "Make this a Japanese woodblock print"},
-      {"label": "🖤 Film Noir 💎", "prompt": "Make this film noir style"}
+      {"label_key": "style.anime_style", "prompt": "Make this anime style"},
+      {"label_key": "style.comic_book", "prompt": "Make this a comic book"},
+      {"label_key": "style.cartoon_90s", "prompt": "Make this a 90s cartoon"},
+      {"label_key": "style.impressionist", "prompt": "Make this an impressionist painting"},
+      {"label_key": "style.vintage_photo", "prompt": "Make this a vintage photo"},
+      {"label_key": "style.sci_fi_art", "prompt": "Make this sci-fi art"},
+      {"label_key": "style.art_nouveau", "prompt": "Make this Art Nouveau style"},
+      {"label_key": "style.psychedelic", "prompt": "Make this psychedelic art"},
+      {"label_key": "style.renaissance", "prompt": "Make this a Renaissance painting"},
+      {"label_key": "style.pixel_art", "prompt": "Make this pixel art"},
+      {"label_key": "style.ukiyo_e", "prompt": "Make this a Japanese woodblock print"},
+      {"label_key": "style.film_noir", "prompt": "Make this film noir style"}
     ]
   },
   "object_edit": {
-    "free": [{"label": "💇 Hair Color", "prompt": "change hair color to blonde"}],
+    "free": [{"label_key": "object.hair_color", "prompt": "change hair color to blonde"}],
     "premium": [
-      {"label": "👓 Add Glasses 💎", "prompt": "add round glasses"},
-      {"label": "🧥 Change Outfit 💎", "prompt": "change outfit to business suit"},
-      {"label": "🎩 Add Hat 💎", "prompt": "add black top hat"}
+      {"label_key": "object.add_glasses", "prompt": "add round glasses"},
+      {"label_key": "object.change_outfit", "prompt": "change outfit to business suit"},
+      {"label_key": "object.add_hat", "prompt": "add black top hat"}
     ]
   },
   "text_edit": {
-    "free": [{"label": "✏️ Replace Text", "prompt": "\"replace 'OLD' with 'NEW'\""}],
+    "free": [{"label_key": "text.replace_text", "prompt": "\"replace 'OLD' with 'NEW'\""}],
     "premium": [
-      {"label": "📐 Font 💎", "prompt": "change font to bold serif"},
-      {"label": "🎨 Color 💎", "prompt": "change text color to red"}
+      {"label_key": "text.font_change", "prompt": "change font to bold serif"},
+      {"label_key": "text.color_change", "prompt": "change text color to red"}
     ]
   },
   "background_swap": {
     "free": [
-      {"label": "🏖️ Beach", "prompt": "Change background to a tropical beach"},
-      {"label": "🌳 Forest", "prompt": "Change background to a lush forest"},
-      {"label": "🏙️ City", "prompt": "Change background to a modern city"}
+      {"label_key": "bg.beach", "prompt": "Change background to a tropical beach"},
+      {"label_key": "bg.forest", "prompt": "Change background to a lush forest"},
+      {"label_key": "bg.city", "prompt": "Change background to a modern city"}
     ],
     "premium": [
-      {"label": "🌌 Space 💎", "prompt": "Change background to outer space with stars"},
-      {"label": "🏔️ Snow Mountains 💎", "prompt": "Change background to snowy mountain peaks"},
-      {"label": "🌸 Cherry Blossoms 💎", "prompt": "Change background to cherry blossom park"},
-      {"label": "🏰 Medieval Castle 💎", "prompt": "Change background to medieval castle"},
-      {"label": "🌊 Ocean Underwater 💎", "prompt": "Change background to underwater coral reef"},
-      {"label": "🔥 Volcano 💎", "prompt": "Change background to active volcano"},
-      {"label": "🌈 Fantasy Realm 💎", "prompt": "Change background to magical fantasy landscape"},
-      {"label": "🏜️ Desert Sunset 💎", "prompt": "Change background to desert at sunset"},
-      {"label": "🌺 Tropical Paradise 💎", "prompt": "Change background to tropical paradise"},
-      {"label": "🏛️ Ancient Ruins 💎", "prompt": "Change background to ancient Greek ruins"},
-      {"label": "🌙 Moonlit Night 💎", "prompt": "Change background to moonlit landscape"},
-      {"label": "☁️ Clouds Sky 💎", "prompt": "Change background to fluffy clouds in sky"},
-      {"label": "🎪 Carnival 💎", "prompt": "Change background to colorful carnival"},
-      {"label": "🏞️ Autumn Forest 💎", "prompt": "Change background to autumn forest"},
-      {"label": "❄️ Winter Wonderland 💎", "prompt": "Change background to snowy winter scene"},
-      {"label": "🌆 Cyberpunk City 💎", "prompt": "Change background to neon cyberpunk city"},
-      {"label": "🚀 Space Station 💎", "prompt": "Change background to futuristic space station"},
-      {"label": "🏝️ Private Island 💎", "prompt": "Change background to private tropical island"}
+      {"label_key": "bg.space", "prompt": "Change background to outer space with stars"},
+      {"label_key": "bg.snow_mountains", "prompt": "Change background to snowy mountain peaks"},
+      {"label_key": "bg.cherry_blossoms", "prompt": "Change background to cherry blossom park"},
+      {"label_key": "bg.medieval_castle", "prompt": "Change background to medieval castle"},
+      {"label_key": "bg.ocean_underwater", "prompt": "Change background to underwater coral reef"},
+      {"label_key": "bg.volcano", "prompt": "Change background to active volcano"},
+      {"label_key": "bg.fantasy_realm", "prompt": "Change background to magical fantasy landscape"},
+      {"label_key": "bg.desert_sunset", "prompt": "Change background to desert at sunset"},
+      {"label_key": "bg.tropical_paradise", "prompt": "Change background to tropical paradise"},
+      {"label_key": "bg.ancient_ruins", "prompt": "Change background to ancient Greek ruins"},
+      {"label_key": "bg.moonlit_night", "prompt": "Change background to moonlit landscape"},
+      {"label_key": "bg.clouds_sky", "prompt": "Change background to fluffy clouds in sky"},
+      {"label_key": "bg.carnival", "prompt": "Change background to colorful carnival"},
+      {"label_key": "bg.autumn_forest", "prompt": "Change background to autumn forest"},
+      {"label_key": "bg.winter_wonderland", "prompt": "Change background to snowy winter scene"},
+      {"label_key": "bg.cyberpunk_city", "prompt": "Change background to neon cyberpunk city"},
+      {"label_key": "bg.space_station", "prompt": "Change background to futuristic space station"},
+      {"label_key": "bg.private_island", "prompt": "Change background to private tropical island"}
     ]
   },
   "face_enhance": {
-    "free": [{"label": "😊 Natural Smile", "prompt": "add subtle smile"}],
+    "free": [{"label_key": "face.natural_smile", "prompt": "add subtle smile"}],
     "premium": [
-      {"label": "💄 Makeup 💎", "prompt": "apply professional makeup subtly"},
-      {"label": "👦 Younger 💎", "prompt": "make face look 5 years younger"},
-      {"label": "👱 Haircut 💎", "prompt": "change haircut to short bob"}
+      {"label_key": "face.makeup", "prompt": "apply professional makeup subtly"},
+      {"label_key": "face.younger", "prompt": "make face look 5 years younger"},
+      {"label_key": "face.haircut", "prompt": "change haircut to short bob"}
     ]
   },
   "animate": {
     "free": [
-      {"label": "🧘 Idle", "kling_prompt": ""},
-      {"label": "🍃 Gentle Breeze", "kling_prompt": "gentle breeze animating hair and clothing"},
-      {"label": "👁️ Portrait Life", "kling_prompt": "subtle facial expressions and eye movement"}
+      {"label_key": "anim.idle", "kling_prompt": ""},
+      {"label_key": "anim.gentle_breeze", "kling_prompt": "gentle breeze animating hair and clothing"},
+      {"label_key": "anim.portrait_life", "kling_prompt": "subtle facial expressions and eye movement"}
     ],
     "premium": [
-      {"label": "✨ Sparkle Effects 💎", "kling_prompt": "sparkling magical effects around the subject"},
-      {"label": "🎞️ Cinematic Zoom 💎", "kling_prompt": "slow cinematic zoom in with subtle camera movement"},
-      {"label": "💡 Moving Lights 💎", "kling_prompt": "moving light reflections and ambient lighting changes"},
-      {"label": "🌊 Water Ripples 💎", "kling_prompt": "water ripples and reflections"},
-      {"label": "🔥 Fire Effects 💎", "kling_prompt": "flickering fire effects and warm lighting"},
-      {"label": "❄️ Snow Fall 💎", "kling_prompt": "gentle snowfall with natural particle movement"},
-      {"label": "☁️ Moving Clouds 💎", "kling_prompt": "moving clouds in the background"},
-      {"label": "🌿 Nature Alive 💎", "kling_prompt": "leaves rustling and natural environment movement"},
-      {"label": "💃 Dance Movement 💎", "kling_prompt": "subtle dancing movement and rhythm"},
-      {"label": "💨 Wind Effects 💎", "kling_prompt": "strong wind effects with dramatic movement"},
-      {"label": "🌟 Mystical Glow 💎", "kling_prompt": "mystical glowing aura around the subject"},
-      {"label": "🌊 Ocean Waves 💎", "kling_prompt": "ocean waves and water movement in background"},
-      {"label": "🎈 Floating Objects 💎", "kling_prompt": "objects floating and levitating gently"}
+      {"label_key": "anim.sparkle_effects", "kling_prompt": "sparkling magical effects around the subject"},
+      {"label_key": "anim.cinematic_zoom", "kling_prompt": "slow cinematic zoom in with subtle camera movement"},
+      {"label_key": "anim.moving_lights", "kling_prompt": "moving light reflections and ambient lighting changes"},
+      {"label_key": "anim.water_ripples", "kling_prompt": "water ripples and reflections"},
+      {"label_key": "anim.fire_effects", "kling_prompt": "flickering fire effects and warm lighting"},
+      {"label_key": "anim.snow_fall", "kling_prompt": "gentle snowfall with natural particle movement"},
+      {"label_key": "anim.moving_clouds", "kling_prompt": "moving clouds in the background"},
+      {"label_key": "anim.nature_alive", "kling_prompt": "leaves rustling and natural environment movement"},
+      {"label_key": "anim.dance_movement", "kling_prompt": "subtle dancing movement and rhythm"},
+      {"label_key": "anim.wind_effects", "kling_prompt": "strong wind effects with dramatic movement"},
+      {"label_key": "anim.mystical_glow", "kling_prompt": "mystical glowing aura around the subject"},
+      {"label_key": "anim.ocean_waves", "kling_prompt": "ocean waves and water movement in background"},
+      {"label_key": "anim.floating_objects", "kling_prompt": "objects floating and levitating gently"}
     ]
   }
 } 

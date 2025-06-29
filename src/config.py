@@ -100,13 +100,18 @@ class Config:
         
         return options
     
-    def is_premium_option(self, category: str, option_label: str) -> bool:
+    def is_premium_option(self, category: str, option_identifier: str) -> bool:
         """Check if a specific option is premium."""
         if category not in self.categories:
             return False
         
         premium_options = self.categories[category].get("premium", [])
-        return any(option["label"] == option_label for option in premium_options)
+        # Check both new label_key format and old label format for backward compatibility
+        return any(
+            option.get("label_key") == option_identifier or 
+            option.get("label") == option_identifier 
+            for option in premium_options
+        )
     
     @property
     def flux_models(self) -> Dict[str, str]:

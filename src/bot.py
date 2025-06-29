@@ -591,9 +591,13 @@ class StyleTransferBot:
         # Create keyboard with options
         keyboard = []
         for option in options:
+            # Use translation key if available, fallback to label
+            label_text = L.get(option.get('label_key', option.get('label', 'Unknown')), user_lang)
+            # Create unique identifier for the option
+            option_id = option.get('label_key', option.get('label', 'unknown'))
             keyboard.append([InlineKeyboardButton(
-                option['label'], 
-                callback_data=f"option_{category}_{hash(option['label'])}"
+                label_text, 
+                callback_data=f"option_{category}_{hash(option_id)}"
             )])
         
         keyboard.append([InlineKeyboardButton(L.get("btn.back", user_lang), callback_data="back_to_enhancements")])
@@ -637,7 +641,9 @@ class StyleTransferBot:
             options = config.get_category_options(category, is_premium)
             selected_option = None
             for option in options:
-                if str(hash(option['label'])) == option_hash:
+                # Check both old 'label' format and new 'label_key' format
+                option_id = option.get('label_key', option.get('label', 'unknown'))
+                if str(hash(option_id)) == option_hash:
                     selected_option = option
                     break
             
@@ -651,21 +657,25 @@ class StyleTransferBot:
             logger.info(f"Selected option: {selected_option}")
             
             # Check if this is a premium option and user has premium access
-            option_label = selected_option['label']
-            is_premium_option = config.is_premium_option(category, option_label)
+            # Use label_key if available, fallback to label for backward compatibility
+            option_identifier = selected_option.get('label_key', selected_option.get('label', ''))
+            is_premium_option = config.is_premium_option(category, option_identifier)
             
             # Check if premium features are temporarily free for testing
             user_has_premium_access = is_premium or config.premium_features_free
             
             if config.premium_features_free and is_premium_option and not is_premium:
-                logger.info(f"🎉 TESTING MODE: Granting free access to premium option {option_label} for user {user_id}")
+                logger.info(f"🎉 TESTING MODE: Granting free access to premium option {option_identifier} for user {user_id}")
             
             if is_premium_option and not user_has_premium_access:
                 # User selected premium option but doesn't have premium access
-                logger.info(f"User {user_id} tried to use premium option {option_label} without premium access")
+                logger.info(f"User {user_id} tried to use premium option {option_identifier} without premium access")
+                
+                # Get translated label for display
+                option_display_name = L.get(option_identifier, user_lang) if selected_option.get('label_key') else option_identifier
                 
                 upgrade_text = (
-                    f"🔒 **{option_label}** is a premium feature!\n\n"
+                    f"🔒 **{option_display_name}** is a premium feature!\n\n"
                     f"Upgrade to premium to unlock:\n"
                     f"• 🌸 Anime Style\n"
                     f"• 💥 Comic Book\n"
@@ -769,28 +779,31 @@ class StyleTransferBot:
             try:
                 logger.info(f"Starting {category} processing")
                 
+                # Get option identifier for logging
+                option_identifier = selected_option.get('label_key', selected_option.get('label', 'unknown'))
+                
                 if category == "style_transfer":
-                    logger.info(f"Using FLUX API for style transfer: {selected_option['label']}")
+                    logger.info(f"Using FLUX API for style transfer: {option_identifier}")
                     style_prompt = selected_option['prompt']
                     result_url = await flux_api.style_transfer(photo_url, style_prompt)
                 elif category == "object_edit":
-                    logger.info(f"Using FLUX API for object editing: {selected_option['label']}")
+                    logger.info(f"Using FLUX API for object editing: {option_identifier}")
                     edit_prompt = selected_option['prompt']
                     result_url = await flux_api.edit_object(photo_url, edit_prompt)
                 elif category == "text_edit":
-                    logger.info(f"Using FLUX API for text editing: {selected_option['label']}")
+                    logger.info(f"Using FLUX API for text editing: {option_identifier}")
                     text_prompt = selected_option['prompt']
                     result_url = await flux_api.edit_text(photo_url, "old text", "new text")
                 elif category == "background_swap":
-                    logger.info(f"Using FLUX API for background swap: {selected_option['label']}")
+                    logger.info(f"Using FLUX API for background swap: {option_identifier}")
                     bg_prompt = selected_option.get('prompt', 'Change background to beautiful landscape')
                     result_url = await flux_api.swap_background(photo_url, bg_prompt)
                 elif category == "face_enhance":
-                    logger.info(f"Using FLUX API for face enhancement: {selected_option['label']}")
+                    logger.info(f"Using FLUX API for face enhancement: {option_identifier}")
                     face_prompt = selected_option['prompt']
                     result_url = await flux_api.enhance_face(photo_url, face_prompt)
                 elif category == "animate":
-                    logger.info(f"Using Kling AI for animation: {selected_option['label']}")
+                    logger.info(f"Using Kling AI for animation: {option_identifier}")
                     animation_prompt = selected_option.get('kling_prompt', '')
                     logger.info(f"Animation prompt: '{animation_prompt}' (empty=idle)")
                     result_url = await kling_api.animate_by_prompt(photo_url, animation_prompt)
