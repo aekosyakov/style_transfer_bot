@@ -2452,19 +2452,33 @@ class StyleTransferBot:
             if not redis_client.redis.get(auto_resume_key):
                 return
             
-            # Get auto-resume context
-            auto_resume_context = context.user_data.get('auto_resume_context')
-            if not auto_resume_context:
+            # Get auto-resume context from Redis
+            auto_resume_context_key = f"user:{user_id}:auto_resume_context"
+            auto_resume_data = redis_client.redis.hgetall(auto_resume_context_key)
+            
+            if not auto_resume_data:
                 logger.warning(f"Auto-resume flag set but no context found for user {user_id}")
                 redis_client.redis.delete(auto_resume_key)
                 return
             
+            # Parse auto-resume context
+            auto_resume_context = {
+                "photo_file_id": auto_resume_data.get("photo_file_id"),
+                "category": auto_resume_data.get("category"),
+                "selected_option": json.loads(auto_resume_data.get("selected_option", "{}")),
+                "user_lang": auto_resume_data.get("user_lang"),
+                "service_type": auto_resume_data.get("service_type"),
+                "timestamp": auto_resume_data.get("timestamp")
+            }
+            
             logger.info(f"🔄 Auto-resuming processing for user {user_id}: {auto_resume_context['category']}")
             
-            # Clean up auto-resume flag
+            # Clean up auto-resume flag and context
             redis_client.redis.delete(auto_resume_key)
+            redis_client.redis.delete(auto_resume_context_key)
             
             # Prepare processing context
+            context.user_data['current_photo'] = auto_resume_context['photo_file_id']
             context.user_data['last_processing'] = {
                 'photo_file_id': auto_resume_context['photo_file_id'],
                 'category': auto_resume_context['category'],
@@ -2500,7 +2514,9 @@ class StyleTransferBot:
             logger.error(f"Error in auto-resume for user {update.effective_user.id}: {e}")
             # Clean up on error
             auto_resume_key = f"user:{update.effective_user.id}:auto_resume"
+            auto_resume_context_key = f"user:{update.effective_user.id}:auto_resume_context"
             redis_client.redis.delete(auto_resume_key)
+            redis_client.redis.delete(auto_resume_context_key)
     
     def run(self) -> None:
         """Start the bot."""

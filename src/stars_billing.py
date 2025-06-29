@@ -385,14 +385,18 @@ class StarsBillingManager:
             user_id = update.effective_user.id
             user_lang = L.get_user_language(update.effective_user)
             
-            # Parse payload
+            # Parse payload: stars_{item_type}_{item_id}_{user_id}
+            # Note: item_id might contain underscores, so we need to be careful
             parts = payload.split("_")
             if len(parts) < 4 or parts[0] != "stars":
                 logger.error(f"Invalid Stars payment payload: {payload}")
                 return
             
             item_type = parts[1]  # "pass" or "payg"
-            item_id = parts[2]    # pass/payg identifier
+            # Reconstruct item_id by joining parts[2] through parts[-2] (excluding last part which is user_id)
+            item_id = "_".join(parts[2:-1])  # pass/payg identifier
+            
+            logger.info(f"Parsed payment: item_type={item_type}, item_id={item_id}, payload={payload}")
             
             success = False
             
@@ -820,19 +824,28 @@ class StarsBillingManager:
         try:
             user_id = update.effective_user.id
             
+            # Store auto-resume context in Redis for persistence across handlers
+            auto_resume_context_key = f"user:{user_id}:auto_resume_context"
+            redis_data = {
+                "photo_file_id": interrupted_context['photo_file_id'],
+                "category": interrupted_context['category'],
+                "selected_option": json.dumps(interrupted_context['selected_option']),
+                "user_lang": interrupted_context['user_lang'],
+                "service_type": interrupted_context['service_type'],
+                "timestamp": interrupted_context['timestamp']
+            }
+            redis_client.redis.hset(auto_resume_context_key, mapping=redis_data)
+            redis_client.redis.expire(auto_resume_context_key, 300)  # 5-minute expiration
+            
             # Set a flag for the bot to auto-resume processing
             auto_resume_key = f"user:{user_id}:auto_resume"
             redis_client.redis.setex(auto_resume_key, 300, "1")  # 5-minute expiration
-            
-            # Store context for bot to use
-            context.user_data['auto_resume_context'] = interrupted_context
-            context.user_data['current_photo'] = interrupted_context['photo_file_id']
             
             # Clean up the interrupted processing context
             interrupted_key = f"user:{user_id}:interrupted_processing"
             redis_client.redis.delete(interrupted_key)
             
-            logger.info(f"Set auto-resume flag for user {user_id}: {interrupted_context['category']}")
+            logger.info(f"Set auto-resume flag and context for user {user_id}: {interrupted_context['category']}")
             
             await update.message.reply_text(
                 "⚡ Processing your image now...",
