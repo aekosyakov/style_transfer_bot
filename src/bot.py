@@ -1050,6 +1050,9 @@ class StyleTransferBot:
                         style_prompt = self._generate_style_prompt(selected_option, is_retry)
                         logger.info(f"Generated style prompt: {style_prompt}")
                     
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{style_prompt}'")
+                    
                     api_params = {"photo_url": photo_url, "prompt": style_prompt, "is_retry": is_retry}
                     
                     logger.info(f"Using FLUX API for style transfer: {option_identifier}")
@@ -1069,6 +1072,9 @@ class StyleTransferBot:
                         edit_prompt = self._generate_dress_prompt(selected_option, is_retry)
                         logger.info(f"Generated women's dress prompt: {edit_prompt}")
                     
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{edit_prompt}'")
+                    
                     api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
                     
                     logger.info(f"Using FLUX API for women's outfit editing: {option_identifier}")
@@ -1087,6 +1093,9 @@ class StyleTransferBot:
                     if self._is_mens_outfit_option(selected_option):
                         edit_prompt = self._generate_mens_outfit_prompt(selected_option, is_retry)
                         logger.info(f"Generated men's outfit prompt: {edit_prompt}")
+                    
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{edit_prompt}'")
                     
                     api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
                     
@@ -1116,6 +1125,9 @@ class StyleTransferBot:
                             edit_prompt = mens_outfit_generator.get_random_outfit(include_color=True, include_material=True, include_effects=False)
                             logger.info(f"Generated random men's outfit: {edit_prompt}")
                     
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{edit_prompt}'")
+                    
                     api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
                     
                     logger.info(f"Using FLUX API for random outfit editing: {option_identifier}")
@@ -1135,6 +1147,9 @@ class StyleTransferBot:
                         edit_prompt = self._generate_hairstyle_prompt(selected_option, is_retry)
                         logger.info(f"Generated hairstyle prompt: {edit_prompt}")
                     
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{edit_prompt}'")
+                    
                     api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
                     
                     logger.info(f"Using FLUX API for hairstyle editing: {option_identifier}")
@@ -1147,6 +1162,10 @@ class StyleTransferBot:
                         
                 elif category == "replace_text":
                     text_prompt = selected_option['prompt']
+                    
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{text_prompt}'")
+                    
                     api_params = {"photo_url": photo_url, "prompt": text_prompt, "is_retry": is_retry}
                     
                     logger.info(f"Using FLUX API for text editing: {option_identifier}")
@@ -1159,6 +1178,10 @@ class StyleTransferBot:
                         
                 elif category == "change_background":
                     bg_prompt = selected_option.get('prompt', 'Change background to beautiful landscape')
+                    
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{bg_prompt}'")
+                    
                     api_params = {"photo_url": photo_url, "prompt": bg_prompt, "is_retry": is_retry}
                     
                     logger.info(f"Using FLUX API for background change: {option_identifier}")
@@ -1173,10 +1196,13 @@ class StyleTransferBot:
                         
                 elif category == "animate":
                     animation_prompt = selected_option.get('kling_prompt', '')
+                    
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{animation_prompt}' (empty=idle animation)")
+                    
                     api_params = {"photo_url": photo_url, "animation_prompt": animation_prompt}
                     
                     logger.info(f"Using Kling AI for animation: {option_identifier}")
-                    logger.info(f"Animation prompt: '{animation_prompt}' (empty=idle)")
                     log_api_call("kling_animate", request_id, user_id, api_params)
                     
                     result_url = await kling_api.animate_by_prompt(photo_url, animation_prompt)
