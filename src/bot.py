@@ -744,6 +744,8 @@ class StyleTransferBot:
         # Check if it's a Stars payment or traditional payment
         if update.message.successful_payment and update.message.successful_payment.invoice_payload.startswith("stars_"):
             await stars_billing.handle_successful_stars_payment(update, context)
+            # Check for auto-resume after successful Stars payment
+            await self._check_and_handle_auto_resume(update, context)
         else:
             await payment_processor.handle_successful_payment(update, context)
     
@@ -2439,6 +2441,66 @@ class StyleTransferBot:
                 await retry_telegram_request(send_animation_error_operation)
             except Exception as send_error:
                 logger.error(f"Failed to send animation error message after retries: {send_error}")
+    
+    async def _check_and_handle_auto_resume(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Check for auto-resume flag and continue interrupted processing."""
+        try:
+            user_id = update.effective_user.id
+            
+            # Check if auto-resume is flagged
+            auto_resume_key = f"user:{user_id}:auto_resume"
+            if not redis_client.redis.get(auto_resume_key):
+                return
+            
+            # Get auto-resume context
+            auto_resume_context = context.user_data.get('auto_resume_context')
+            if not auto_resume_context:
+                logger.warning(f"Auto-resume flag set but no context found for user {user_id}")
+                redis_client.redis.delete(auto_resume_key)
+                return
+            
+            logger.info(f"🔄 Auto-resuming processing for user {user_id}: {auto_resume_context['category']}")
+            
+            # Clean up auto-resume flag
+            redis_client.redis.delete(auto_resume_key)
+            
+            # Prepare processing context
+            context.user_data['last_processing'] = {
+                'photo_file_id': auto_resume_context['photo_file_id'],
+                'category': auto_resume_context['category'],
+                'selected_option': auto_resume_context['selected_option'],
+                'user_id': user_id,
+                'user_lang': auto_resume_context['user_lang'],
+                'service_type': auto_resume_context['service_type']
+            }
+            
+            # Check and consume quota for the resumed processing
+            service_type = auto_resume_context['service_type']
+            if not stars_billing.consume_quota(user_id, service_type, user_obj=update.effective_user):
+                logger.error(f"Failed to consume quota for auto-resume for user {user_id}")
+                await update.message.reply_text("❌ Failed to start processing. Please try again.")
+                return
+            
+            # Start background processing
+            asyncio.create_task(self._process_image_background(
+                update.effective_chat.id,
+                context.bot,
+                auto_resume_context['photo_file_id'],
+                auto_resume_context['category'],
+                auto_resume_context['selected_option'],
+                user_id,
+                auto_resume_context['user_lang'],
+                context,
+                is_retry=False
+            ))
+            
+            logger.info(f"✅ Auto-resume processing started for user {user_id}")
+            
+        except Exception as e:
+            logger.error(f"Error in auto-resume for user {update.effective_user.id}: {e}")
+            # Clean up on error
+            auto_resume_key = f"user:{update.effective_user.id}:auto_resume"
+            redis_client.redis.delete(auto_resume_key)
     
     def run(self) -> None:
         """Start the bot."""

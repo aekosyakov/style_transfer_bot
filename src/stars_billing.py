@@ -24,28 +24,71 @@ class StarsBillingManager:
         }
         
         # Pass prices and quotas (Stars, FLUX, Kling, margin)
+        # self.passes = {
+        #     "pro_1day": {
+        #         "price_stars": 499,
+        #         "flux_quota": 50,
+        #         "kling_quota": 10,
+        #         "duration_hours": 24,
+        #         "margin_percent": 61.8,
+        #         "name_key": "billing.pass.pro_1day"
+        #     },
+        #     "creator_7day": {
+        #         "price_stars": 2999,
+        #         "flux_quota": 500,
+        #         "kling_quota": 50,
+        #         "duration_hours": 24 * 7,
+        #         "margin_percent": 42.5,
+        #         "name_key": "billing.pass.creator_7day"
+        #     },
+        #     "studio_30day": {
+        #         "price_stars": 9999,
+        #         "flux_quota": 2000,
+        #         "kling_quota": 200,
+        #         "duration_hours": 24 * 30,
+        #         "margin_percent": 31.1,
+        #         "name_key": "billing.pass.studio_30day"
+        #     }
+        # }
+        
+        # # Pay-as-you-go prices
+        # self.payg_prices = {
+        #     "flux_extra": {
+        #         "price_stars": 25,
+        #         "quota": 1,
+        #         "margin_percent": 88,
+        #         "name_key": "billing.payg.flux_extra"
+        #     },
+        #     "kling_extra": {
+        #         "price_stars": 50,
+        #         "quota": 1,
+        #         "margin_percent": 92,
+        #         "name_key": "billing.payg.kling_extra"
+        #     }
+        # }
+
         self.passes = {
             "pro_1day": {
-                "price_stars": 499,
-                "flux_quota": 50,
-                "kling_quota": 10,
-                "duration_hours": 24,
+                "price_stars": 3,
+                "flux_quota": 5,
+                "kling_quota": 2,
+                "duration_hours": 1,
                 "margin_percent": 61.8,
                 "name_key": "billing.pass.pro_1day"
             },
             "creator_7day": {
-                "price_stars": 2999,
-                "flux_quota": 500,
-                "kling_quota": 50,
-                "duration_hours": 24 * 7,
+                "price_stars": 5,
+                "flux_quota": 10,
+                "kling_quota": 3,
+                "duration_hours": 12,
                 "margin_percent": 42.5,
                 "name_key": "billing.pass.creator_7day"
             },
             "studio_30day": {
-                "price_stars": 9999,
-                "flux_quota": 2000,
-                "kling_quota": 200,
-                "duration_hours": 24 * 30,
+                "price_stars": 10,
+                "flux_quota": 15,
+                "kling_quota": 5,
+                "duration_hours": 24,
                 "margin_percent": 31.1,
                 "name_key": "billing.pass.studio_30day"
             }
@@ -369,10 +412,19 @@ class StarsBillingManager:
                     success_msg = (
                         f"💎 {duration_text} Pro activated until 23:59 UTC!\n"
                         f"{pass_info['flux_quota']} style / {pass_info['kling_quota']} video credits now available.\n"
-                        f"Send a photo to start."
                     )
                     
-                    await update.message.reply_text(success_msg)
+                    # Check for interrupted processing and auto-resume
+                    interrupted_context = await self._get_interrupted_processing(user_id)
+                    if interrupted_context:
+                        success_msg += "🔄 Resuming your generation..."
+                        await update.message.reply_text(success_msg)
+                        
+                        # Auto-resume processing
+                        await self._resume_interrupted_processing(update, context, interrupted_context)
+                    else:
+                        success_msg += "Send a photo to start."
+                        await update.message.reply_text(success_msg)
                     
             elif item_type == "payg":
                 payg_info = self.payg_prices[item_id]
@@ -383,9 +435,19 @@ class StarsBillingManager:
                     success_msg = (
                         f"⚡ +{payg_info['quota']} {service_name} credit added!\n"
                         f"Total: {self.get_user_quota(user_id, service)} credits available.\n"
-                        f"Send a photo to start."
                     )
-                    await update.message.reply_text(success_msg)
+                    
+                    # Check for interrupted processing and auto-resume
+                    interrupted_context = await self._get_interrupted_processing(user_id)
+                    if interrupted_context and interrupted_context.get('service_type') == service:
+                        success_msg += "🔄 Resuming your generation..."
+                        await update.message.reply_text(success_msg)
+                        
+                        # Auto-resume processing
+                        await self._resume_interrupted_processing(update, context, interrupted_context)
+                    else:
+                        success_msg += "Send a photo to start."
+                        await update.message.reply_text(success_msg)
             
             if not success:
                 # Refund should be handled by Telegram automatically for Stars
@@ -615,6 +677,24 @@ class StarsBillingManager:
             
             text = L.get("billing.no_credits_left", user_lang, service=service_name)
             
+            # Store interrupted processing context for auto-resume after payment
+            user_id = update.effective_user.id
+            last_processing = context.user_data.get('last_processing')
+            if last_processing:
+                # Store interrupted context in Redis for auto-resume
+                interrupted_key = f"user:{user_id}:interrupted_processing"
+                interrupted_data = {
+                    "photo_file_id": last_processing.get('photo_file_id'),
+                    "category": last_processing.get('category'),
+                    "selected_option": json.dumps(last_processing.get('selected_option', {})),
+                    "user_lang": last_processing.get('user_lang', user_lang),
+                    "service_type": service,
+                    "timestamp": datetime.now().isoformat()
+                }
+                redis_client.redis.hset(interrupted_key, mapping=interrupted_data)
+                redis_client.redis.expire(interrupted_key, 3600)  # Expire in 1 hour
+                logger.info(f"Stored interrupted processing context for user {user_id}")
+            
             # Create invoice links for all options with proper translations
             extra_service = L.get("billing.extra_image", user_lang) if service == "flux" else L.get("billing.extra_video", user_lang)
             keyboard = [
@@ -703,6 +783,66 @@ class StarsBillingManager:
             # Refund quota on exception
             self.refund_quota(user_id, service, 1) 
             return None
+    
+    async def _get_interrupted_processing(self, user_id: int) -> Optional[Dict[str, Any]]:
+        """Get interrupted processing context for auto-resume."""
+        try:
+            interrupted_key = f"user:{user_id}:interrupted_processing"
+            interrupted_data = redis_client.redis.hgetall(interrupted_key)
+            
+            if not interrupted_data:
+                return None
+            
+            # Parse the stored data
+            context = {
+                "photo_file_id": interrupted_data.get("photo_file_id"),
+                "category": interrupted_data.get("category"),
+                "selected_option": json.loads(interrupted_data.get("selected_option", "{}")),
+                "user_lang": interrupted_data.get("user_lang"),
+                "service_type": interrupted_data.get("service_type"),
+                "timestamp": interrupted_data.get("timestamp")
+            }
+            
+            logger.info(f"Retrieved interrupted processing context for user {user_id}")
+            return context
+            
+        except Exception as e:
+            logger.error(f"Error getting interrupted processing context for user {user_id}: {e}")
+            return None
+    
+    async def _resume_interrupted_processing(
+        self, 
+        update: Update, 
+        context: ContextTypes.DEFAULT_TYPE,
+        interrupted_context: Dict[str, Any]
+    ) -> None:
+        """Resume interrupted processing after successful payment."""
+        try:
+            user_id = update.effective_user.id
+            
+            # Set a flag for the bot to auto-resume processing
+            auto_resume_key = f"user:{user_id}:auto_resume"
+            redis_client.redis.setex(auto_resume_key, 300, "1")  # 5-minute expiration
+            
+            # Store context for bot to use
+            context.user_data['auto_resume_context'] = interrupted_context
+            context.user_data['current_photo'] = interrupted_context['photo_file_id']
+            
+            # Clean up the interrupted processing context
+            interrupted_key = f"user:{user_id}:interrupted_processing"
+            redis_client.redis.delete(interrupted_key)
+            
+            logger.info(f"Set auto-resume flag for user {user_id}: {interrupted_context['category']}")
+            
+            await update.message.reply_text(
+                "⚡ Processing your image now...",
+            )
+            
+        except Exception as e:
+            logger.error(f"Error setting up auto-resume: {e}")
+            await update.message.reply_text(
+                "✅ Credit added! Please try your generation again.",
+            )
 
 
 # Global Stars billing manager instance
