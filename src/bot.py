@@ -101,7 +101,8 @@ class StyleTransferBot:
             
             await update.message.reply_text(
                 welcome_msg,
-                reply_markup=keyboard
+                reply_markup=keyboard,
+                message_effect_id="5046509860389126442"  # 🎆 Fireworks effect for welcome
             )
             
             logger.info(f"User {user.id} started the bot")
@@ -319,6 +320,8 @@ class StyleTransferBot:
                 "• 🌌 Sci-Fi Art\n"
                 "• 🎮 Pixel Art\n"
                 "• And many more!"
+            ,
+                message_effect_id="5104841245755180586"  # 🎉 Party effect for premium activation
             )
         else:
             await update.message.reply_text("❌ DEBUG: Failed to grant premium status")
@@ -743,7 +746,8 @@ class StyleTransferBot:
                 logger.error(f"Failed to get photo file: {e}")
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=L.get("msg.error_occurred", user_lang)
+                    text=L.get("msg.error_occurred", user_lang),
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
                 return
             
@@ -815,7 +819,8 @@ class StyleTransferBot:
                             chat_id=chat_id,
                             animation=result_url,
                             caption=L.get("msg.success", user_lang),
-                            reply_markup=InlineKeyboardMarkup(keyboard)
+                            reply_markup=InlineKeyboardMarkup(keyboard),
+                            message_effect_id="5104841245755180586"  # 🎉 Party effect for animations
                         )
                     except Exception as e:
                         logger.warning(f"Failed to send animation result as animation, trying as video: {e}")
@@ -825,8 +830,9 @@ class StyleTransferBot:
                                 chat_id=chat_id,
                                 video=result_url,
                                 caption=L.get("msg.success", user_lang),
-                                reply_markup=InlineKeyboardMarkup(keyboard)
-                            )
+                                reply_markup=InlineKeyboardMarkup(keyboard),
+                            message_effect_id="5104841245755180586"  # 🎉 Party effect
+                        )
                         except Exception as e2:
                             logger.error(f"Failed to send animation result as video, sending as document: {e2}")
                             # Final fallback: send as document
@@ -842,13 +848,15 @@ class StyleTransferBot:
                         chat_id=chat_id,
                         photo=result_url,
                         caption=L.get("msg.success", user_lang),
-                        reply_markup=InlineKeyboardMarkup(keyboard)
+                        reply_markup=InlineKeyboardMarkup(keyboard),
+                        message_effect_id="5046509860389126442"  # 🎆 Fireworks effect for success
                     )
             else:
                 logger.error(f"❌ Processing failed for user {user_id}, category {category}")
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=L.get("msg.error", user_lang)
+                    text=L.get("msg.error", user_lang),
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
                 
         except Exception as e:
@@ -859,7 +867,8 @@ class StyleTransferBot:
             try:
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=L.get("msg.error_occurred", user_lang)
+                    text=L.get("msg.error_occurred", user_lang),
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
             except Exception as send_error:
                 logger.error(f"Failed to send error message: {send_error}")
@@ -1107,7 +1116,8 @@ class StyleTransferBot:
                     await bot.send_animation(
                         chat_id=chat_id,
                         animation=animation_result,
-                        caption="🎬 Your animated result is ready!"
+                        caption="🎬 Your animated result is ready!",
+                        message_effect_id="5104841245755180586"  # 🎉 Party effect for animations
                     )
                 except Exception as e:
                     logger.warning(f"Failed to send as animation, trying as video: {e}")
@@ -1116,8 +1126,9 @@ class StyleTransferBot:
                         await bot.send_video(
                             chat_id=chat_id,
                             video=animation_result,
-                            caption="🎬 Your animated result is ready!"
-                        )
+                            caption="🎬 Your animated result is ready!",
+                        message_effect_id="5104841245755180586"  # 🎉 Party effect
+                    )
                     except Exception as e2:
                         logger.error(f"Failed to send video, sending as document: {e2}")
                         # Final fallback: send as document
@@ -1130,7 +1141,8 @@ class StyleTransferBot:
                 logger.error(f"❌ Animation failed for user {user_id}")
                 await bot.send_message(
                     chat_id=chat_id,
-                    text="❌ Animation failed. Please try again later."
+                    text="❌ Animation failed. Please try again later.",
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
                 
         except Exception as e:
@@ -1140,7 +1152,8 @@ class StyleTransferBot:
             try:
                 await bot.send_message(
                     chat_id=chat_id,
-                    text="❌ Animation failed due to an error."
+                    text="❌ Animation failed due to an error.",
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
             except Exception as send_error:
                 logger.error(f"Failed to send error message: {send_error}")
