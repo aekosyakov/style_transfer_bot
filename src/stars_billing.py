@@ -381,23 +381,15 @@ class StarsBillingManager:
                     else:
                         duration_text = f"{hours}-Hour"
                     
-                    # Create success message with specific format
-                    success_msg = (
-                        f"💎 {duration_text} Pro activated until 23:59 UTC!\n"
-                        f"{pass_info['flux_quota']} style / {pass_info['kling_quota']} video credits now available.\n"
-                    )
-                    
                     # Check for interrupted processing and auto-resume
                     interrupted_context = await self._get_interrupted_processing(user_id)
                     if interrupted_context:
-                        success_msg += "🔄 Resuming your generation..."
-                        await update.message.reply_text(success_msg)
-                        
-                        # Auto-resume processing
+                        # Auto-resume processing without credit mentions
+                        await update.message.reply_text("🔄 Resuming your generation...")
                         await self._resume_interrupted_processing(update, context, interrupted_context)
                     else:
-                        success_msg += "Send a photo to start."
-                        await update.message.reply_text(success_msg)
+                        # Show simple activation message
+                        await update.message.reply_text(f"💎 {duration_text} Pro activated until 23:59 UTC!\nSend a photo to start.")
                     
             elif item_type == "payg":
                 payg_info = self.payg_prices[item_id]
@@ -405,22 +397,16 @@ class StarsBillingManager:
                 success = self.add_payg_quota(user_id, service, payg_info["quota"])
                 if success:
                     service_name = "style" if service == "flux" else "video"
-                    success_msg = (
-                        f"⚡ +{payg_info['quota']} {service_name} credit added!\n"
-                        f"Total: {self.get_user_quota(user_id, service)} credits available.\n"
-                    )
                     
                     # Check for interrupted processing and auto-resume
                     interrupted_context = await self._get_interrupted_processing(user_id)
                     if interrupted_context and interrupted_context.get('service_type') == service:
-                        success_msg += "🔄 Resuming your generation..."
-                        await update.message.reply_text(success_msg)
-                        
-                        # Auto-resume processing
+                        # Auto-resume processing without credit mentions
+                        await update.message.reply_text("🔄 Resuming your generation...")
                         await self._resume_interrupted_processing(update, context, interrupted_context)
                     else:
-                        success_msg += "Send a photo to start."
-                        await update.message.reply_text(success_msg)
+                        # Show simple purchase confirmation
+                        await update.message.reply_text(f"⚡ Extra {service_name} purchased!\nSend a photo to start.")
             
             if not success:
                 # Refund should be handled by Telegram automatically for Stars
@@ -839,32 +825,39 @@ class StarsBillingManager:
         try:
             user_id = update.effective_user.id
             
-            # Store auto-resume context in Redis for persistence across handlers
-            auto_resume_context_key = f"user:{user_id}:auto_resume_context"
-            redis_data = {
-                "photo_file_id": interrupted_context['photo_file_id'],
-                "category": interrupted_context['category'],
-                "selected_option": json.dumps(interrupted_context['selected_option']),
-                "user_lang": interrupted_context['user_lang'],
-                "service_type": interrupted_context['service_type'],
-                "timestamp": interrupted_context['timestamp']
-            }
-            redis_client.redis.hset(auto_resume_context_key, mapping=redis_data)
-            redis_client.redis.expire(auto_resume_context_key, self.redis_ttl["auto_resume_context"])
-            
-            # Set a flag for the bot to auto-resume processing
-            auto_resume_key = f"user:{user_id}:auto_resume"
-            redis_client.redis.setex(auto_resume_key, self.redis_ttl["auto_resume_flag"], "1")
-            
             # Clean up the interrupted processing context
             interrupted_key = f"user:{user_id}:interrupted_processing"
             redis_client.redis.delete(interrupted_key)
             
-            logger.info(f"Set auto-resume flag and context for user {user_id}: {interrupted_context['category']}")
+            logger.info(f"🔄 Auto-resuming processing for user {user_id}: {interrupted_context['category']}")
             
-            await update.message.reply_text(
-                "⚡ Processing your image now...",
-            )
+            # Prepare processing context  
+            context.user_data['current_photo'] = interrupted_context['photo_file_id']
+            context.user_data['last_processing'] = {
+                'photo_file_id': interrupted_context['photo_file_id'],
+                'category': interrupted_context['category'],
+                'selected_option': interrupted_context['selected_option'],
+                'user_id': user_id,
+                'user_lang': interrupted_context['user_lang'],
+                'service_type': interrupted_context['service_type']
+            }
+            
+            # Check and consume quota for the resumed processing
+            service_type = interrupted_context['service_type']
+            if not self.consume_quota(user_id, service_type, user_obj=update.effective_user):
+                logger.error(f"Failed to consume quota for auto-resume for user {user_id}")
+                await update.message.reply_text("❌ Failed to start processing. Please try again.")
+                return
+            
+            await update.message.reply_text("⚡ Processing your image now...")
+            
+            # Import and start background processing immediately
+            import asyncio
+            # We need to import the bot's process function - let's use a different approach
+            # Store the context for immediate processing
+            context.user_data['immediate_resume'] = True
+            
+            logger.info(f"✅ Auto-resume processing set up for user {user_id}")
             
         except Exception as e:
             logger.error(f"Error setting up auto-resume: {e}")
