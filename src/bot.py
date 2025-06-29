@@ -1026,7 +1026,14 @@ class StyleTransferBot:
                 logger.info(f"Starting {category} processing")
                 
                 if category == "style_transfer":
+                    # Handle style transfer with random generation support
                     style_prompt = selected_option['prompt']
+                    
+                    # Handle special style prompts (like RANDOM_STYLE)
+                    if self._is_style_option(selected_option):
+                        style_prompt = self._generate_style_prompt(selected_option, is_retry)
+                        logger.info(f"Generated style prompt: {style_prompt}")
+                    
                     api_params = {"photo_url": photo_url, "prompt": style_prompt, "is_retry": is_retry}
                     
                     logger.info(f"Using FLUX API for style transfer: {option_identifier}")
@@ -1290,6 +1297,46 @@ class StyleTransferBot:
         """Check if an option is a dress-related option."""
         option_identifier = option.get('label_key', '')
         return option_identifier.startswith('dress.')
+    
+    def _is_style_option(self, option: dict) -> bool:
+        """Check if an option is a style-related option."""
+        option_identifier = option.get('label_key', '')
+        return option_identifier.startswith('style.')
+    
+    def _generate_style_prompt(self, option: dict, is_retry: bool = False) -> str:
+        """Generate style prompt with random variations."""
+        option_identifier = option.get('label_key', '')
+        original_prompt = option.get('prompt', '')
+        
+        logger.info(f"Generating style prompt for {option_identifier}, original: {original_prompt}")
+        
+        if option_identifier == 'style.random' or 'RANDOM_STYLE' in original_prompt:
+            # Random style generation - pick from all available styles
+            all_styles = [
+                "Make this anime style",
+                "Make this digital art",
+                "Make this a pencil sketch", 
+                "Make this pop art",
+                "Make this a comic book",
+                "Make this a 90s cartoon",
+                "Make this an impressionist painting",
+                "Make this a vintage photo",
+                "Make this sci-fi art",
+                "Make this Art Nouveau style",
+                "Make this psychedelic art",
+                "Make this a Renaissance painting", 
+                "Make this pixel art",
+                "Make this a Japanese woodblock print",
+                "Make this film noir style"
+            ]
+            import random
+            generated_prompt = random.choice(all_styles)
+            logger.info(f"Generated random style: {generated_prompt}")
+            return generated_prompt
+        else:
+            # For specific style options, return the original prompt
+            logger.info(f"Using original style prompt: {original_prompt}")
+            return original_prompt
     
     def _generate_dress_prompt(self, option: dict, is_retry: bool = False) -> str:
         """Generate dress prompt using DressGenerator."""
