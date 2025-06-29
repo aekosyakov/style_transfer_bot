@@ -101,7 +101,8 @@ class StyleTransferBot:
             
             await update.message.reply_text(
                 welcome_msg,
-                reply_markup=keyboard
+                reply_markup=keyboard,
+                message_effect_id="5046509860389126442"  # 🎆 Fireworks effect for welcome
             )
             
             logger.info(f"User {user.id} started the bot")
@@ -318,7 +319,8 @@ class StyleTransferBot:
                 "• 💥 Comic Book\n"
                 "• 🌌 Sci-Fi Art\n"
                 "• 🎮 Pixel Art\n"
-                "• And many more!"
+                "• And many more!",
+                message_effect_id="5104841245755180586"  # 🎉 Party effect for premium activation
             )
         else:
             await update.message.reply_text("❌ DEBUG: Failed to grant premium status")
@@ -716,7 +718,8 @@ class StyleTransferBot:
             user_lang = self._get_user_language(update.effective_user)
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text=L.get("msg.error_occurred", user_lang)
+                text=L.get("msg.error_occurred", user_lang),
+                message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
             )
     
     async def _process_image_background(
@@ -810,12 +813,13 @@ class StyleTransferBot:
                     # Animation results should be sent as video/animation
                     logger.info(f"Sending animation result as video: {result_url}")
                     try:
-                        # Try sending as animation first (MP4/GIF)
+                        # Try sending as animation first (MP4/GIF) with fun effect
                         await bot.send_animation(
                             chat_id=chat_id,
                             animation=result_url,
                             caption=L.get("msg.success", user_lang),
-                            reply_markup=InlineKeyboardMarkup(keyboard)
+                            reply_markup=InlineKeyboardMarkup(keyboard),
+                            message_effect_id="5104841245755180586"  # 🎉 Party effect for animations
                         )
                     except Exception as e:
                         logger.warning(f"Failed to send animation result as animation, trying as video: {e}")
@@ -825,7 +829,8 @@ class StyleTransferBot:
                                 chat_id=chat_id,
                                 video=result_url,
                                 caption=L.get("msg.success", user_lang),
-                                reply_markup=InlineKeyboardMarkup(keyboard)
+                                reply_markup=InlineKeyboardMarkup(keyboard),
+                                message_effect_id="5104841245755180586"  # 🎉 Party effect
                             )
                         except Exception as e2:
                             logger.error(f"Failed to send animation result as video, sending as document: {e2}")
@@ -837,18 +842,20 @@ class StyleTransferBot:
                                 reply_markup=InlineKeyboardMarkup(keyboard)
                             )
                 else:
-                    # Regular image results
+                    # Regular image results with fireworks effect
                     await bot.send_photo(
                         chat_id=chat_id,
                         photo=result_url,
                         caption=L.get("msg.success", user_lang),
-                        reply_markup=InlineKeyboardMarkup(keyboard)
+                        reply_markup=InlineKeyboardMarkup(keyboard),
+                        message_effect_id="5046509860389126442"  # 🎆 Fireworks effect for success
                     )
             else:
                 logger.error(f"❌ Processing failed for user {user_id}, category {category}")
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=L.get("msg.error", user_lang)
+                    text=L.get("msg.error", user_lang),
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
                 
         except Exception as e:
@@ -859,7 +866,8 @@ class StyleTransferBot:
             try:
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=L.get("msg.error_occurred", user_lang)
+                    text=L.get("msg.error_occurred", user_lang),
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
             except Exception as send_error:
                 logger.error(f"Failed to send error message: {send_error}")
@@ -897,9 +905,9 @@ class StyleTransferBot:
             parse_mode='Markdown'
         )
         
-        # Also show a quick confirmation
+        # Also show a quick confirmation with a fun effect
         confirmation_text = "Language changed to English! 🇺🇸" if lang == 'en' else "Язык изменен на русский! 🇷🇺"
-        await update.callback_query.answer(confirmation_text)
+        await update.callback_query.answer(confirmation_text, show_alert=True)
     
     async def _handle_invite_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle invite callback from about page."""
@@ -1107,7 +1115,8 @@ class StyleTransferBot:
                     await bot.send_animation(
                         chat_id=chat_id,
                         animation=animation_result,
-                        caption="🎬 Your animated result is ready!"
+                        caption="🎬 Your animated result is ready!",
+                        message_effect_id="5104841245755180586"  # 🎉 Party effect for animations
                     )
                 except Exception as e:
                     logger.warning(f"Failed to send as animation, trying as video: {e}")
@@ -1116,7 +1125,8 @@ class StyleTransferBot:
                         await bot.send_video(
                             chat_id=chat_id,
                             video=animation_result,
-                            caption="🎬 Your animated result is ready!"
+                            caption="🎬 Your animated result is ready!",
+                            message_effect_id="5104841245755180586"  # 🎉 Party effect
                         )
                     except Exception as e2:
                         logger.error(f"Failed to send video, sending as document: {e2}")
@@ -1130,7 +1140,8 @@ class StyleTransferBot:
                 logger.error(f"❌ Animation failed for user {user_id}")
                 await bot.send_message(
                     chat_id=chat_id,
-                    text="❌ Animation failed. Please try again later."
+                    text="❌ Animation failed. Please try again later.",
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
                 
         except Exception as e:
@@ -1140,7 +1151,8 @@ class StyleTransferBot:
             try:
                 await bot.send_message(
                     chat_id=chat_id,
-                    text="❌ Animation failed due to an error."
+                    text="❌ Animation failed due to an error.",
+                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
                 )
             except Exception as send_error:
                 logger.error(f"Failed to send error message: {send_error}")
