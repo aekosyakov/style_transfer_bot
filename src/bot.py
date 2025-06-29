@@ -1103,6 +1103,42 @@ class StyleTransferBot:
             except Exception as send_error:
                 logger.error(f"Failed to send error message: {send_error}")
     
+    def _is_dress_option(self, option: dict) -> bool:
+        """Check if an option is a dress-related option."""
+        option_identifier = option.get('callback_data', '')
+        return option_identifier.startswith('dress.')
+    
+    def _generate_dress_prompt(self, option: dict, is_retry: bool = False) -> str:
+        """Generate dress prompt using DressGenerator."""
+        from src.dresses import dress_generator
+        
+        option_identifier = option.get('callback_data', '')
+        
+        if option_identifier == 'dress.random':
+            # Random dress generation
+            return dress_generator.generate_random_dress_prompt()
+        else:
+            # Fallback for other dress options
+            return "change outfit to elegant dress, preserve original face and body proportions exactly"
+    
+    def _is_hairstyle_option(self, option: dict) -> bool:
+        """Check if an option is a hairstyle-related option."""
+        option_identifier = option.get('callback_data', '')
+        return option_identifier.startswith('hairstyle.')
+    
+    def _generate_hairstyle_prompt(self, option: dict, is_retry: bool = False) -> str:
+        """Generate hairstyle prompt using HairstyleGenerator."""
+        from src.hairstyles import hairstyle_generator
+        
+        option_identifier = option.get('callback_data', '')
+        
+        if option_identifier == 'hairstyle.random':
+            # Random hairstyle generation
+            return hairstyle_generator.generate_random_hairstyle_prompt()
+        else:
+            # Fallback for other hairstyle options
+            return "change hairstyle to modern bob cut, preserve original face and facial features exactly"
+    
     async def _handle_animation_request(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:
         """Handle animation requests."""
         # Implementation for animation handling
