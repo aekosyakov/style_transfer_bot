@@ -523,7 +523,15 @@ class StyleTransferBot:
             elif data.startswith("animate_"):
                 await self._handle_animation_request(update, context, data)
             else:
-                await query.edit_message_text(L.get("msg.unknown_option", user_lang))
+                try:
+                    await query.edit_message_text(L.get("msg.unknown_option", user_lang))
+                except Exception as e:
+                    # If edit_message_text fails, it might be a photo message, try edit_message_caption
+                    if "no text in the message to edit" in str(e).lower():
+                        logger.info("Message has no text, trying to edit caption instead for unknown option")
+                        await query.edit_message_caption(caption=L.get("msg.unknown_option", user_lang))
+                    else:
+                        raise e
                 
         except Exception as e:
             logger.error(f"Error handling callback query: {e}")
@@ -661,7 +669,15 @@ class StyleTransferBot:
         options = config.get_category_options(category, is_premium, show_all=True)
         
         if not options:
-            await update.callback_query.edit_message_text(L.get("msg.no_options", user_lang))
+            try:
+                await update.callback_query.edit_message_text(L.get("msg.no_options", user_lang))
+            except Exception as e:
+                # If edit_message_text fails, it might be a photo message, try edit_message_caption
+                if "no text in the message to edit" in str(e).lower():
+                    logger.info("Message has no text, trying to edit caption instead for no options")
+                    await update.callback_query.edit_message_caption(caption=L.get("msg.no_options", user_lang))
+                else:
+                    raise e
             return
         
         # Store category in context
@@ -684,10 +700,22 @@ class StyleTransferBot:
         # Get localized category name
         category_name = L.get(f"category.{category}", user_lang)
         
-        await update.callback_query.edit_message_text(
-            L.get("msg.category_selection", user_lang, category=category_name),
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+        # Check if the message has a photo (from restart button) or is a text message
+        try:
+            await update.callback_query.edit_message_text(
+                L.get("msg.category_selection", user_lang, category=category_name),
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
+        except Exception as e:
+            # If edit_message_text fails, it might be a photo message, try edit_message_caption
+            if "no text in the message to edit" in str(e).lower():
+                logger.info("Message has no text, trying to edit caption instead")
+                await update.callback_query.edit_message_caption(
+                    caption=L.get("msg.category_selection", user_lang, category=category_name),
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
+            else:
+                raise e
     
     async def _handle_option_selection(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:
         """Handle specific option selection and process image."""
@@ -728,9 +756,19 @@ class StyleTransferBot:
             
             if not selected_option:
                 logger.error(f"Could not find selected option for hash {option_hash}")
-                await update.callback_query.edit_message_text(
-                    L.get("msg.error_occurred", user_lang)
-                )
+                try:
+                    await update.callback_query.edit_message_text(
+                        L.get("msg.error_occurred", user_lang)
+                    )
+                except Exception as e:
+                    # If edit_message_text fails, it might be a photo message, try edit_message_caption
+                    if "no text in the message to edit" in str(e).lower():
+                        logger.info("Message has no text, trying to edit caption instead for error message")
+                        await update.callback_query.edit_message_caption(
+                            caption=L.get("msg.error_occurred", user_lang)
+                        )
+                    else:
+                        raise e
                 return
             
             logger.info(f"Selected option: {selected_option}")
@@ -769,20 +807,42 @@ class StyleTransferBot:
                     [InlineKeyboardButton("⬅️ Back to Styles", callback_data="category_style_transfer")]
                 ]
                 
-                await update.callback_query.edit_message_text(
-                    upgrade_text,
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode='Markdown'
-                )
+                try:
+                    await update.callback_query.edit_message_text(
+                        upgrade_text,
+                        reply_markup=InlineKeyboardMarkup(keyboard),
+                        parse_mode='Markdown'
+                    )
+                except Exception as e:
+                    # If edit_message_text fails, it might be a photo message, try edit_message_caption
+                    if "no text in the message to edit" in str(e).lower():
+                        logger.info("Message has no text, trying to edit caption instead for upgrade message")
+                        await update.callback_query.edit_message_caption(
+                            caption=upgrade_text,
+                            reply_markup=InlineKeyboardMarkup(keyboard),
+                            parse_mode='Markdown'
+                        )
+                    else:
+                        raise e
                 return
             
             # Get photo from context
             photo_file_id = context.user_data.get('current_photo')
             if not photo_file_id:
                 logger.warning(f"No photo found in context for user {user_id}")
-                await update.callback_query.edit_message_text(
-                    L.get("msg.upload_photo_first", user_lang)
-                )
+                try:
+                    await update.callback_query.edit_message_text(
+                        L.get("msg.upload_photo_first", user_lang)
+                    )
+                except Exception as e:
+                    # If edit_message_text fails, it might be a photo message, try edit_message_caption
+                    if "no text in the message to edit" in str(e).lower():
+                        logger.info("Message has no text, trying to edit caption instead for upload photo message")
+                        await update.callback_query.edit_message_caption(
+                            caption=L.get("msg.upload_photo_first", user_lang)
+                        )
+                    else:
+                        raise e
                 return
             
             logger.info(f"Processing photo {photo_file_id} for user {user_id}")
@@ -797,7 +857,17 @@ class StyleTransferBot:
             }
             
             # Show processing message
-            await update.callback_query.edit_message_text(L.get("msg.processing", user_lang))
+            try:
+                await update.callback_query.edit_message_text(L.get("msg.processing", user_lang))
+            except Exception as e:
+                # If edit_message_text fails, it might be a photo message, try edit_message_caption
+                if "no text in the message to edit" in str(e).lower():
+                    logger.info("Message has no text, trying to edit caption instead for processing message")
+                    await update.callback_query.edit_message_caption(
+                        caption=L.get("msg.processing", user_lang)
+                    )
+                else:
+                    raise e
             
             # Start background processing (non-blocking)
             asyncio.create_task(self._process_image_background(
