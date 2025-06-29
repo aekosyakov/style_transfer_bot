@@ -90,7 +90,7 @@ def log_processing_step(step: str, request_id: str, user_id: int, details: Dict[
 # Success effect IDs for random selection
 SUCCESS_EFFECT_IDS: Final[list[str]] = [
     "5104841245755180586",  # 🔥
-    "5107584321108051014",  # 👍
+    # "5107584321108051014",  # 👍 - REMOVED: Invalid effect ID
     "5044134455711629726",  # ❤️
     "5046509860389126442",  # 🎉
 ]
@@ -388,8 +388,7 @@ class StyleTransferBot:
                 "• 💥 Comic Book\n"
                 "• 🌌 Sci-Fi Art\n"
                 "• 🎮 Pixel Art\n"
-                "• And many more!"
-            ,
+                "• And many more!",
                 message_effect_id="5104841245755180586"  # 🎉 Party effect for premium activation
             )
         else:
@@ -852,8 +851,8 @@ class StyleTransferBot:
                 logger.error(f"Failed to get photo file: {e}")
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=L.get("msg.error_occurred", user_lang),
-                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
+                    text=L.get("msg.error_occurred", user_lang)
+                    # Removed effect ID to prevent "Effect_id_invalid" error
                 )
                 return
             
@@ -1046,8 +1045,8 @@ class StyleTransferBot:
                 logger.error(f"❌ Processing failed for user {user_id}, category {category}")
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=L.get("msg.error", user_lang),
-                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
+                    text=L.get("msg.error", user_lang)
+                    # message_effect_id="5107584321108051014"  # 💔 Broken heart effect - DISABLED due to invalid ID
                 )
                 
         except Exception as e:
@@ -1058,8 +1057,8 @@ class StyleTransferBot:
             try:
                 await bot.send_message(
                     chat_id=chat_id,
-                    text=L.get("msg.error_occurred", user_lang),
-                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
+                    text=L.get("msg.error_occurred", user_lang)
+                    # Removed effect ID to prevent "Effect_id_invalid" error
                 )
             except Exception as send_error:
                 logger.error(f"Failed to send error message: {send_error}")
@@ -1376,8 +1375,8 @@ class StyleTransferBot:
                 logger.error(f"❌ Animation failed for user {user_id}")
                 await bot.send_message(
                     chat_id=chat_id,
-                    text="❌ Animation failed. Please try again later.",
-                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
+                    text="❌ Animation failed. Please try again later."
+                    # Removed effect ID to prevent "Effect_id_invalid" error
                 )
                 
         except Exception as e:
@@ -1387,8 +1386,8 @@ class StyleTransferBot:
             try:
                 await bot.send_message(
                     chat_id=chat_id,
-                    text="❌ Animation failed due to an error.",
-                    message_effect_id="5107584321108051014"  # 💔 Broken heart effect for errors
+                    text="❌ Animation failed due to an error."
+                    # Removed effect ID to prevent "Effect_id_invalid" error
                 )
             except Exception as send_error:
                 logger.error(f"Failed to send error message: {send_error}")
