@@ -651,10 +651,21 @@ class StarsBillingManager:
             
             # Use callback query edit to avoid spamming chat
             if update.callback_query:
-                await update.callback_query.edit_message_text(
-                    text,
-                    reply_markup=InlineKeyboardMarkup(keyboard)
-                )
+                try:
+                    await update.callback_query.edit_message_text(
+                        text,
+                        reply_markup=InlineKeyboardMarkup(keyboard)
+                    )
+                except Exception as e:
+                    # If edit_message_text fails, it might be a photo message, try edit_message_caption
+                    if "no text in the message to edit" in str(e).lower():
+                        logger.info("Message has no text, trying to edit caption instead for gentle warning")
+                        await update.callback_query.edit_message_caption(
+                            caption=text,
+                            reply_markup=InlineKeyboardMarkup(keyboard)
+                        )
+                    else:
+                        raise e
             else:
                 await update.message.reply_text(
                     text,
@@ -709,10 +720,21 @@ class StarsBillingManager:
             
             # Use callback query edit to avoid spamming chat
             if update.callback_query:
-                await update.callback_query.edit_message_text(
-                    text,
-                    reply_markup=InlineKeyboardMarkup(keyboard)
-                )
+                try:
+                    await update.callback_query.edit_message_text(
+                        text,
+                        reply_markup=InlineKeyboardMarkup(keyboard)
+                    )
+                except Exception as e:
+                    # If edit_message_text fails, it might be a photo message, try edit_message_caption
+                    if "no text in the message to edit" in str(e).lower():
+                        logger.info("Message has no text, trying to edit caption instead for hard block upsell")
+                        await update.callback_query.edit_message_caption(
+                            caption=text,
+                            reply_markup=InlineKeyboardMarkup(keyboard)
+                        )
+                    else:
+                        raise e
             else:
                 await update.message.reply_text(
                     text,
