@@ -229,5 +229,32 @@
   "anim.wind_effects": "💨 Wind Effects 💎",
   "anim.mystical_glow": "🌟 Mystical Glow 💎",
   "anim.ocean_waves": "🌊 Ocean Waves 💎",
-  "anim.floating_objects": "🎈 Floating Objects 💎"
+  "anim.floating_objects": "🎈 Floating Objects 💎",
+
+  "billing": {
+    "pass": {
+      "pro_1day": "1-Day Pro Pass",
+      "creator_7day": "7-Day Creator Pass",
+      "studio_30day": "30-Day Studio Pass"
+    },
+    "payg": {
+      "flux_extra": "Extra FLUX Generation",
+      "kling_extra": "Extra Kling Animation"
+    },
+    "current_status": "🌟 **Your Current Status**\n\n💎 **Active Pass:** {pass_name}\n⏰ **Expires:** {days}d {hours}h remaining\n\n🎨 **FLUX Quota:** {flux} generations\n🎬 **Kling Quota:** {kling} animations",
+    "no_active_pass": "🎯 **Your Current Status**\n\n🆓 **No Active Pass**\n\n🎨 **FLUX Quota:** {flux} generations\n🎬 **Kling Quota:** {kling} animations\n\n💡 *Purchase a pass to get more generations!*",
+    "view_passes": "🎟️ View Passes",
+    "buy_extra": "⚡ Buy Extra",
+    "available_passes": "🎟️ **Available Passes**\n\nChoose the perfect pass for your needs:\n\n💎 **1-Day Pro** - Perfect for quick projects\n• 50 FLUX + 10 Kling generations\n• 24 hours access\n• 499 ⭐\n\n🚀 **7-Day Creator** - Great for ongoing work\n• 500 FLUX + 50 Kling generations\n• 7 days access\n• 2,999 ⭐\n\n🏆 **30-Day Studio** - Professional tier\n• 2,000 FLUX + 200 Kling generations\n• 30 days access\n• 9,999 ⭐",
+    "pass_button": "{name} - {price} ⭐",
+    "payg_options": "⚡ **Pay-as-you-go Options**\n\nNeed just a few more generations? Perfect!\n\n🎨 **Extra FLUX** - 25 ⭐ each\n• High-quality image generation\n• Instant delivery\n\n🎬 **Extra Kling** - 50 ⭐ each\n• Professional animation\n• Video output",
+    "pass_description": "{flux} FLUX + {kling} Kling generations for {duration} days",
+    "payg_description": "Instant quota top-up",
+    "pass_activated": "🎉 **Pass Activated!**\n\n💎 **{pass_name}** is now active!\n🎨 **{flux} FLUX** generations available\n🎬 **{kling} Kling** animations available\n\nStart creating amazing content! 🚀",
+    "payg_added": "⚡ **Quota Added!**\n\n🎯 **+{amount} {service}** generations added to your account!\n\nReady to create! 🎨",
+    "quota_depleted": "😅 **{service} Quota Depleted!**\n\nYou've used all your {service} generations. Time to refuel! ⛽\n\n💡 **Options:**\n• 🎟️ Purchase a pass for better value\n• ⚡ Buy individual generations\n• 🎁 Invite friends for free quota",
+    "system_unavailable": "❌ Billing system temporarily unavailable. Please try again later.",
+    "processing_error": "❌ Error processing payment. Please contact support if this persists.",
+    "menu_title": "💰 **Billing & Quotas**"
+  }
 } 

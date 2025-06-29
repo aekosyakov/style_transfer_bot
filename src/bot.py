@@ -27,6 +27,7 @@ from redis_client import redis_client
 from flux_api import flux_api
 from kling_api import kling_api
 from payments import payment_processor
+from stars_billing import stars_billing
 
 # Import hairstyle and dress generators
 try:
@@ -196,6 +197,13 @@ class StyleTransferBot:
         self.app.add_handler(CommandHandler("about", self.about_command))
         self.app.add_handler(CommandHandler("invite", self.invite_command))
         self.app.add_handler(CommandHandler("support", self.support_command))
+        
+        # Stars billing commands
+        self.app.add_handler(CommandHandler("quota", self.quota_command))
+        self.app.add_handler(CommandHandler("buy", self.buy_command))
+        self.app.add_handler(CommandHandler("style", self.style_command))
+        self.app.add_handler(CommandHandler("video", self.video_command))
+        self.app.add_handler(CommandHandler("help", self.help_command))
         
         # Debug commands (only in debug mode)
         if self.debug:
@@ -443,6 +451,114 @@ class StyleTransferBot:
             parse_mode='Markdown'
         )
     
+    async def quota_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /quota command - show current quota status."""
+        user_id = update.effective_user.id
+        user_lang = self._get_user_language(update.effective_user)
+        
+        # Get current pass and quota info
+        pass_info = stars_billing.get_user_pass_info(user_id)
+        flux_quota = stars_billing.get_user_quota(user_id, "flux")
+        kling_quota = stars_billing.get_user_quota(user_id, "kling")
+        
+        if pass_info:
+            expires_dt = datetime.fromisoformat(pass_info["expires_at"])
+            time_left = expires_dt - datetime.now()
+            days_left = max(0, time_left.days)
+            hours_left = max(0, time_left.seconds // 3600)
+            
+            status_text = L.get("billing.current_status", user_lang,
+                               pass_name=L.get(stars_billing.passes[pass_info["pass_type"]]["name_key"], user_lang),
+                               days=days_left,
+                               hours=hours_left,
+                               flux=flux_quota,
+                               kling=kling_quota)
+        else:
+            status_text = L.get("billing.no_active_pass", user_lang,
+                               flux=flux_quota,
+                               kling=kling_quota)
+        
+        await update.message.reply_text(status_text, parse_mode='Markdown')
+    
+    async def buy_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /buy command - show billing menu."""
+        await stars_billing.show_billing_menu(update, context)
+    
+    async def style_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /style command - quick style transfer."""
+        user_id = update.effective_user.id
+        user_lang = self._get_user_language(update.effective_user)
+        
+        # Check if user has FLUX quota
+        if not stars_billing.has_quota(user_id, "flux"):
+            await stars_billing.check_quota_and_upsell(update, context, "flux")
+            return
+        
+        # Prompt user to upload photo
+        await update.message.reply_text(
+            L.get("msg.photo_upload_prompt", user_lang),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton(L.get("btn.upload_photo", user_lang), callback_data="upload_photo")]
+            ])
+        )
+    
+    async def video_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /video command - quick video/animation creation."""
+        user_id = update.effective_user.id
+        user_lang = self._get_user_language(update.effective_user)
+        
+        # Check if user has Kling quota
+        if not stars_billing.has_quota(user_id, "kling"):
+            await stars_billing.check_quota_and_upsell(update, context, "kling")
+            return
+        
+        # Prompt user to upload photo for animation
+        await update.message.reply_text(
+            L.get("msg.photo_upload_prompt", user_lang),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton(L.get("btn.upload_photo", user_lang), callback_data="upload_photo")]
+            ])
+        )
+    
+    async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle /help command - show comprehensive help."""
+        user_lang = self._get_user_language(update.effective_user)
+        
+        help_text = (
+            "🤖 **Style Transfer Bot Help**\n\n"
+            "**📋 Available Commands:**\n"
+            "• `/start` - Start the bot\n"
+            "• `/quota` - Check your current quota\n"
+            "• `/buy` - Purchase passes or extra quota\n"
+            "• `/style` - Quick style transfer\n"
+            "• `/video` - Quick video/animation\n"
+            "• `/help` - Show this help message\n\n"
+            "**🎨 How to Use:**\n"
+            "1. Upload any photo\n"
+            "2. Choose enhancement type\n"
+            "3. Select specific style/effect\n"
+            "4. Wait for AI processing\n\n"
+            "**💰 Billing System:**\n"
+            "• **Passes** - Better value for regular use\n"
+            "• **Pay-as-you-go** - Perfect for occasional use\n"
+            "• **FLUX** - High-quality image generation\n"
+            "• **Kling** - Professional video/animation\n\n"
+            "**🎁 Need Help?**\n"
+            "Contact: @StyleTransferSupport"
+        )
+        
+        keyboard = [
+            [InlineKeyboardButton("🎟️ View Passes", callback_data="billing_passes")],
+            [InlineKeyboardButton("⚡ Buy Extra", callback_data="billing_payg")],
+            [InlineKeyboardButton("📊 Check Quota", callback_data="billing_menu")]
+        ]
+        
+        await update.message.reply_text(
+            help_text,
+            reply_markup=InlineKeyboardMarkup(keyboard),
+            parse_mode='Markdown'
+        )
+    
     async def debug_premium_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Debug command to grant premium status."""
         if not self.debug:
@@ -539,6 +655,20 @@ class StyleTransferBot:
                 await self._show_main_menu(update, context)
             elif data == "premium_info":
                 await self._show_premium_options(update, context)
+            
+            # Stars billing callbacks
+            elif data == "billing_menu":
+                await stars_billing.show_billing_menu(update, context)
+            elif data == "billing_passes":
+                await stars_billing.show_passes_menu(update, context)
+            elif data == "billing_payg":
+                await stars_billing.show_payg_menu(update, context)
+            elif data.startswith("buy_pass_"):
+                pass_id = data.split("buy_pass_")[1]
+                await stars_billing.create_stars_invoice(update, context, "pass", pass_id)
+            elif data.startswith("buy_payg_"):
+                payg_id = data.split("buy_payg_")[1]
+                await stars_billing.create_stars_invoice(update, context, "payg", payg_id)
             elif data == "back_to_enhancements":
                 await self._show_enhancement_menu(update, context)
             elif data == "upload_prompt":
@@ -597,7 +727,11 @@ class StyleTransferBot:
     
     async def handle_successful_payment(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle successful payments."""
-        await payment_processor.handle_successful_payment(update, context)
+        # Check if it's a Stars payment or traditional payment
+        if update.message.successful_payment and update.message.successful_payment.invoice_payload.startswith("stars_"):
+            await stars_billing.handle_successful_stars_payment(update, context)
+        else:
+            await payment_processor.handle_successful_payment(update, context)
     
     def _get_main_menu_keyboard(self, lang: str, user_id: int) -> InlineKeyboardMarkup:
         """Get main menu keyboard."""
@@ -607,6 +741,8 @@ class StyleTransferBot:
         
         keyboard = [
             [InlineKeyboardButton(L.get("btn.upload_photo", lang), callback_data="upload_prompt")],
+            [InlineKeyboardButton("📊 Check Quota", callback_data="billing_menu")],
+            [InlineKeyboardButton("🎟️ Buy Passes", callback_data="billing_passes")],
             [InlineKeyboardButton(premium_text, callback_data="premium_info")],
             [InlineKeyboardButton(L.get("btn.help", lang), callback_data="help")],
         ]
@@ -892,10 +1028,27 @@ class StyleTransferBot:
                         raise e
                 return
             
+            # Check quota for FLUX/Kling before processing
+            service_type = "kling" if category == "animate" else "flux"
+            if not stars_billing.has_quota(user_id, service_type):
+                # Show upsell message
+                await stars_billing._show_upsell_message(update, context, service_type)
+                return
+                
+            # Consume quota
+            if not stars_billing.consume_quota(user_id, service_type):
+                # Failed to consume quota (race condition), show upsell
+                await stars_billing._show_upsell_message(update, context, service_type)
+                return
+
             # Get photo from context
             photo_file_id = context.user_data.get('current_photo')
             if not photo_file_id:
                 logger.warning(f"No photo found in context for user {user_id}")
+                
+                # Refund quota since processing won't happen
+                stars_billing.refund_quota(user_id, service_type)
+                
                 try:
                     await update.callback_query.edit_message_text(
                         L.get("msg.upload_photo_first", user_lang)
@@ -919,7 +1072,8 @@ class StyleTransferBot:
                 'category': category,
                 'selected_option': selected_option,
                 'user_id': user_id,
-                'user_lang': user_lang
+                'user_lang': user_lang,
+                'service_type': service_type  # Store for refund on failure
             }
             
             # Show processing message
@@ -954,6 +1108,12 @@ class StyleTransferBot:
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Refund quota if it was consumed but processing failed
+            if 'service_type' in locals():
+                stars_billing.refund_quota(user_id, service_type)
+                logger.info(f"Refunded {service_type} quota for user {user_id} due to processing error")
+            
             user_lang = self._get_user_language(update.effective_user)
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
@@ -1435,6 +1595,11 @@ class StyleTransferBot:
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Refund quota since processing failed
+            service_type = "kling" if category == "animate" else "flux"
+            stars_billing.refund_quota(user_id, service_type)
+            logger.info(f"Refunded {service_type} quota for user {user_id} due to background processing error")
             
             # Use retry logic for general error message
             async def send_general_error_operation():
