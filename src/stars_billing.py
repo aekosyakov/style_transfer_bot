@@ -8,6 +8,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from redis_client import redis_client
 from localization import L
+from config.billing_config import get_billing_config, get_pass_config, get_payg_config
 
 logger = logging.getLogger(__name__)
 
@@ -67,48 +68,13 @@ class StarsBillingManager:
         #     }
         # }
 
-        self.passes = {
-            "pro_1day": {
-                "price_stars": 3,
-                "flux_quota": 5,
-                "kling_quota": 2,
-                "duration_hours": 1,
-                "margin_percent": 61.8,
-                "name_key": "billing.pass.pro_1day"
-            },
-            "creator_7day": {
-                "price_stars": 5,
-                "flux_quota": 10,
-                "kling_quota": 3,
-                "duration_hours": 12,
-                "margin_percent": 42.5,
-                "name_key": "billing.pass.creator_7day"
-            },
-            "studio_30day": {
-                "price_stars": 10,
-                "flux_quota": 15,
-                "kling_quota": 5,
-                "duration_hours": 24,
-                "margin_percent": 31.1,
-                "name_key": "billing.pass.studio_30day"
-            }
-        }
-        
-        # Pay-as-you-go prices
-        self.payg_prices = {
-            "flux_extra": {
-                "price_stars": 1,
-                "quota": 1,
-                "margin_percent": 88,
-                "name_key": "billing.payg.flux_extra"
-            },
-            "kling_extra": {
-                "price_stars": 2,
-                "quota": 1,
-                "margin_percent": 92,
-                "name_key": "billing.payg.kling_extra"
-            }
-        }
+        # Load billing configuration from config file
+        billing_config = get_billing_config()
+        self.passes = billing_config["passes"]
+        self.payg_prices = billing_config["payg"]
+        self.free_quotas = billing_config["free_quotas"]
+        self.warnings = billing_config["warnings"]
+        self.redis_ttl = billing_config["redis_ttl"]
     
     def is_unlimited_user(self, user_obj) -> bool:
         """Check if user is in unlimited access whitelist."""
@@ -530,7 +496,32 @@ class StarsBillingManager:
         try:
             user_lang = L.get_user_language(update.effective_user)
             
-            text = L.get("billing.available_passes", user_lang)
+            # Build dynamic text with current pricing from config
+            pro_pass = self.passes["pro_1day"]
+            creator_pass = self.passes["creator_7day"] 
+            studio_pass = self.passes["studio_30day"]
+            
+            # Convert hours to days for display
+            pro_days = pro_pass["duration_hours"] // 24 if pro_pass["duration_hours"] >= 24 else f"{pro_pass['duration_hours']}h"
+            creator_days = creator_pass["duration_hours"] // 24 if creator_pass["duration_hours"] >= 24 else f"{creator_pass['duration_hours']}h"
+            studio_days = studio_pass["duration_hours"] // 24 if studio_pass["duration_hours"] >= 24 else f"{studio_pass['duration_hours']}h"
+            
+            text = (
+                f"🎟️ **Available Passes**\n\n"
+                f"Choose the perfect pass for your needs:\n\n"
+                f"💎 **1-Day Pro** - Perfect for quick projects\n"
+                f"• {pro_pass['flux_quota']} FLUX + {pro_pass['kling_quota']} Kling generations\n"
+                f"• {pro_days} access\n"
+                f"• {pro_pass['price_stars']} ⭐\n\n"
+                f"🚀 **7-Day Creator** - Great for ongoing work\n"
+                f"• {creator_pass['flux_quota']} FLUX + {creator_pass['kling_quota']} Kling generations\n"
+                f"• {creator_days} access\n"
+                f"• {creator_pass['price_stars']} ⭐\n\n"
+                f"🏆 **30-Day Studio** - Professional tier\n"
+                f"• {studio_pass['flux_quota']} FLUX + {studio_pass['kling_quota']} Kling generations\n"
+                f"• {studio_days} access\n"
+                f"• {studio_pass['price_stars']} ⭐"
+            )
             
             keyboard = []
             for pass_id, pass_info in self.passes.items():
@@ -559,7 +550,20 @@ class StarsBillingManager:
         try:
             user_lang = L.get_user_language(update.effective_user)
             
-            text = L.get("billing.payg_options", user_lang)
+            # Build dynamic text with current pricing from config
+            flux_extra = self.payg_prices["flux_extra"]
+            kling_extra = self.payg_prices["kling_extra"]
+            
+            text = (
+                f"⚡ **Pay-as-you-go Options**\n\n"
+                f"Need just a few more generations? Perfect!\n\n"
+                f"🎨 **Extra FLUX** - {flux_extra['price_stars']} ⭐ each\n"
+                f"• High-quality image generation\n"
+                f"• Instant delivery\n\n"
+                f"🎬 **Extra Kling** - {kling_extra['price_stars']} ⭐ each\n"
+                f"• Professional animation\n"
+                f"• Video output"
+            )
             
             keyboard = []
             for payg_id, payg_info in self.payg_prices.items():
@@ -596,11 +600,11 @@ class StarsBillingManager:
         user_id = update.effective_user.id
         current_quota = self.get_user_quota(user_id, service)
         
-        if current_quota <= 0:
+        if current_quota <= self.warnings["hard_block_threshold"]:
             # Hard block - no quota left
             await self._show_hard_block_upsell(update, context, service)
             return 'hard_block'
-        elif current_quota <= 3:
+        elif current_quota <= self.warnings["gentle_warning_threshold"]:
             # Gentle warning - low quota
             await self._show_gentle_warning(update, context, service, current_quota)
             return 'gentle_warning'
@@ -645,11 +649,14 @@ class StarsBillingManager:
                         remaining=remaining_quota, 
                         service=service_name)
             
-            # Create invoice links for quick purchase with translations
+            # Create invoice links for quick purchase with dynamic pricing
+            pro_pass_price = self.passes["pro_1day"]["price_stars"]
+            extra_price = self.payg_prices[f'{service}_extra']['price_stars']
+            
             keyboard = [
                 [
-                    InlineKeyboardButton(L.get("billing.pass_1day_button", user_lang), callback_data="buy_pass_pro_1day"),
-                    InlineKeyboardButton(f"{L.get('billing.extra_button', user_lang)} {self.payg_prices[f'{service}_extra']['price_stars']} ⭐", callback_data=f"buy_payg_{service}_extra")
+                    InlineKeyboardButton(f"Buy 1-Day Pass — {pro_pass_price}⭐", callback_data="buy_pass_pro_1day"),
+                    InlineKeyboardButton(f"{L.get('billing.extra_button', user_lang)} {extra_price} ⭐", callback_data=f"buy_payg_{service}_extra")
                 ]
             ]
             
@@ -696,15 +703,19 @@ class StarsBillingManager:
                     "timestamp": datetime.now().isoformat()
                 }
                 redis_client.redis.hset(interrupted_key, mapping=interrupted_data)
-                redis_client.redis.expire(interrupted_key, 3600)  # Expire in 1 hour
+                redis_client.redis.expire(interrupted_key, self.redis_ttl["interrupted_processing"])
                 logger.info(f"Stored interrupted processing context for user {user_id}")
             
-            # Create invoice links for all options with proper translations
+            # Create invoice links for all options with dynamic pricing
             extra_service = L.get("billing.extra_image", user_lang) if service == "flux" else L.get("billing.extra_video", user_lang)
+            extra_price = self.payg_prices[f'{service}_extra']['price_stars']
+            pro_pass_price = self.passes["pro_1day"]["price_stars"]
+            creator_pass_price = self.passes["creator_7day"]["price_stars"]
+            
             keyboard = [
-                [InlineKeyboardButton(f"{extra_service} {self.payg_prices[f'{service}_extra']['price_stars']}⭐", callback_data=f"buy_payg_{service}_extra")],
-                [InlineKeyboardButton(L.get("billing.pass_1day_button", user_lang), callback_data="buy_pass_pro_1day")],
-                [InlineKeyboardButton(L.get("billing.pass_7day_button", user_lang), callback_data="buy_pass_creator_7day")]
+                [InlineKeyboardButton(f"{extra_service} {extra_price}⭐", callback_data=f"buy_payg_{service}_extra")],
+                [InlineKeyboardButton(f"Buy 1-Day Pass — {pro_pass_price}⭐", callback_data="buy_pass_pro_1day")],
+                [InlineKeyboardButton(f"7-Day Pass {creator_pass_price}⭐", callback_data="buy_pass_creator_7day")]
             ]
             
             # Use callback query edit to avoid spamming chat
@@ -724,19 +735,20 @@ class StarsBillingManager:
     
     def _get_initial_free_quota(self, service: str) -> int:
         """Get initial free quota for new users."""
-        # Give new users daily free credits
+        # Give new users daily free credits from config
         if service == "flux":
-            return 5  # 5 free FLUX generations per day
+            return self.free_quotas["flux_daily"]
         elif service == "kling":
-            return 1  # 1 free Kling animation per day
+            return self.free_quotas["kling_daily"]
         return 0
     
     def _set_initial_quota(self, user_id: int, service: str, quota: int) -> None:
-        """Set initial daily quota for free users with 24-hour expiration."""
+        """Set initial daily quota for free users with configurable expiration."""
         try:
             quota_key = f"user:{user_id}:quota:{service}"
-            # Set with 24-hour expiration for daily free credits
-            redis_client.redis.setex(quota_key, 24 * 3600, quota)
+            # Set with expiration from config for daily free credits
+            expiration_seconds = self.free_quotas["expiration_hours"] * 3600
+            redis_client.redis.setex(quota_key, expiration_seconds, quota)
             logger.info(f"Set daily {service} quota of {quota} for user {user_id}")
         except Exception as e:
             logger.error(f"Error setting initial quota for user {user_id}: {e}")
@@ -835,11 +847,11 @@ class StarsBillingManager:
                 "timestamp": interrupted_context['timestamp']
             }
             redis_client.redis.hset(auto_resume_context_key, mapping=redis_data)
-            redis_client.redis.expire(auto_resume_context_key, 300)  # 5-minute expiration
+            redis_client.redis.expire(auto_resume_context_key, self.redis_ttl["auto_resume_context"])
             
             # Set a flag for the bot to auto-resume processing
             auto_resume_key = f"user:{user_id}:auto_resume"
-            redis_client.redis.setex(auto_resume_key, 300, "1")  # 5-minute expiration
+            redis_client.redis.setex(auto_resume_key, self.redis_ttl["auto_resume_flag"], "1")
             
             # Clean up the interrupted processing context
             interrupted_key = f"user:{user_id}:interrupted_processing"
