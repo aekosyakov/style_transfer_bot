@@ -1,11 +1,20 @@
 """
-Comprehensive hairstyle database for focused hair transformations.
-This system generates random hairstyles while preserving the original face.
+Unified hairstyle interface for both men's and women's hairstyle transformations.
+This system routes to appropriate gender-specific generators while maintaining backward compatibility.
 """
 
 import random
 import logging
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
+
+# Import specialized generators
+try:
+    from .mens_hairstyles import mens_hairstyle_generator
+    from .womens_hairstyles import womens_hairstyle_generator
+except ImportError:
+    # Fallback for import errors
+    mens_hairstyle_generator = None
+    womens_hairstyle_generator = None
 
 logger = logging.getLogger(__name__)
 
@@ -259,6 +268,77 @@ class HairstyleGenerator:
     def generate_random_hairstyle_prompt(self, include_color: bool = True, include_effects: bool = False) -> str:
         """Backward compatibility method for prompt variation system."""
         return self.get_random_hairstyle(include_color, include_effects)
+
+    # Gender-specific methods for new submenu system
+    def get_mens_hairstyle(self, include_color: bool = True, include_effects: bool = False) -> str:
+        """Generate a random men's hairstyle."""
+        try:
+            if mens_hairstyle_generator:
+                return mens_hairstyle_generator.get_random_hairstyle(include_color, include_effects)
+            else:
+                # Fallback to general hairstyle if men's generator not available
+                logger.warning("Men's hairstyle generator not available, using general generator")
+                return self.get_random_hairstyle(include_color, include_effects)
+        except Exception as e:
+            logger.error(f"Error generating men's hairstyle: {e}")
+            return "change hairstyle to modern crew cut, preserve original face and facial features exactly"
+
+    def get_womens_hairstyle(self, include_color: bool = True, include_effects: bool = False) -> str:
+        """Generate a random women's hairstyle."""
+        try:
+            if womens_hairstyle_generator:
+                return womens_hairstyle_generator.get_random_hairstyle(include_color, include_effects)
+            else:
+                # Fallback to general hairstyle if women's generator not available
+                logger.warning("Women's hairstyle generator not available, using general generator")
+                return self.get_random_hairstyle(include_color, include_effects)
+        except Exception as e:
+            logger.error(f"Error generating women's hairstyle: {e}")
+            return "change hairstyle to modern bob cut, preserve original face and facial features exactly"
+
+    def get_random_gender_hairstyle(self, include_color: bool = True, include_effects: bool = False) -> str:
+        """Generate a random hairstyle from either men's or women's categories."""
+        try:
+            # Randomly choose between men's and women's hairstyles
+            if random.choice([True, False]):
+                logger.info("🎲 Randomly selected men's hairstyle for random gender")
+                return self.get_mens_hairstyle(include_color, include_effects)
+            else:
+                logger.info("🎲 Randomly selected women's hairstyle for random gender")
+                return self.get_womens_hairstyle(include_color, include_effects)
+        except Exception as e:
+            logger.error(f"Error generating random gender hairstyle: {e}")
+            return self.get_random_hairstyle(include_color, include_effects)
+
+    def get_hairstyle_by_gender_and_category(self, gender: str, category: Optional[str] = None, 
+                                           include_color: bool = True) -> str:
+        """
+        Get a hairstyle by gender and optionally by category.
+        
+        Args:
+            gender: 'men', 'women', or 'random'
+            category: Optional category name
+            include_color: Whether to include random hair color
+            
+        Returns:
+            A hairstyle prompt for the specified gender and category
+        """
+        try:
+            if gender.lower() == 'men':
+                if category and mens_hairstyle_generator:
+                    return mens_hairstyle_generator.get_hairstyle_by_category(category, include_color)
+                else:
+                    return self.get_mens_hairstyle(include_color)
+            elif gender.lower() == 'women':
+                if category and womens_hairstyle_generator:
+                    return womens_hairstyle_generator.get_hairstyle_by_category(category, include_color)
+                else:
+                    return self.get_womens_hairstyle(include_color)
+            else:  # random gender
+                return self.get_random_gender_hairstyle(include_color)
+        except Exception as e:
+            logger.error(f"Error generating hairstyle for gender {gender}, category {category}: {e}")
+            return self.get_random_hairstyle(include_color)
 
 
 # Global instance

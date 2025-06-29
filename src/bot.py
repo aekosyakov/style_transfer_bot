@@ -568,7 +568,7 @@ class StyleTransferBot:
                 await payment_processor.create_premium_invoice(update, context, plan_type)
             elif data.startswith("category_"):
                 await self._handle_category_selection(update, context, data)
-            elif data in ["new_look_men", "new_look_women", "new_look_random"]:
+            elif data in ["new_look_men", "new_look_women", "new_look_random", "new_hairstyle_men", "new_hairstyle_women", "new_hairstyle_random"]:
                 # Handle submenu navigation - treat as category selection
                 await self._handle_category_selection(update, context, f"category_{data}")
             elif data.startswith("option_"):
@@ -1139,7 +1139,7 @@ class StyleTransferBot:
                         result_url = await flux_api.edit_object(photo_url, edit_prompt)
                         
                 elif category == "new_hairstyle":
-                    # Handle hairstyle changes
+                    # Handle hairstyle changes (legacy support)
                     edit_prompt = selected_option['prompt']
                     
                     # Handle special hairstyle prompts
@@ -1154,6 +1154,72 @@ class StyleTransferBot:
                     
                     logger.info(f"Using FLUX API for hairstyle editing: {option_identifier}")
                     log_api_call("flux_hairstyle_edit", request_id, user_id, api_params)
+                    
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
+                    else:
+                        result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                        
+                elif category == "new_hairstyle_women":
+                    # Handle women's hairstyle changes
+                    edit_prompt = selected_option['prompt']
+                    
+                    # Handle special women's hairstyle prompts
+                    if self._is_womens_hairstyle_option(selected_option):
+                        edit_prompt = self._generate_womens_hairstyle_prompt(selected_option, is_retry)
+                        logger.info(f"Generated women's hairstyle prompt: {edit_prompt}")
+                    
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{edit_prompt}'")
+                    
+                    api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for women's hairstyle editing: {option_identifier}")
+                    log_api_call("flux_womens_hairstyle_edit", request_id, user_id, api_params)
+                    
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
+                    else:
+                        result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                        
+                elif category == "new_hairstyle_men":
+                    # Handle men's hairstyle changes
+                    edit_prompt = selected_option['prompt']
+                    
+                    # Handle special men's hairstyle prompts
+                    if self._is_mens_hairstyle_option(selected_option):
+                        edit_prompt = self._generate_mens_hairstyle_prompt(selected_option, is_retry)
+                        logger.info(f"Generated men's hairstyle prompt: {edit_prompt}")
+                    
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{edit_prompt}'")
+                    
+                    api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for men's hairstyle editing: {option_identifier}")
+                    log_api_call("flux_mens_hairstyle_edit", request_id, user_id, api_params)
+                    
+                    if is_retry:
+                        result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
+                    else:
+                        result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                        
+                elif category == "new_hairstyle_random":
+                    # Handle random gender hairstyle changes
+                    edit_prompt = selected_option['prompt']
+                    
+                    # Handle special random hairstyle prompts
+                    if self._is_random_hairstyle_option(selected_option):
+                        edit_prompt = self._generate_random_hairstyle_prompt(selected_option, is_retry)
+                        logger.info(f"Generated random hairstyle prompt: {edit_prompt}")
+                    
+                    # Log the EXACT prompt being sent to API
+                    logger.info(f"📝 FINAL_PROMPT for {category}: '{edit_prompt}'")
+                    
+                    api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for random hairstyle editing: {option_identifier}")
+                    log_api_call("flux_random_hairstyle_edit", request_id, user_id, api_params)
                     
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
@@ -1535,6 +1601,21 @@ class StyleTransferBot:
         option_identifier = option.get('label_key', '')
         return option_identifier.startswith('hair.')
     
+    def _is_womens_hairstyle_option(self, option: dict) -> bool:
+        """Check if an option is a women's hairstyle-related option."""
+        option_identifier = option.get('label_key', '')
+        return option_identifier.startswith('hair.women_') or option_identifier.startswith('hair.color_only')
+    
+    def _is_mens_hairstyle_option(self, option: dict) -> bool:
+        """Check if an option is a men's hairstyle-related option.""" 
+        option_identifier = option.get('label_key', '')
+        return option_identifier.startswith('hair.men_')
+    
+    def _is_random_hairstyle_option(self, option: dict) -> bool:
+        """Check if an option is a random hairstyle-related option."""
+        option_identifier = option.get('label_key', '')
+        return option_identifier.startswith('hair.random_') or option_identifier.startswith('hair.surprise_')
+    
     def _generate_hairstyle_prompt(self, option: dict, is_retry: bool = False) -> str:
         """Generate hairstyle prompt using HairstyleGenerator."""
         from src.hairstyles import hairstyle_generator
@@ -1582,6 +1663,121 @@ class StyleTransferBot:
             # Fallback for other hairstyle options
             fallback_prompt = "change hairstyle to modern bob cut, preserve original face and facial features exactly"
             logger.info(f"Using fallback hairstyle: {fallback_prompt}")
+            return fallback_prompt
+    
+    def _generate_womens_hairstyle_prompt(self, option: dict, is_retry: bool = False) -> str:
+        """Generate women's hairstyle prompt using HairstyleGenerator."""
+        from src.hairstyles import hairstyle_generator
+        
+        option_identifier = option.get('label_key', '')
+        original_prompt = option.get('prompt', '')
+        
+        logger.info(f"Generating women's hairstyle prompt for {option_identifier}, original: {original_prompt}")
+        
+        if option_identifier == 'hair.women_random' or 'RANDOM_WOMENS_HAIRSTYLE' in original_prompt:
+            # Random women's hairstyle generation
+            generated_prompt = hairstyle_generator.get_womens_hairstyle(include_color=True, include_effects=False)
+            logger.info(f"Generated random women's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.color_only':
+            # Color only change
+            generated_prompt = hairstyle_generator.get_color_only_change()
+            logger.info(f"Generated color change: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.women_modern' or 'MODERN_WOMENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("women", "modern_trendy", include_color=True)
+            logger.info(f"Generated modern women's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.women_classic' or 'CLASSIC_WOMENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("women", "classic_timeless", include_color=True)
+            logger.info(f"Generated classic women's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.women_edgy' or 'EDGY_WOMENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("women", "edgy_statement", include_color=True)
+            logger.info(f"Generated edgy women's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.women_cultural' or 'CULTURAL_WOMENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("women", "cultural_traditional", include_color=True)
+            logger.info(f"Generated cultural women's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.women_anime' or 'ANIME_WOMENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("women", "anime_inspired", include_color=True)
+            logger.info(f"Generated anime women's hairstyle: {generated_prompt}")
+            return generated_prompt
+        else:
+            # Fallback for other women's hairstyle options
+            fallback_prompt = "change hairstyle to modern women's bob cut, preserve original face and facial features exactly"
+            logger.info(f"Using fallback women's hairstyle: {fallback_prompt}")
+            return fallback_prompt
+    
+    def _generate_mens_hairstyle_prompt(self, option: dict, is_retry: bool = False) -> str:
+        """Generate men's hairstyle prompt using HairstyleGenerator."""
+        from src.hairstyles import hairstyle_generator
+        
+        option_identifier = option.get('label_key', '')
+        original_prompt = option.get('prompt', '')
+        
+        logger.info(f"Generating men's hairstyle prompt for {option_identifier}, original: {original_prompt}")
+        
+        if option_identifier == 'hair.men_random' or 'RANDOM_MENS_HAIRSTYLE' in original_prompt:
+            # Random men's hairstyle generation
+            generated_prompt = hairstyle_generator.get_mens_hairstyle(include_color=True, include_effects=False)
+            logger.info(f"Generated random men's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.men_color_only':
+            # Color only change for men
+            generated_prompt = hairstyle_generator.get_color_only_change()
+            logger.info(f"Generated men's color change: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.men_modern' or 'MODERN_MENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("men", "modern_trendy", include_color=True)
+            logger.info(f"Generated modern men's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.men_classic' or 'CLASSIC_MENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("men", "classic_timeless", include_color=True)
+            logger.info(f"Generated classic men's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.men_edgy' or 'EDGY_MENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("men", "edgy_statement", include_color=True)
+            logger.info(f"Generated edgy men's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.men_cultural' or 'CULTURAL_MENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("men", "cultural_traditional", include_color=True)
+            logger.info(f"Generated cultural men's hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.men_anime' or 'ANIME_MENS_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_gender_and_category("men", "anime_inspired", include_color=True)
+            logger.info(f"Generated anime men's hairstyle: {generated_prompt}")
+            return generated_prompt
+        else:
+            # Fallback for other men's hairstyle options
+            fallback_prompt = "change hairstyle to modern men's crew cut, preserve original face and facial features exactly"
+            logger.info(f"Using fallback men's hairstyle: {fallback_prompt}")
+            return fallback_prompt
+    
+    def _generate_random_hairstyle_prompt(self, option: dict, is_retry: bool = False) -> str:
+        """Generate random gender hairstyle prompt using HairstyleGenerator."""
+        from src.hairstyles import hairstyle_generator
+        
+        option_identifier = option.get('label_key', '')
+        original_prompt = option.get('prompt', '')
+        
+        logger.info(f"Generating random hairstyle prompt for {option_identifier}, original: {original_prompt}")
+        
+        if option_identifier == 'hair.random_any' or 'RANDOM_ANY_HAIRSTYLE' in original_prompt:
+            # Random gender hairstyle generation  
+            generated_prompt = hairstyle_generator.get_random_gender_hairstyle(include_color=True, include_effects=False)
+            logger.info(f"Generated random gender hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.surprise_me' or 'SURPRISE_HAIRSTYLE' in original_prompt:
+            # Surprise hairstyle with random gender and effects
+            generated_prompt = hairstyle_generator.get_random_gender_hairstyle(include_color=True, include_effects=True)
+            logger.info(f"Generated surprise hairstyle: {generated_prompt}")
+            return generated_prompt
+        else:
+            # Fallback to random gender hairstyle
+            fallback_prompt = hairstyle_generator.get_random_gender_hairstyle(include_color=True, include_effects=False)
+            logger.info(f"Using fallback random hairstyle: {fallback_prompt}")
             return fallback_prompt
     
     async def _handle_animation_request(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:

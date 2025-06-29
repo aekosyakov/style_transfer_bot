@@ -66,17 +66,45 @@
     ]
   },
   "new_hairstyle": {
+    "submenu": true,
+    "options": [
+      {"label_key": "hairstyle.men", "callback_data": "new_hairstyle_men"},
+      {"label_key": "hairstyle.women", "callback_data": "new_hairstyle_women"},
+      {"label_key": "hairstyle.random", "callback_data": "new_hairstyle_random"}
+    ]
+  },
+  "new_hairstyle_women": {
     "free": [
-      {"label_key": "hair.random", "prompt": "RANDOM_HAIRSTYLE"},
+      {"label_key": "hair.women_random", "prompt": "RANDOM_WOMENS_HAIRSTYLE"},
       {"label_key": "hair.color_only", "prompt": "change hair color to blonde"}
     ],
     "premium": [
-      {"label_key": "hair.modern_hairstyle", "prompt": "MODERN_HAIRSTYLE"},
-      {"label_key": "hair.classic_hairstyle", "prompt": "CLASSIC_HAIRSTYLE"},
-      {"label_key": "hair.edgy_hairstyle", "prompt": "EDGY_HAIRSTYLE"},
-      {"label_key": "hair.updo_hairstyle", "prompt": "UPDO_HAIRSTYLE"},
-      {"label_key": "hair.cultural_hairstyle", "prompt": "CULTURAL_HAIRSTYLE"},
-      {"label_key": "hair.anime_hairstyle", "prompt": "ANIME_HAIRSTYLE"}
+      {"label_key": "hair.women_modern", "prompt": "MODERN_WOMENS_HAIRSTYLE"},
+      {"label_key": "hair.women_classic", "prompt": "CLASSIC_WOMENS_HAIRSTYLE"},
+      {"label_key": "hair.women_edgy", "prompt": "EDGY_WOMENS_HAIRSTYLE"},
+      {"label_key": "hair.women_cultural", "prompt": "CULTURAL_WOMENS_HAIRSTYLE"},
+      {"label_key": "hair.women_anime", "prompt": "ANIME_WOMENS_HAIRSTYLE"}
+    ]
+  },
+  "new_hairstyle_men": {
+    "free": [
+      {"label_key": "hair.men_random", "prompt": "RANDOM_MENS_HAIRSTYLE"},
+      {"label_key": "hair.men_color_only", "prompt": "change hair color to dark brown"}
+    ],
+    "premium": [
+      {"label_key": "hair.men_modern", "prompt": "MODERN_MENS_HAIRSTYLE"},
+      {"label_key": "hair.men_classic", "prompt": "CLASSIC_MENS_HAIRSTYLE"},
+      {"label_key": "hair.men_edgy", "prompt": "EDGY_MENS_HAIRSTYLE"},
+      {"label_key": "hair.men_cultural", "prompt": "CULTURAL_MENS_HAIRSTYLE"},
+      {"label_key": "hair.men_anime", "prompt": "ANIME_MENS_HAIRSTYLE"}
+    ]
+  },
+  "new_hairstyle_random": {
+    "free": [
+      {"label_key": "hair.random_any", "prompt": "RANDOM_ANY_HAIRSTYLE"}
+    ],
+    "premium": [
+      {"label_key": "hair.surprise_me", "prompt": "SURPRISE_HAIRSTYLE"}
     ]
   },
   "replace_text": {
