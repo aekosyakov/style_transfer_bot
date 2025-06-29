@@ -1,8 +1,5 @@
 {
-  "btn.cartoon": "😆 Cartoon",
-  "btn.anime": "🌸 Anime",
-  "btn.comics": "💥 Comics",
-  "btn.art_styles": "🎨 Art Styles",
+  "btn.style_transfer": "🎨 Stylize",
   "btn.new_look": "👗 New Look",
   "btn.new_hairstyle": "✨ New Hairstyle", 
   "btn.change_background": "🏙 Change Background",
@@ -66,6 +63,7 @@
   "payment.status_unknown": "❓ Unable to check premium status",
   "payment.system_unavailable": "Payment system temporarily unavailable.",
 
+  "category.style_transfer": "stylize",
   "category.cartoon": "cartoon",
   "category.anime": "anime", 
   "category.comics": "comics",
@@ -87,6 +85,11 @@
   "btn.animate_result": "📽 Animate",
 
   "lang_name": "English",
+
+  "style.cartoon": "😆 Cartoon",
+  "style.anime": "🌸 Anime",
+  "style.comics": "💥 Comics",
+  "style.art_styles": "🎨 Art Styles",
 
   "cartoon.random": "🎲 Random Cartoon",
   "cartoon.retro_classic": "😆 Retro Classic",

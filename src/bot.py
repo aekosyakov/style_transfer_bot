@@ -568,7 +568,7 @@ class StyleTransferBot:
                 await payment_processor.create_premium_invoice(update, context, plan_type)
             elif data.startswith("category_"):
                 await self._handle_category_selection(update, context, data)
-            elif data in ["new_look_men", "new_look_women", "new_look_random", "new_hairstyle_men", "new_hairstyle_women", "new_hairstyle_random"]:
+            elif data in ["new_look_men", "new_look_women", "new_look_random", "new_hairstyle_men", "new_hairstyle_women", "new_hairstyle_random", "cartoon", "anime", "comics", "art_styles"]:
                 # Handle submenu navigation - treat as category selection
                 await self._handle_category_selection(update, context, f"category_{data}")
             elif data.startswith("option_"):
@@ -618,10 +618,7 @@ class StyleTransferBot:
         is_premium = redis_client.is_user_premium(user_id)
         
         keyboard = [
-            [InlineKeyboardButton(L.get("btn.cartoon", lang), callback_data="category_cartoon")],
-            [InlineKeyboardButton(L.get("btn.anime", lang), callback_data="category_anime")],
-            [InlineKeyboardButton(L.get("btn.comics", lang), callback_data="category_comics")],
-            [InlineKeyboardButton(L.get("btn.art_styles", lang), callback_data="category_art_styles")],
+            [InlineKeyboardButton(L.get("btn.style_transfer", lang), callback_data="category_style_transfer")],
             [InlineKeyboardButton(L.get("btn.new_look", lang), callback_data="category_new_look")],
             [InlineKeyboardButton(L.get("btn.new_hairstyle", lang), callback_data="category_new_hairstyle")],
             [InlineKeyboardButton(L.get("btn.change_background", lang), callback_data="category_change_background")],
@@ -1044,8 +1041,8 @@ class StyleTransferBot:
                 
                 logger.info(f"Starting {category} processing")
                 
-                if category in ["cartoon", "anime", "comics", "art_styles"]:
-                    # Handle style transfer for new categorized styles
+                if category in ["style_transfer", "cartoon", "anime", "comics", "art_styles"]:
+                    # Handle style transfer with categorized styles
                     style_prompt = selected_option['prompt']
                     
                     # Handle special style prompts (like RANDOM_CARTOON, RANDOM_ANIME, etc.)
@@ -1467,7 +1464,8 @@ class StyleTransferBot:
         return (option_identifier.startswith('cartoon.') or 
                 option_identifier.startswith('anime.') or 
                 option_identifier.startswith('comics.') or 
-                option_identifier.startswith('art.'))
+                option_identifier.startswith('art.') or
+                option_identifier.startswith('style.'))
     
     def _generate_style_prompt(self, option: dict, is_retry: bool = False, category: str = None) -> str:
         """Generate style prompt with random variations."""

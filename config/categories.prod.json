@@ -1,4 +1,13 @@
 {
+  "style_transfer": {
+    "submenu": true,
+    "options": [
+      {"label_key": "style.cartoon", "callback_data": "cartoon"},
+      {"label_key": "style.anime", "callback_data": "anime"},
+      {"label_key": "style.comics", "callback_data": "comics"},
+      {"label_key": "style.art_styles", "callback_data": "art_styles"}
+    ]
+  },
   "cartoon": {
     "free": [
       {"label_key": "cartoon.random", "prompt": "RANDOM_CARTOON"},
