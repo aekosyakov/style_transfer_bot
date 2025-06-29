@@ -320,23 +320,35 @@ class StarsBillingManager:
                 success = self.activate_pass(user_id, item_id)
                 if success:
                     pass_info = self.passes[item_id]
-                    await update.message.reply_text(
-                        L.get("billing.pass_activated", user_lang,
-                              pass_name=L.get(pass_info["name_key"], user_lang),
-                              flux=pass_info["flux_quota"],
-                              kling=pass_info["kling_quota"])
+                    # Get pass duration for display
+                    hours = pass_info["duration_hours"]
+                    if hours >= 24:
+                        days = hours // 24
+                        duration_text = f"{days}-Day" if days == 1 else f"{days}-Day"
+                    else:
+                        duration_text = f"{hours}-Hour"
+                    
+                    # Create success message with specific format
+                    success_msg = (
+                        f"💎 {duration_text} Pro activated until 23:59 UTC!\n"
+                        f"{pass_info['flux_quota']} style / {pass_info['kling_quota']} video credits now available.\n"
+                        f"Send a photo to start."
                     )
+                    
+                    await update.message.reply_text(success_msg)
                     
             elif item_type == "payg":
                 payg_info = self.payg_prices[item_id]
                 service = "flux" if "flux" in item_id else "kling"
                 success = self.add_payg_quota(user_id, service, payg_info["quota"])
                 if success:
-                    await update.message.reply_text(
-                        L.get("billing.payg_added", user_lang,
-                              service=service.upper(),
-                              amount=payg_info["quota"])
+                    service_name = "style" if service == "flux" else "video"
+                    success_msg = (
+                        f"⚡ +{payg_info['quota']} {service_name} credit added!\n"
+                        f"Total: {self.get_user_quota(user_id, service)} credits available.\n"
+                        f"Send a photo to start."
                     )
+                    await update.message.reply_text(success_msg)
             
             if not success:
                 # Refund should be handled by Telegram automatically for Stars
@@ -463,6 +475,31 @@ class StarsBillingManager:
         except Exception as e:
             logger.error(f"Error showing payg menu: {e}")
     
+    async def check_quota_with_warnings(
+        self, 
+        update: Update, 
+        context: ContextTypes.DEFAULT_TYPE,
+        service: str
+    ) -> str:
+        """
+        Check quota with gentle warnings and hard blocks.
+        Returns: 'ok', 'gentle_warning', or 'hard_block'
+        """
+        user_id = update.effective_user.id
+        current_quota = self.get_user_quota(user_id, service)
+        
+        if current_quota <= 0:
+            # Hard block - no quota left
+            await self._show_hard_block_upsell(update, context, service)
+            return 'hard_block'
+        elif current_quota <= 3:
+            # Gentle warning - low quota
+            await self._show_gentle_warning(update, context, service, current_quota)
+            return 'gentle_warning'
+        else:
+            # All good
+            return 'ok'
+    
     async def check_quota_and_upsell(
         self, 
         update: Update, 
@@ -475,9 +512,81 @@ class StarsBillingManager:
         if self.has_quota(user_id, service):
             return True
         
-        # No quota, show upsell
-        await self._show_upsell_message(update, context, service)
+        # No quota, show hard block
+        await self._show_hard_block_upsell(update, context, service)
         return False
+    
+    async def _show_gentle_warning(
+        self, 
+        update: Update, 
+        context: ContextTypes.DEFAULT_TYPE,
+        service: str,
+        remaining_quota: int
+    ) -> None:
+        """Show gentle warning when quota is low (≤3)."""
+        try:
+            user_lang = L.get_user_language(update.effective_user)
+            service_name = "style" if service == "flux" else "video"
+            
+            text = f"⚡ You have only {remaining_quota} {service_name} credits left today."
+            
+            # Create invoice links for quick purchase
+            keyboard = [
+                [
+                    InlineKeyboardButton("Buy 1-Day Pass — 499⭐", callback_data="buy_pass_pro_1day"),
+                    InlineKeyboardButton(f"Extra {self.payg_prices[f'{service}_extra']['price_stars']} ⭐", callback_data=f"buy_payg_{service}_extra")
+                ]
+            ]
+            
+            # Use callback query edit to avoid spamming chat
+            if update.callback_query:
+                await update.callback_query.edit_message_text(
+                    text,
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
+            else:
+                await update.message.reply_text(
+                    text,
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
+            
+        except Exception as e:
+            logger.error(f"Error showing gentle warning: {e}")
+    
+    async def _show_hard_block_upsell(
+        self, 
+        update: Update, 
+        context: ContextTypes.DEFAULT_TYPE,
+        service: str
+    ) -> None:
+        """Show hard block when quota is depleted (≤0)."""
+        try:
+            user_lang = L.get_user_language(update.effective_user)
+            service_name = "styles" if service == "flux" else "videos"
+            
+            text = f"🚫 No credits left for {service_name} today.\nGet more:"
+            
+            # Create invoice links for all options
+            keyboard = [
+                [InlineKeyboardButton(f"Extra Image {self.payg_prices[f'{service}_extra']['price_stars']}⭐", callback_data=f"buy_payg_{service}_extra")],
+                [InlineKeyboardButton("1-Day Pass 499⭐", callback_data="buy_pass_pro_1day")],
+                [InlineKeyboardButton("7-Day Pass 2,999⭐", callback_data="buy_pass_creator_7day")]
+            ]
+            
+            # Use callback query edit to avoid spamming chat
+            if update.callback_query:
+                await update.callback_query.edit_message_text(
+                    text,
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
+            else:
+                await update.message.reply_text(
+                    text,
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
+            
+        except Exception as e:
+            logger.error(f"Error showing hard block upsell: {e}")
     
     async def _show_upsell_message(
         self, 
@@ -486,25 +595,45 @@ class StarsBillingManager:
         service: str
     ) -> None:
         """Show upsell message when quota is depleted."""
+        # Redirect to hard block upsell
+        await self._show_hard_block_upsell(update, context, service)
+    
+    async def safe_generate(
+        self,
+        user_id: int,
+        service: str,
+        generation_func,
+        *args,
+        **kwargs
+    ) -> any:
+        """
+        Safely execute generation with automatic quota refund on failure.
+        Args:
+            user_id: User ID for quota management
+            service: Service type ('flux' or 'kling')
+            generation_func: Async function to call for generation
+            *args, **kwargs: Arguments to pass to generation_func
+        Returns:
+            Result from generation_func or None if failed
+        """
         try:
-            user_lang = L.get_user_language(update.effective_user)
+            logger.info(f"Safe generation started for user {user_id}, service {service}")
+            result = await generation_func(*args, **kwargs)
             
-            text = L.get("billing.quota_depleted", user_lang, service=service.upper())
-            
-            keyboard = [
-                [InlineKeyboardButton(L.get("billing.view_passes", user_lang), callback_data="billing_passes")],
-                [InlineKeyboardButton(L.get("billing.buy_extra", user_lang), callback_data="billing_payg")],
-                [InlineKeyboardButton(L.get("btn.back", user_lang), callback_data="main_menu")]
-            ]
-            
-            await update.message.reply_text(
-                text,
-                reply_markup=InlineKeyboardMarkup(keyboard),
-                parse_mode='Markdown'
-            )
-            
+            if result:
+                logger.info(f"Safe generation succeeded for user {user_id}")
+                return result
+            else:
+                logger.warning(f"Safe generation failed (empty result) for user {user_id}")
+                # Refund quota on empty result
+                self.refund_quota(user_id, service, 1)
+                return None
+                
         except Exception as e:
-            logger.error(f"Error showing upsell message: {e}")
+            logger.error(f"Safe generation exception for user {user_id}: {e}")
+            # Refund quota on exception
+            self.refund_quota(user_id, service, 1) 
+            return None
 
 
 # Global Stars billing manager instance

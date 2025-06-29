@@ -1028,17 +1028,21 @@ class StyleTransferBot:
                         raise e
                 return
             
-            # Check quota for FLUX/Kling before processing
+            # Check quota with warnings before processing
             service_type = "kling" if category == "animate" else "flux"
-            if not stars_billing.has_quota(user_id, service_type):
-                # Show upsell message
-                await stars_billing._show_upsell_message(update, context, service_type)
+            quota_status = await stars_billing.check_quota_with_warnings(update, context, service_type)
+            
+            if quota_status == 'hard_block':
+                # No quota, user was shown hard block - stop processing
                 return
+            elif quota_status == 'gentle_warning':
+                # Low quota but can continue - user was shown warning
+                pass
                 
-            # Consume quota
+            # Consume quota atomically
             if not stars_billing.consume_quota(user_id, service_type):
-                # Failed to consume quota (race condition), show upsell
-                await stars_billing._show_upsell_message(update, context, service_type)
+                # Failed to consume quota (race condition or depleted), show hard block
+                await stars_billing._show_hard_block_upsell(update, context, service_type)
                 return
 
             # Get photo from context
@@ -1076,8 +1080,15 @@ class StyleTransferBot:
                 'service_type': service_type  # Store for refund on failure
             }
             
-            # Show processing message
+            # Send chat action and show processing message
             try:
+                # Send appropriate chat action based on service type
+                if service_type == "kling":
+                    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="record_video")
+                else:
+                    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="upload_photo")
+                
+                # Show processing message
                 await update.callback_query.edit_message_text(L.get("msg.processing", user_lang))
             except Exception as e:
                 # If edit_message_text fails, it might be a photo message, try edit_message_caption
@@ -1109,10 +1120,8 @@ class StyleTransferBot:
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
             
-            # Refund quota if it was consumed but processing failed
-            if 'service_type' in locals():
-                stars_billing.refund_quota(user_id, service_type)
-                logger.info(f"Refunded {service_type} quota for user {user_id} due to processing error")
+            # Note: Quota refund is handled automatically by safe_generate method if it was called
+            # No manual refund needed here for processing errors
             
             user_lang = self._get_user_language(update.effective_user)
             await context.bot.send_message(
@@ -1192,6 +1201,9 @@ class StyleTransferBot:
             result_url = None
             api_start_time = time.time()
             
+            # Determine service type for safe generation
+            service_type = "kling" if category == "animate" else "flux"
+            
             try:
                 log_processing_step("api_processing_started", request_id, user_id, {
                     "category": category,
@@ -1200,6 +1212,11 @@ class StyleTransferBot:
                 }, success=True)
                 
                 logger.info(f"Starting {category} processing")
+                
+                # Send periodic chat actions to keep user engaged
+                async def send_chat_action_periodic():
+                    action = "record_video" if service_type == "kling" else "upload_photo"
+                    await bot.send_chat_action(chat_id=chat_id, action=action)
                 
                 if category in ["style_transfer", "cartoon", "anime", "comics", "art_styles"]:
                     # Handle style transfer with categorized styles
@@ -1218,10 +1235,18 @@ class StyleTransferBot:
                     logger.info(f"Using FLUX API for {category} style: {option_identifier}")
                     log_api_call(f"flux_{category}_style", request_id, user_id, api_params)
                     
+                    # Use safe generation with periodic chat actions
+                    await send_chat_action_periodic()
                     if is_retry:
-                        result_url = await flux_api.process_image_with_variation(photo_url, style_prompt)
+                        result_url = await stars_billing.safe_generate(
+                            user_id, service_type,
+                            flux_api.process_image_with_variation, photo_url, style_prompt
+                        )
                     else:
-                        result_url = await flux_api.style_transfer(photo_url, style_prompt)
+                        result_url = await stars_billing.safe_generate(
+                            user_id, service_type,
+                            flux_api.style_transfer, photo_url, style_prompt
+                        )
                         
                 elif category == "new_look_women":
                     # Handle women's dress/outfit changes
@@ -1240,10 +1265,18 @@ class StyleTransferBot:
                     logger.info(f"Using FLUX API for women's outfit editing: {option_identifier}")
                     log_api_call("flux_womens_outfit_edit", request_id, user_id, api_params)
                     
+                    # Use safe generation
+                    await send_chat_action_periodic()
                     if is_retry:
-                        result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
+                        result_url = await stars_billing.safe_generate(
+                            user_id, service_type,
+                            flux_api.process_image_with_variation, photo_url, edit_prompt
+                        )
                     else:
-                        result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                        result_url = await stars_billing.safe_generate(
+                            user_id, service_type,
+                            flux_api.edit_object, photo_url, edit_prompt
+                        )
                         
                 elif category == "new_look_men":
                     # Handle men's outfit changes
@@ -1413,10 +1446,18 @@ class StyleTransferBot:
                     logger.info(f"Using FLUX API for background change: {option_identifier}")
                     log_api_call("flux_background_swap", request_id, user_id, api_params)
                     
+                    # Use safe generation
+                    await send_chat_action_periodic()
                     if is_retry:
-                        result_url = await flux_api.process_image_with_variation(photo_url, bg_prompt)
+                        result_url = await stars_billing.safe_generate(
+                            user_id, service_type,
+                            flux_api.process_image_with_variation, photo_url, bg_prompt
+                        )
                     else:
-                        result_url = await flux_api.swap_background(photo_url, bg_prompt)
+                        result_url = await stars_billing.safe_generate(
+                            user_id, service_type,
+                            flux_api.swap_background, photo_url, bg_prompt
+                        )
                         
 
                         
@@ -1431,7 +1472,12 @@ class StyleTransferBot:
                     logger.info(f"Using Kling AI for animation: {option_identifier}")
                     log_api_call("kling_animate", request_id, user_id, api_params)
                     
-                    result_url = await kling_api.animate_by_prompt(photo_url, animation_prompt)
+                    # Use safe generation with chat actions
+                    await send_chat_action_periodic()
+                    result_url = await stars_billing.safe_generate(
+                        user_id, service_type,
+                        kling_api.animate_by_prompt, photo_url, animation_prompt
+                    )
                 else:
                     logger.warning(f"Unknown category: {category}")
                     log_processing_step("unknown_category", request_id, user_id, {
@@ -1596,10 +1642,8 @@ class StyleTransferBot:
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
             
-            # Refund quota since processing failed
-            service_type = "kling" if category == "animate" else "flux"
-            stars_billing.refund_quota(user_id, service_type)
-            logger.info(f"Refunded {service_type} quota for user {user_id} due to background processing error")
+            # Note: Quota refund is handled automatically by safe_generate method
+            # No manual refund needed here
             
             # Use retry logic for general error message
             async def send_general_error_operation():
