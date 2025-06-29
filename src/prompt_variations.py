@@ -472,7 +472,7 @@ class PromptVariationGenerator:
         hairstyle_keywords = [
             "RANDOM_HAIRSTYLE", "MODERN_HAIRSTYLE", "CLASSIC_HAIRSTYLE", 
             "EDGY_HAIRSTYLE", "UPDO_HAIRSTYLE", "CULTURAL_HAIRSTYLE", 
-            "ANIME_HAIRSTYLE", "haircut", "hairstyle"
+            "ANIME_HAIRSTYLE", "haircut", "hairstyle", "hair."
         ]
         return any(keyword in prompt or keyword in label_key for keyword in hairstyle_keywords)
     
@@ -481,7 +481,7 @@ class PromptVariationGenerator:
         dress_keywords = [
             "RANDOM_DRESS", "MODERN_DRESS", "CLASSIC_DRESS", 
             "EDGY_DRESS", "EVENING_DRESS", "CULTURAL_DRESS", 
-            "ANIME_DRESS", "CASUAL_OUTFIT", "dress", "outfit"
+            "ANIME_DRESS", "CASUAL_OUTFIT", "dress.", "outfit"
         ]
         return any(keyword in prompt or keyword in label_key for keyword in dress_keywords)
     

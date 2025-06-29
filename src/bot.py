@@ -558,10 +558,10 @@ class StyleTransferBot:
         
         keyboard = [
             [InlineKeyboardButton(L.get("btn.style_transfer", lang), callback_data="category_style_transfer")],
-            [InlineKeyboardButton(L.get("btn.object_edit", lang), callback_data="category_object_edit")],
-            [InlineKeyboardButton(L.get("btn.text_edit", lang), callback_data="category_text_edit")],
-            [InlineKeyboardButton(L.get("btn.background_swap", lang), callback_data="category_background_swap")],
-            [InlineKeyboardButton(L.get("btn.face_enhance", lang), callback_data="category_face_enhance")],
+            [InlineKeyboardButton(L.get("btn.new_look", lang), callback_data="category_new_look")],
+            [InlineKeyboardButton(L.get("btn.new_hairstyle", lang), callback_data="category_new_hairstyle")],
+            [InlineKeyboardButton(L.get("btn.change_background", lang), callback_data="category_change_background")],
+            [InlineKeyboardButton(L.get("btn.replace_text", lang), callback_data="category_replace_text")],
             [InlineKeyboardButton(L.get("btn.animate", lang), callback_data="category_animate")],
         ]
         

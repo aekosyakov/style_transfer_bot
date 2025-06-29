@@ -1,6 +1,7 @@
 {
   "style_transfer": {
     "free": [
+      {"label_key": "style.random", "prompt": "RANDOM_STYLE"},
       {"label_key": "style.pencil_sketch", "prompt": "Make this a pencil sketch"},
       {"label_key": "style.digital_art", "prompt": "Make this digital art"},
       {"label_key": "style.pop_art", "prompt": "Make this pop art"}
@@ -20,40 +21,44 @@
       {"label_key": "style.film_noir", "prompt": "Make this film noir style"}
     ]
   },
-  "object_edit": {
+  "new_look": {
     "free": [
-      {"label_key": "object.hair_color", "prompt": "change hair color to blonde"},
-      {"label_key": "object.random_hairstyle", "prompt": "RANDOM_HAIRSTYLE"}
+      {"label_key": "dress.random", "prompt": "RANDOM_DRESS"},
+      {"label_key": "dress.casual_outfit", "prompt": "CASUAL_OUTFIT"}
     ],
     "premium": [
-      {"label_key": "object.modern_hairstyle", "prompt": "MODERN_HAIRSTYLE"},
-      {"label_key": "object.classic_hairstyle", "prompt": "CLASSIC_HAIRSTYLE"},
-      {"label_key": "object.edgy_hairstyle", "prompt": "EDGY_HAIRSTYLE"},
-      {"label_key": "object.updo_hairstyle", "prompt": "UPDO_HAIRSTYLE"},
-      {"label_key": "object.cultural_hairstyle", "prompt": "CULTURAL_HAIRSTYLE"},
-      {"label_key": "object.anime_hairstyle", "prompt": "ANIME_HAIRSTYLE"},
-      {"label_key": "object.random_dress", "prompt": "RANDOM_DRESS"},
-      {"label_key": "object.modern_dress", "prompt": "MODERN_DRESS"},
-      {"label_key": "object.classic_dress", "prompt": "CLASSIC_DRESS"},
-      {"label_key": "object.edgy_dress", "prompt": "EDGY_DRESS"},
-      {"label_key": "object.evening_dress", "prompt": "EVENING_DRESS"},
-      {"label_key": "object.cultural_dress", "prompt": "CULTURAL_DRESS"},
-      {"label_key": "object.anime_dress", "prompt": "ANIME_DRESS"},
-      {"label_key": "object.casual_outfit", "prompt": "CASUAL_OUTFIT"},
-      {"label_key": "object.add_glasses", "prompt": "add round glasses"},
-      {"label_key": "object.change_outfit", "prompt": "change outfit to business suit"},
-      {"label_key": "object.add_hat", "prompt": "add black top hat"}
+      {"label_key": "dress.modern_dress", "prompt": "MODERN_DRESS"},
+      {"label_key": "dress.classic_dress", "prompt": "CLASSIC_DRESS"},
+      {"label_key": "dress.edgy_dress", "prompt": "EDGY_DRESS"},
+      {"label_key": "dress.evening_dress", "prompt": "EVENING_DRESS"},
+      {"label_key": "dress.cultural_dress", "prompt": "CULTURAL_DRESS"},
+      {"label_key": "dress.anime_dress", "prompt": "ANIME_DRESS"}
     ]
   },
-  "text_edit": {
+  "new_hairstyle": {
+    "free": [
+      {"label_key": "hair.random", "prompt": "RANDOM_HAIRSTYLE"},
+      {"label_key": "hair.color_only", "prompt": "change hair color to blonde"}
+    ],
+    "premium": [
+      {"label_key": "hair.modern_hairstyle", "prompt": "MODERN_HAIRSTYLE"},
+      {"label_key": "hair.classic_hairstyle", "prompt": "CLASSIC_HAIRSTYLE"},
+      {"label_key": "hair.edgy_hairstyle", "prompt": "EDGY_HAIRSTYLE"},
+      {"label_key": "hair.updo_hairstyle", "prompt": "UPDO_HAIRSTYLE"},
+      {"label_key": "hair.cultural_hairstyle", "prompt": "CULTURAL_HAIRSTYLE"},
+      {"label_key": "hair.anime_hairstyle", "prompt": "ANIME_HAIRSTYLE"}
+    ]
+  },
+  "replace_text": {
     "free": [{"label_key": "text.replace_text", "prompt": "\"replace 'OLD' with 'NEW'\""}],
     "premium": [
       {"label_key": "text.font_change", "prompt": "change font to bold serif"},
       {"label_key": "text.color_change", "prompt": "change text color to red"}
     ]
   },
-  "background_swap": {
+  "change_background": {
     "free": [
+      {"label_key": "bg.random", "prompt": "RANDOM_BACKGROUND"},
       {"label_key": "bg.beach", "prompt": "Change background to a tropical beach"},
       {"label_key": "bg.forest", "prompt": "Change background to a lush forest"},
       {"label_key": "bg.city", "prompt": "Change background to a modern city"}
@@ -79,14 +84,7 @@
       {"label_key": "bg.private_island", "prompt": "Change background to private tropical island"}
     ]
   },
-  "face_enhance": {
-    "free": [{"label_key": "face.natural_smile", "prompt": "add subtle smile"}],
-    "premium": [
-      {"label_key": "face.makeup", "prompt": "apply professional makeup subtly"},
-      {"label_key": "face.younger", "prompt": "make face look 5 years younger"},
-      {"label_key": "face.haircut", "prompt": "change haircut to short bob"}
-    ]
-  },
+
   "animate": {
     "free": [
       {"label_key": "anim.idle", "kling_prompt": ""},
