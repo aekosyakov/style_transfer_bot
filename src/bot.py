@@ -27,15 +27,27 @@ from flux_api import flux_api
 from kling_api import kling_api
 from payments import payment_processor
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - [%(funcName)s:%(lineno)d] - %(message)s',
-    handlers=[
-        logging.FileHandler('logs/bot.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+# Configure logging with safe file handler
+def setup_logging():
+    """Setup logging with safe file handler that creates directory if needed."""
+    handlers = [logging.StreamHandler(sys.stdout)]
+    
+    # Try to create file handler, but don't fail if logs directory doesn't exist
+    try:
+        import os
+        os.makedirs('logs', exist_ok=True)
+        handlers.append(logging.FileHandler('logs/bot.log'))
+    except Exception as e:
+        print(f"Warning: Could not create log file handler: {e}")
+        print("Logging to console only.")
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - [%(funcName)s:%(lineno)d] - %(message)s',
+        handlers=handlers
+    )
+
+setup_logging()
 logger = logging.getLogger(__name__)
 
 # Add request tracking
