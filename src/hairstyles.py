@@ -70,7 +70,7 @@ class HairstyleGenerator:
             "Gibson Tuck Roll hairstyle",
             "Bubble Ponytail hairstyle",
             "Waterfall Braid Cascade hairstyle",
-            "Low Double Buns (Minnie Buns) hairstyle"
+            "Low Double Buns hairstyle"
         ]
         
         # Cultural & Traditional Icons
@@ -89,15 +89,15 @@ class HairstyleGenerator:
         
         # Anime & Game-Inspired
         self.anime_inspired = [
-            "Shōnen Gravity-Defying Spikes (Goku style) hairstyle",
-            "Tri-Color Pharaoh Spikes (Yugi style) hairstyle",
-            "Side-Swept Bangs with Ahoge (antenna sprout) hairstyle",
-            "Odango Buns with Long Tails (Sailor Moon) hairstyle",
-            "Twin Tails with Ribbons (Hatsune Miku length) hairstyle",
-            "Spiky Wolf Ears Fringe (Inuyasha vibe) hairstyle",
-            "Massive Drill Curls (Lady Oscar style) hairstyle",
-            "Jagged Layered Emo Fringe (Sasuke style) hairstyle",
-            "Short Bob with Cat Ears (Neko aesthetic) hairstyle",
+            "Gravity-Defying Spiky hairstyle",
+            "Tri-Color Layered Spikes hairstyle",
+            "Side-Swept Bangs with Cowlick hairstyle",
+            "Double Buns with Long Tails hairstyle",
+            "Twin-Tails with Ribbons hairstyle",
+            "Spiky Layered Fringe hairstyle",
+            "Massive Drill Curls hairstyle",
+            "Jagged Layered Emo Fringe hairstyle",
+            "Short Bob with Hair Clips hairstyle",
             "Super Long Straight Hime Cut hairstyle"
         ]
         
