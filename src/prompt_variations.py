@@ -6,12 +6,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Import the hairstyle generator
+# Import the hairstyle and dress generators
 try:
     from src.hairstyles import hairstyle_generator
 except ImportError:
     logger.warning("Could not import hairstyle_generator, hairstyle variations will be limited")
     hairstyle_generator = None
+
+try:
+    from src.dresses import dress_generator
+except ImportError:
+    logger.warning("Could not import dress_generator, dress variations will be limited")
+    dress_generator = None
 
 
 class PromptVariationGenerator:
@@ -382,6 +388,10 @@ class PromptVariationGenerator:
             if self._is_hairstyle_prompt(label_key, original_prompt):
                 return self._generate_hairstyle_variation(label_key, original_prompt)
             
+            # Special handling for dress-related prompts
+            if self._is_dress_prompt(label_key, original_prompt):
+                return self._generate_dress_variation(label_key, original_prompt)
+            
             # Try to get specific variations for this label key
             if label_key in self.variations:
                 available_variations = self.variations[label_key]
@@ -466,6 +476,15 @@ class PromptVariationGenerator:
         ]
         return any(keyword in prompt or keyword in label_key for keyword in hairstyle_keywords)
     
+    def _is_dress_prompt(self, label_key: str, prompt: str) -> bool:
+        """Check if this is a dress/outfit-related prompt."""
+        dress_keywords = [
+            "RANDOM_DRESS", "MODERN_DRESS", "CLASSIC_DRESS", 
+            "EDGY_DRESS", "EVENING_DRESS", "CULTURAL_DRESS", 
+            "ANIME_DRESS", "CASUAL_OUTFIT", "dress", "outfit"
+        ]
+        return any(keyword in prompt or keyword in label_key for keyword in dress_keywords)
+    
     def _generate_hairstyle_variation(self, label_key: str, original_prompt: str) -> str:
         """Generate hairstyle variation using the specialized hairstyle generator."""
         if not hairstyle_generator:
@@ -497,6 +516,40 @@ class PromptVariationGenerator:
         except Exception as e:
             logger.error(f"Error generating hairstyle variation: {e}")
             return original_prompt + ", preserve original face and facial features exactly"
+    
+    def _generate_dress_variation(self, label_key: str, original_prompt: str) -> str:
+        """Generate dress variation using the specialized dress generator."""
+        if not dress_generator:
+            logger.warning("Dress generator not available, using fallback")
+            return original_prompt + ", preserve original face and body"
+        
+        try:
+            # Determine which type of dress generation to use
+            if "RANDOM_DRESS" in original_prompt:
+                return dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
+            elif "MODERN_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("modern_trendy", include_color=True, include_material=True)
+            elif "CLASSIC_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("classic_timeless", include_color=True, include_material=True)
+            elif "EDGY_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("edgy_statement", include_color=True, include_material=True)
+            elif "EVENING_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("evening_occasion", include_color=True, include_material=True)
+            elif "CULTURAL_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("cultural_traditional", include_color=True, include_material=True)
+            elif "ANIME_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("anime_inspired", include_color=True, include_material=True)
+            elif "CASUAL_OUTFIT" in original_prompt:
+                return dress_generator.get_casual_outfit()
+            elif "change_outfit" in label_key or "outfit" in original_prompt:
+                return dress_generator.get_random_dress(include_color=True, include_material=False, include_effects=False)
+            else:
+                # General dress variation
+                return dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
+                
+        except Exception as e:
+            logger.error(f"Error generating dress variation: {e}")
+            return original_prompt + ", preserve original face and body proportions exactly"
     
     def get_random_seed(self) -> int:
         """Generate a random seed for additional variation."""
