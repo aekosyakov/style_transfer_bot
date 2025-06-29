@@ -353,19 +353,57 @@ class PromptVariationGenerator:
         Returns:
             A varied but similar prompt
         """
+        import time
+        start_time = time.time()
+        
+        # Log the request details
+        request_details = {
+            "category": category,
+            "label_key": label_key,
+            "original_prompt": original_prompt,
+            "original_prompt_length": len(original_prompt),
+            "is_kling": is_kling,
+            "timestamp": time.time()
+        }
+        
+        logger.info(f"🔄 PROMPT_VARIATION_START: {request_details}")
+        
         try:
             logger.info(f"Generating prompt variation for {category}.{label_key}")
             
             # Try to get specific variations for this label key
             if label_key in self.variations:
-                varied_prompt = random.choice(self.variations[label_key])
+                available_variations = self.variations[label_key]
+                varied_prompt = random.choice(available_variations)
+                
+                success_details = {
+                    "method": "specific_variation",
+                    "label_key": label_key,
+                    "available_count": len(available_variations),
+                    "original_prompt": original_prompt,
+                    "varied_prompt": varied_prompt,
+                    "duration": time.time() - start_time
+                }
+                logger.info(f"✅ PROMPT_VARIATION_SUCCESS: {success_details}")
                 logger.info(f"Using specific variation: '{varied_prompt}'")
                 return varied_prompt
             
             # Fallback to generic variations for the category
             if category in self.generic_variations:
-                variation_suffix = random.choice(self.generic_variations[category])
+                available_suffixes = self.generic_variations[category]
+                variation_suffix = random.choice(available_suffixes)
                 varied_prompt = original_prompt + variation_suffix
+                
+                success_details = {
+                    "method": "generic_variation",
+                    "category": category,
+                    "available_count": len(available_suffixes),
+                    "original_prompt": original_prompt,
+                    "varied_prompt": varied_prompt,
+                    "suffix_used": variation_suffix,
+                    "duration": time.time() - start_time
+                }
+                logger.info(f"✅ PROMPT_VARIATION_SUCCESS: {success_details}")
                 logger.info(f"Using generic variation: '{varied_prompt}'")
                 return varied_prompt
             
@@ -377,18 +415,44 @@ class PromptVariationGenerator:
                 " with refined approach",
                 " with natural variation"
             ]
-            varied_prompt = original_prompt + random.choice(simple_variations)
+            variation_suffix = random.choice(simple_variations)
+            varied_prompt = original_prompt + variation_suffix
+            
+            fallback_details = {
+                "method": "simple_fallback",
+                "original_prompt": original_prompt,
+                "varied_prompt": varied_prompt,
+                "suffix_used": variation_suffix,
+                "duration": time.time() - start_time,
+                "reason": "no_specific_or_generic_variations_found"
+            }
+            logger.warning(f"⚠️  PROMPT_VARIATION_FALLBACK: {fallback_details}")
             logger.info(f"Using simple variation: '{varied_prompt}'")
             return varied_prompt
             
         except Exception as e:
+            error_details = {
+                "error": "variation_generation_failed",
+                "exception_type": type(e).__name__,
+                "exception_message": str(e),
+                "original_prompt": original_prompt,
+                "duration": time.time() - start_time,
+                "request_details": request_details
+            }
+            logger.error(f"❌ PROMPT_VARIATION_ERROR: {error_details}")
             logger.error(f"Error generating prompt variation: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             # Return original prompt as fallback
             return original_prompt
     
     def get_random_seed(self) -> int:
         """Generate a random seed for additional variation."""
-        return random.randint(1, 1000000)
+        import time
+        seed = random.randint(1, 1000000)
+        
+        logger.debug(f"🎲 RANDOM_SEED_GENERATED: {{'seed': {seed}, 'timestamp': {time.time()}}}")
+        return seed
 
 
 # Global instance

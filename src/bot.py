@@ -3,12 +3,15 @@
 
 import os
 import sys
-import logging
+import json
 import asyncio
 import argparse
+import traceback
+import logging
+import time
+import uuid
 import random
 from typing import Dict, Any, Optional, Final
-import uuid
 from datetime import datetime
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -26,10 +29,63 @@ from payments import payment_processor
 
 # Configure logging
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - [%(funcName)s:%(lineno)d] - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/bot.log'),
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 logger = logging.getLogger(__name__)
+
+# Add request tracking
+def generate_request_id() -> str:
+    """Generate unique request ID for tracking."""
+    return f"req_{int(time.time())}_{uuid.uuid4().hex[:8]}"
+
+def log_user_action(user_id: int, action: str, details: Dict[str, Any] = None, request_id: str = None):
+    """Log user action with detailed context."""
+    log_data = {
+        "user_id": user_id,
+        "action": action,
+        "timestamp": datetime.now().isoformat(),
+        "request_id": request_id,
+        "details": details or {}
+    }
+    logger.info(f"👤 USER_ACTION: {json.dumps(log_data)}")
+
+def log_api_call(api_name: str, request_id: str, user_id: int, params: Dict[str, Any], duration: float = None, success: bool = None, error: str = None):
+    """Log API call with timing and result information."""
+    log_data = {
+        "api": api_name,
+        "request_id": request_id,
+        "user_id": user_id,
+        "timestamp": datetime.now().isoformat(),
+        "params": params,
+        "duration_seconds": duration,
+        "success": success,
+        "error": error
+    }
+    if success:
+        logger.info(f"🌐 API_SUCCESS: {json.dumps(log_data)}")
+    else:
+        logger.error(f"🌐 API_FAILURE: {json.dumps(log_data)}")
+
+def log_processing_step(step: str, request_id: str, user_id: int, details: Dict[str, Any] = None, success: bool = True, error: str = None):
+    """Log processing step with context."""
+    log_data = {
+        "step": step,
+        "request_id": request_id,
+        "user_id": user_id,
+        "timestamp": datetime.now().isoformat(),
+        "success": success,
+        "details": details or {},
+        "error": error
+    }
+    if success:
+        logger.info(f"⚙️  PROCESSING: {json.dumps(log_data)}")
+    else:
+        logger.error(f"⚙️  PROCESSING_ERROR: {json.dumps(log_data)}")
 
 # Success effect IDs for random selection
 SUCCESS_EFFECT_IDS: Final[list[str]] = [
@@ -755,18 +811,44 @@ class StyleTransferBot:
         user_id: int, 
         user_lang: str,
         context: ContextTypes.DEFAULT_TYPE,
-        is_retry: bool = False
+        is_retry: bool = False,
+        request_id: str = None
     ) -> None:
         """Process image in background without blocking main bot handler."""
+        if not request_id:
+            request_id = generate_request_id()
+        
+        start_time = time.time()
+        option_identifier = selected_option.get('label_key', selected_option.get('label', 'unknown'))
+        
+        log_processing_step("background_processing_started", request_id, user_id, {
+            "category": category,
+            "option_identifier": option_identifier,
+            "is_retry": is_retry,
+            "photo_file_id": photo_file_id
+        }, success=True)
+        
         try:
             logger.info(f"🚀 Background processing started for user {user_id}, category {category}")
             
             # Get photo URL
             try:
+                photo_file_start = time.time()
                 photo_file = await bot.get_file(photo_file_id)
                 photo_url = photo_file.file_path
-                logger.info(f"Got photo URL: {photo_url}")
+                photo_file_duration = time.time() - photo_file_start
+                
+                log_processing_step("get_photo_url", request_id, user_id, {
+                    "photo_url": photo_url,
+                    "duration": photo_file_duration
+                }, success=True)
+                
+                logger.info(f"Got photo URL: {photo_url} (took {photo_file_duration:.2f}s)")
+                
             except Exception as e:
+                log_processing_step("get_photo_url", request_id, user_id, {
+                    "photo_file_id": photo_file_id
+                }, success=False, error=str(e))
                 logger.error(f"Failed to get photo file: {e}")
                 await bot.send_message(
                     chat_id=chat_id,
@@ -777,58 +859,122 @@ class StyleTransferBot:
             
             # Process based on category
             result_url = None
+            api_start_time = time.time()
+            
             try:
+                log_processing_step("api_processing_started", request_id, user_id, {
+                    "category": category,
+                    "option_identifier": option_identifier,
+                    "is_retry": is_retry
+                }, success=True)
+                
                 logger.info(f"Starting {category} processing")
                 
-                # Get option identifier for logging
-                option_identifier = selected_option.get('label_key', selected_option.get('label', 'unknown'))
-                
                 if category == "style_transfer":
-                    logger.info(f"Using FLUX API for style transfer: {option_identifier}")
                     style_prompt = selected_option['prompt']
+                    api_params = {"photo_url": photo_url, "prompt": style_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for style transfer: {option_identifier}")
+                    log_api_call("flux_style_transfer", request_id, user_id, api_params)
+                    
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, style_prompt)
                     else:
                         result_url = await flux_api.style_transfer(photo_url, style_prompt)
+                        
                 elif category == "object_edit":
-                    logger.info(f"Using FLUX API for object editing: {option_identifier}")
                     edit_prompt = selected_option['prompt']
+                    api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for object editing: {option_identifier}")
+                    log_api_call("flux_object_edit", request_id, user_id, api_params)
+                    
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, edit_prompt)
                     else:
                         result_url = await flux_api.edit_object(photo_url, edit_prompt)
+                        
                 elif category == "text_edit":
-                    logger.info(f"Using FLUX API for text editing: {option_identifier}")
                     text_prompt = selected_option['prompt']
+                    api_params = {"photo_url": photo_url, "prompt": text_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for text editing: {option_identifier}")
+                    log_api_call("flux_text_edit", request_id, user_id, api_params)
+                    
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, text_prompt)
                     else:
                         result_url = await flux_api.edit_text(photo_url, "old text", "new text")
+                        
                 elif category == "background_swap":
-                    logger.info(f"Using FLUX API for background swap: {option_identifier}")
                     bg_prompt = selected_option.get('prompt', 'Change background to beautiful landscape')
+                    api_params = {"photo_url": photo_url, "prompt": bg_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for background swap: {option_identifier}")
+                    log_api_call("flux_background_swap", request_id, user_id, api_params)
+                    
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, bg_prompt)
                     else:
                         result_url = await flux_api.swap_background(photo_url, bg_prompt)
+                        
                 elif category == "face_enhance":
-                    logger.info(f"Using FLUX API for face enhancement: {option_identifier}")
                     face_prompt = selected_option['prompt']
+                    api_params = {"photo_url": photo_url, "prompt": face_prompt, "is_retry": is_retry}
+                    
+                    logger.info(f"Using FLUX API for face enhancement: {option_identifier}")
+                    log_api_call("flux_face_enhance", request_id, user_id, api_params)
+                    
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, face_prompt)
                     else:
                         result_url = await flux_api.enhance_face(photo_url, face_prompt)
+                        
                 elif category == "animate":
-                    logger.info(f"Using Kling AI for animation: {option_identifier}")
                     animation_prompt = selected_option.get('kling_prompt', '')
+                    api_params = {"photo_url": photo_url, "animation_prompt": animation_prompt}
+                    
+                    logger.info(f"Using Kling AI for animation: {option_identifier}")
                     logger.info(f"Animation prompt: '{animation_prompt}' (empty=idle)")
+                    log_api_call("kling_animate", request_id, user_id, api_params)
+                    
                     result_url = await kling_api.animate_by_prompt(photo_url, animation_prompt)
                 else:
                     logger.warning(f"Unknown category: {category}")
+                    log_processing_step("unknown_category", request_id, user_id, {
+                        "category": category
+                    }, success=False, error="Unknown category")
                 
-                logger.info(f"Processing result for {category}: {result_url}")
+                api_duration = time.time() - api_start_time
+                
+                if result_url:
+                    log_api_call(f"{category}_api", request_id, user_id, api_params, 
+                               duration=api_duration, success=True)
+                    log_processing_step("api_processing_completed", request_id, user_id, {
+                        "result_url": result_url,
+                        "duration": api_duration
+                    }, success=True)
+                    logger.info(f"Processing result for {category}: {result_url} (took {api_duration:.2f}s)")
+                else:
+                    log_api_call(f"{category}_api", request_id, user_id, api_params, 
+                               duration=api_duration, success=False, error="Empty result")
+                    log_processing_step("api_processing_failed", request_id, user_id, {
+                        "duration": api_duration
+                    }, success=False, error="API returned empty result")
+                    logger.warning(f"API returned empty result for {category} (took {api_duration:.2f}s)")
                 
             except Exception as e:
+                api_duration = time.time() - api_start_time
+                error_msg = str(e)
+                
+                log_api_call(f"{category}_api", request_id, user_id, 
+                           {"photo_url": photo_url, "category": category}, 
+                           duration=api_duration, success=False, error=error_msg)
+                log_processing_step("api_processing_exception", request_id, user_id, {
+                    "duration": api_duration,
+                    "exception_type": type(e).__name__
+                }, success=False, error=error_msg)
+                
                 logger.error(f"Error during {category} processing: {e}")
                 logger.error(f"Exception type: {type(e).__name__}")
                 import traceback

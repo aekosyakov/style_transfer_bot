@@ -41,12 +41,35 @@ class FluxAPI:
         Returns:
             URL of processed image or None if failed
         """
+        import time
+        start_time = time.time()
+        
+        # Log the detailed request parameters
+        request_details = {
+            "model_type": model_type,
+            "prompt_length": len(prompt),
+            "prompt_preview": prompt[:100],
+            "image_url": image_url,
+            "aspect_ratio": aspect_ratio,
+            "output_format": output_format,
+            "safety_tolerance": safety_tolerance,
+            "seed": seed,
+            "timestamp": time.time()
+        }
+        
+        logger.info(f"🔄 FLUX_REQUEST_START: {request_details}")
+        
         try:
             logger.info(f"Starting FLUX processing - Model: {model_type}, Prompt: '{prompt[:100]}...'")
             logger.info(f"Image URL: {image_url}")
             
             # Check if we have a valid API token
             if not config.replicate_token:
+                error_details = {
+                    "error": "missing_api_token",
+                    "duration": time.time() - start_time
+                }
+                logger.error(f"❌ FLUX_REQUEST_FAILED: {error_details}")
                 logger.error("REPLICATE_API_TOKEN is not configured!")
                 return None
             
@@ -71,30 +94,70 @@ class FluxAPI:
             
             # Run in thread pool to avoid blocking
             logger.info("Calling Replicate API...")
+            api_call_start = time.time()
             loop = asyncio.get_event_loop()
+            
             try:
                 result = await loop.run_in_executor(
                     None, 
                     lambda: self.client.run(model_id, input=input_params)
                 )
-                logger.info(f"Replicate API call completed. Result type: {type(result)}")
+                api_call_duration = time.time() - api_call_start
+                
+                logger.info(f"Replicate API call completed in {api_call_duration:.2f}s. Result type: {type(result)}")
                 logger.info(f"Result content: {result}")
+                
+                if result:
+                    success_details = {
+                        "success": True,
+                        "result_url": result,
+                        "api_duration": api_call_duration,
+                        "total_duration": time.time() - start_time,
+                        "model_id": model_id
+                    }
+                    logger.info(f"✅ FLUX_REQUEST_SUCCESS: {success_details}")
+                    logger.info("FLUX processing completed successfully")
+                    logger.info(f"Result URL: {result}")
+                    return result
+                else:
+                    failure_details = {
+                        "error": "empty_result",
+                        "api_duration": api_call_duration,
+                        "total_duration": time.time() - start_time,
+                        "model_id": model_id,
+                        "input_params": input_params
+                    }
+                    logger.error(f"❌ FLUX_REQUEST_FAILED: {failure_details}")
+                    logger.warning("FLUX returned empty result")
+                    return None
+                    
             except Exception as e:
+                api_call_duration = time.time() - api_call_start
+                api_error_details = {
+                    "error": "api_exception",
+                    "exception_type": type(e).__name__,
+                    "exception_message": str(e),
+                    "api_duration": api_call_duration,
+                    "total_duration": time.time() - start_time,
+                    "model_id": model_id,
+                    "input_params": input_params
+                }
+                logger.error(f"❌ FLUX_API_EXCEPTION: {api_error_details}")
                 logger.error(f"Replicate API call failed: {e}")
                 logger.error(f"Exception type: {type(e).__name__}")
                 import traceback
                 logger.error(f"Full traceback: {traceback.format_exc()}")
                 return None
-            
-            if result:
-                logger.info("FLUX processing completed successfully")
-                logger.info(f"Result URL: {result}")
-                return result
-            else:
-                logger.warning("FLUX returned empty result")
-                return None
                 
         except Exception as e:
+            general_error_details = {
+                "error": "general_exception",
+                "exception_type": type(e).__name__,
+                "exception_message": str(e),
+                "total_duration": time.time() - start_time,
+                "request_details": request_details
+            }
+            logger.error(f"❌ FLUX_GENERAL_EXCEPTION: {general_error_details}")
             logger.error(f"FLUX processing failed: {e}")
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback

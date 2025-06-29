@@ -41,6 +41,24 @@ class KlingAPI:
         Returns:
             URL of animated video or None if failed
         """
+        import time
+        start_time = time.time()
+        
+        # Log the detailed request parameters
+        request_details = {
+            "model_type": model_type,
+            "animation_prompt": animation_prompt,
+            "prompt_length": len(animation_prompt) if animation_prompt else 0,
+            "image_url": image_url,
+            "duration_seconds": duration_seconds,
+            "cfg_scale": cfg_scale,
+            "negative_prompt": negative_prompt,
+            "aspect_ratio": aspect_ratio,
+            "timestamp": time.time()
+        }
+        
+        logger.info(f"🔄 KLING_REQUEST_START: {request_details}")
+        
         try:
             model_id = config.kling_models.get(model_type, self.default_model)
             
@@ -65,21 +83,69 @@ class KlingAPI:
             logger.debug(f"Kling input parameters: {input_params}")
             
             # Run in thread pool to avoid blocking
+            api_call_start = time.time()
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None, 
-                lambda: self.client.run(model_id, input=input_params)
-            )
             
-            if result:
-                logger.info("Kling animation completed successfully")
-                logger.info(f"Result URL: {result}")
-                return result
-            else:
-                logger.warning("Kling returned empty result")
+            try:
+                result = await loop.run_in_executor(
+                    None, 
+                    lambda: self.client.run(model_id, input=input_params)
+                )
+                api_call_duration = time.time() - api_call_start
+                
+                logger.info(f"Kling API call completed in {api_call_duration:.2f}s. Result type: {type(result)}")
+                
+                if result:
+                    success_details = {
+                        "success": True,
+                        "result_url": result,
+                        "api_duration": api_call_duration,
+                        "total_duration": time.time() - start_time,
+                        "model_id": model_id
+                    }
+                    logger.info(f"✅ KLING_REQUEST_SUCCESS: {success_details}")
+                    logger.info("Kling animation completed successfully")
+                    logger.info(f"Result URL: {result}")
+                    return result
+                else:
+                    failure_details = {
+                        "error": "empty_result",
+                        "api_duration": api_call_duration,
+                        "total_duration": time.time() - start_time,
+                        "model_id": model_id,
+                        "input_params": input_params
+                    }
+                    logger.error(f"❌ KLING_REQUEST_FAILED: {failure_details}")
+                    logger.warning("Kling returned empty result")
+                    return None
+                    
+            except Exception as e:
+                api_call_duration = time.time() - api_call_start
+                api_error_details = {
+                    "error": "api_exception",
+                    "exception_type": type(e).__name__,
+                    "exception_message": str(e),
+                    "api_duration": api_call_duration,
+                    "total_duration": time.time() - start_time,
+                    "model_id": model_id,
+                    "input_params": input_params
+                }
+                logger.error(f"❌ KLING_API_EXCEPTION: {api_error_details}")
+                logger.error(f"Kling animation failed: {e}")
+                logger.error(f"Error type: {type(e).__name__}")
+                import traceback
+                logger.error(f"Full traceback: {traceback.format_exc()}")
                 return None
                 
         except Exception as e:
+            general_error_details = {
+                "error": "general_exception",
+                "exception_type": type(e).__name__,
+                "exception_message": str(e),
+                "total_duration": time.time() - start_time,
+                "request_details": request_details
+            }
+            logger.error(f"❌ KLING_GENERAL_EXCEPTION: {general_error_details}")
             logger.error(f"Kling animation failed: {e}")
             logger.error(f"Error type: {type(e).__name__}")
             import traceback
