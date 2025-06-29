@@ -21,8 +21,17 @@
     ]
   },
   "object_edit": {
-    "free": [{"label_key": "object.hair_color", "prompt": "change hair color to blonde"}],
+    "free": [
+      {"label_key": "object.hair_color", "prompt": "change hair color to blonde"},
+      {"label_key": "object.random_hairstyle", "prompt": "RANDOM_HAIRSTYLE"}
+    ],
     "premium": [
+      {"label_key": "object.modern_hairstyle", "prompt": "MODERN_HAIRSTYLE"},
+      {"label_key": "object.classic_hairstyle", "prompt": "CLASSIC_HAIRSTYLE"},
+      {"label_key": "object.edgy_hairstyle", "prompt": "EDGY_HAIRSTYLE"},
+      {"label_key": "object.updo_hairstyle", "prompt": "UPDO_HAIRSTYLE"},
+      {"label_key": "object.cultural_hairstyle", "prompt": "CULTURAL_HAIRSTYLE"},
+      {"label_key": "object.anime_hairstyle", "prompt": "ANIME_HAIRSTYLE"},
       {"label_key": "object.add_glasses", "prompt": "add round glasses"},
       {"label_key": "object.change_outfit", "prompt": "change outfit to business suit"},
       {"label_key": "object.add_hat", "prompt": "add black top hat"}

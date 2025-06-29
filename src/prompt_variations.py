@@ -6,6 +6,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Import the hairstyle generator
+try:
+    from src.hairstyles import hairstyle_generator
+except ImportError:
+    logger.warning("Could not import hairstyle_generator, hairstyle variations will be limited")
+    hairstyle_generator = None
+
 
 class PromptVariationGenerator:
     """Generate varied prompts while maintaining semantic similarity."""
@@ -121,14 +128,14 @@ class PromptVariationGenerator:
             
             # Object Edit Variations
             "object.hair_color": [
-                "change hair color to brunette",
-                "change hair color to auburn",
-                "change hair color to platinum blonde",
-                "change hair color to copper red",
-                "change hair color to honey blonde",
-                "change hair color to chocolate brown",
-                "change hair color to strawberry blonde",
-                "change hair color to ash brown"
+                "change hair color to brunette, preserve original face",
+                "change hair color to auburn, preserve original face", 
+                "change hair color to platinum blonde, preserve original face",
+                "change hair color to copper red, preserve original face",
+                "change hair color to honey blonde, preserve original face",
+                "change hair color to chocolate brown, preserve original face",
+                "change hair color to strawberry blonde, preserve original face",
+                "change hair color to ash brown, preserve original face"
             ],
             "object.add_glasses": [
                 "add stylish round glasses",
@@ -371,6 +378,10 @@ class PromptVariationGenerator:
         try:
             logger.info(f"Generating prompt variation for {category}.{label_key}")
             
+            # Special handling for hairstyle-related prompts
+            if self._is_hairstyle_prompt(label_key, original_prompt):
+                return self._generate_hairstyle_variation(label_key, original_prompt)
+            
             # Try to get specific variations for this label key
             if label_key in self.variations:
                 available_variations = self.variations[label_key]
@@ -445,6 +456,47 @@ class PromptVariationGenerator:
             logger.error(f"Full traceback: {traceback.format_exc()}")
             # Return original prompt as fallback
             return original_prompt
+    
+    def _is_hairstyle_prompt(self, label_key: str, prompt: str) -> bool:
+        """Check if this is a hairstyle-related prompt."""
+        hairstyle_keywords = [
+            "RANDOM_HAIRSTYLE", "MODERN_HAIRSTYLE", "CLASSIC_HAIRSTYLE", 
+            "EDGY_HAIRSTYLE", "UPDO_HAIRSTYLE", "CULTURAL_HAIRSTYLE", 
+            "ANIME_HAIRSTYLE", "haircut", "hairstyle"
+        ]
+        return any(keyword in prompt or keyword in label_key for keyword in hairstyle_keywords)
+    
+    def _generate_hairstyle_variation(self, label_key: str, original_prompt: str) -> str:
+        """Generate hairstyle variation using the specialized hairstyle generator."""
+        if not hairstyle_generator:
+            logger.warning("Hairstyle generator not available, using fallback")
+            return original_prompt + ", preserve original face"
+        
+        try:
+            # Determine which type of hairstyle generation to use
+            if "RANDOM_HAIRSTYLE" in original_prompt:
+                return hairstyle_generator.get_random_hairstyle(include_color=True, include_effects=False)
+            elif "MODERN_HAIRSTYLE" in original_prompt:
+                return hairstyle_generator.get_hairstyle_by_category("modern_trendy", include_color=True)
+            elif "CLASSIC_HAIRSTYLE" in original_prompt:
+                return hairstyle_generator.get_hairstyle_by_category("classic_timeless", include_color=True)
+            elif "EDGY_HAIRSTYLE" in original_prompt:
+                return hairstyle_generator.get_hairstyle_by_category("edgy_statement", include_color=True)
+            elif "UPDO_HAIRSTYLE" in original_prompt:
+                return hairstyle_generator.get_hairstyle_by_category("updos_braids", include_color=True)
+            elif "CULTURAL_HAIRSTYLE" in original_prompt:
+                return hairstyle_generator.get_hairstyle_by_category("cultural_traditional", include_color=True)
+            elif "ANIME_HAIRSTYLE" in original_prompt:
+                return hairstyle_generator.get_hairstyle_by_category("anime_inspired", include_color=True)
+            elif "hair_color" in label_key:
+                return hairstyle_generator.get_color_only_change()
+            else:
+                # General hairstyle variation
+                return hairstyle_generator.get_random_hairstyle(include_color=False, include_effects=False)
+                
+        except Exception as e:
+            logger.error(f"Error generating hairstyle variation: {e}")
+            return original_prompt + ", preserve original face and facial features exactly"
     
     def get_random_seed(self) -> int:
         """Generate a random seed for additional variation."""

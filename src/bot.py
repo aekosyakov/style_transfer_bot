@@ -27,6 +27,13 @@ from flux_api import flux_api
 from kling_api import kling_api
 from payments import payment_processor
 
+# Import hairstyle generator
+try:
+    from src.hairstyles import hairstyle_generator
+except ImportError:
+    logger.warning("Could not import hairstyle_generator")
+    hairstyle_generator = None
+
 # Configure logging with safe file handler
 def setup_logging():
     """Setup logging with safe file handler that creates directory if needed."""
@@ -894,6 +901,12 @@ class StyleTransferBot:
                         
                 elif category == "object_edit":
                     edit_prompt = selected_option['prompt']
+                    
+                    # Handle special hairstyle prompts
+                    if self._is_hairstyle_option(selected_option):
+                        edit_prompt = self._generate_hairstyle_prompt(selected_option, is_retry)
+                        logger.info(f"Generated hairstyle prompt: {edit_prompt}")
+                    
                     api_params = {"photo_url": photo_url, "prompt": edit_prompt, "is_retry": is_retry}
                     
                     logger.info(f"Using FLUX API for object editing: {option_identifier}")
