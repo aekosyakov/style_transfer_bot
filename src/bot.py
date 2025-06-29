@@ -1175,39 +1175,111 @@ class StyleTransferBot:
     
     def _is_dress_option(self, option: dict) -> bool:
         """Check if an option is a dress-related option."""
-        option_identifier = option.get('callback_data', '')
+        option_identifier = option.get('label_key', '')
         return option_identifier.startswith('dress.')
     
     def _generate_dress_prompt(self, option: dict, is_retry: bool = False) -> str:
         """Generate dress prompt using DressGenerator."""
         from src.dresses import dress_generator
         
-        option_identifier = option.get('callback_data', '')
+        option_identifier = option.get('label_key', '')
+        original_prompt = option.get('prompt', '')
         
-        if option_identifier == 'dress.random':
+        logger.info(f"Generating dress prompt for {option_identifier}, original: {original_prompt}")
+        
+        if option_identifier == 'dress.random' or 'RANDOM_DRESS' in original_prompt:
             # Random dress generation
-            return dress_generator.generate_random_dress_prompt()
+            generated_prompt = dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
+            logger.info(f"Generated random dress: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'dress.casual_outfit':
+            # Casual outfit change
+            generated_prompt = dress_generator.get_casual_outfit()
+            logger.info(f"Generated casual outfit: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'dress.modern_dress' or 'MODERN_DRESS' in original_prompt:
+            generated_prompt = dress_generator.get_dress_by_category("modern_trendy", include_color=True, include_material=True)
+            logger.info(f"Generated modern dress: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'dress.classic_dress' or 'CLASSIC_DRESS' in original_prompt:
+            generated_prompt = dress_generator.get_dress_by_category("classic_timeless", include_color=True, include_material=True)
+            logger.info(f"Generated classic dress: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'dress.edgy_dress' or 'EDGY_DRESS' in original_prompt:
+            generated_prompt = dress_generator.get_dress_by_category("edgy_statement", include_color=True, include_material=True)
+            logger.info(f"Generated edgy dress: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'dress.evening_dress' or 'EVENING_DRESS' in original_prompt:
+            generated_prompt = dress_generator.get_dress_by_category("evening_occasion", include_color=True, include_material=True)
+            logger.info(f"Generated evening dress: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'dress.cultural_dress' or 'CULTURAL_DRESS' in original_prompt:
+            generated_prompt = dress_generator.get_dress_by_category("cultural_traditional", include_color=True, include_material=True)
+            logger.info(f"Generated cultural dress: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'dress.anime_dress' or 'ANIME_DRESS' in original_prompt:
+            generated_prompt = dress_generator.get_dress_by_category("anime_inspired", include_color=True, include_material=True)
+            logger.info(f"Generated anime dress: {generated_prompt}")
+            return generated_prompt
         else:
             # Fallback for other dress options
-            return "change outfit to elegant dress, preserve original face and body proportions exactly"
+            fallback_prompt = "change outfit to elegant dress, preserve original face and body proportions exactly"
+            logger.info(f"Using fallback dress: {fallback_prompt}")
+            return fallback_prompt
     
     def _is_hairstyle_option(self, option: dict) -> bool:
         """Check if an option is a hairstyle-related option."""
-        option_identifier = option.get('callback_data', '')
-        return option_identifier.startswith('hairstyle.')
+        option_identifier = option.get('label_key', '')
+        return option_identifier.startswith('hair.')
     
     def _generate_hairstyle_prompt(self, option: dict, is_retry: bool = False) -> str:
         """Generate hairstyle prompt using HairstyleGenerator."""
         from src.hairstyles import hairstyle_generator
         
-        option_identifier = option.get('callback_data', '')
+        option_identifier = option.get('label_key', '')
+        original_prompt = option.get('prompt', '')
         
-        if option_identifier == 'hairstyle.random':
+        logger.info(f"Generating hairstyle prompt for {option_identifier}, original: {original_prompt}")
+        
+        if option_identifier == 'hair.random' or 'RANDOM_HAIRSTYLE' in original_prompt:
             # Random hairstyle generation
-            return hairstyle_generator.generate_random_hairstyle_prompt()
+            generated_prompt = hairstyle_generator.get_random_hairstyle(include_color=True, include_effects=False)
+            logger.info(f"Generated random hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.color_only':
+            # Color only change
+            generated_prompt = hairstyle_generator.get_color_only_change()
+            logger.info(f"Generated color change: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.modern_hairstyle' or 'MODERN_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_category("modern_trendy", include_color=True)
+            logger.info(f"Generated modern hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.classic_hairstyle' or 'CLASSIC_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_category("classic_timeless", include_color=True)
+            logger.info(f"Generated classic hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.edgy_hairstyle' or 'EDGY_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_category("edgy_statement", include_color=True)
+            logger.info(f"Generated edgy hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.updo_hairstyle' or 'UPDO_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_category("updos_braids", include_color=True)
+            logger.info(f"Generated updo hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.cultural_hairstyle' or 'CULTURAL_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_category("cultural_traditional", include_color=True)
+            logger.info(f"Generated cultural hairstyle: {generated_prompt}")
+            return generated_prompt
+        elif option_identifier == 'hair.anime_hairstyle' or 'ANIME_HAIRSTYLE' in original_prompt:
+            generated_prompt = hairstyle_generator.get_hairstyle_by_category("anime_inspired", include_color=True)
+            logger.info(f"Generated anime hairstyle: {generated_prompt}")
+            return generated_prompt
         else:
             # Fallback for other hairstyle options
-            return "change hairstyle to modern bob cut, preserve original face and facial features exactly"
+            fallback_prompt = "change hairstyle to modern bob cut, preserve original face and facial features exactly"
+            logger.info(f"Using fallback hairstyle: {fallback_prompt}")
+            return fallback_prompt
     
     async def _handle_animation_request(self, update: Update, context: ContextTypes.DEFAULT_TYPE, data: str) -> None:
         """Handle animation requests."""

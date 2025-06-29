@@ -310,7 +310,11 @@ class DressGenerator:
     def get_category_info(self) -> Dict[str, int]:
         """Get information about available categories and their counts."""
         return {category: len(dresses) for category, dresses in self.all_categories.items()}
+    
+    def generate_random_dress_prompt(self, include_color: bool = True, include_material: bool = True, include_effects: bool = False) -> str:
+        """Backward compatibility method for prompt variation system."""
+        return self.get_random_dress(include_color, include_material, include_effects)
 
 
-# Global instance
+# Global instance  
 dress_generator = DressGenerator() 

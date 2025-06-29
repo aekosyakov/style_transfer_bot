@@ -255,6 +255,10 @@ class HairstyleGenerator:
     def get_category_info(self) -> Dict[str, int]:
         """Get information about available categories and their counts."""
         return {category: len(styles) for category, styles in self.all_categories.items()}
+    
+    def generate_random_hairstyle_prompt(self, include_color: bool = True, include_effects: bool = False) -> str:
+        """Backward compatibility method for prompt variation system."""
+        return self.get_random_hairstyle(include_color, include_effects)
 
 
 # Global instance
