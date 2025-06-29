@@ -16,6 +16,13 @@ class StarsBillingManager:
     """Handle Telegram Stars billing and pass management."""
     
     def __init__(self):
+        # Whitelist of usernames with unlimited access (no @ symbol in storage)
+        self.unlimited_users = {
+            "aekosyakov",
+            "davidpole", 
+            "stvasilisa"
+        }
+        
         # Pass prices and quotas (Stars, FLUX, Kling, margin)
         self.passes = {
             "pro_1day": {
@@ -60,6 +67,16 @@ class StarsBillingManager:
             }
         }
     
+    def is_unlimited_user(self, user_obj) -> bool:
+        """Check if user is in unlimited access whitelist."""
+        try:
+            if hasattr(user_obj, 'username') and user_obj.username:
+                return user_obj.username.lower() in self.unlimited_users
+            return False
+        except Exception as e:
+            logger.error(f"Error checking unlimited user status: {e}")
+            return False
+    
     def get_user_pass_info(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Get user's active pass information."""
         try:
@@ -97,19 +114,39 @@ class StarsBillingManager:
         try:
             quota_key = f"user:{user_id}:quota:{service}"
             quota = redis_client.redis.get(quota_key)
-            return int(quota) if quota else 0
+            
+            if quota is None:
+                # New user - give them initial free credits
+                initial_quota = self._get_initial_free_quota(service)
+                if initial_quota > 0:
+                    self._set_initial_quota(user_id, service, initial_quota)
+                    logger.info(f"Granted {initial_quota} free {service} credits to new user {user_id}")
+                    return initial_quota
+                return 0
+            
+            return int(quota)
         except Exception as e:
             logger.error(f"Error getting {service} quota for user {user_id}: {e}")
             return 0
     
-    def has_quota(self, user_id: int, service: str, amount: int = 1) -> bool:
+    def has_quota(self, user_id: int, service: str, amount: int = 1, user_obj=None) -> bool:
         """Check if user has enough quota for service."""
+        # Check if user is unlimited
+        if user_obj and self.is_unlimited_user(user_obj):
+            logger.info(f"Unlimited access granted to @{user_obj.username}")
+            return True
+            
         current_quota = self.get_user_quota(user_id, service)
         return current_quota >= amount
     
-    def consume_quota(self, user_id: int, service: str, amount: int = 1) -> bool:
+    def consume_quota(self, user_id: int, service: str, amount: int = 1, user_obj=None) -> bool:
         """Consume quota for service. Returns True if successful."""
         try:
+            # Check if user is unlimited - no quota consumption needed
+            if user_obj and self.is_unlimited_user(user_obj):
+                logger.info(f"Skipping quota consumption for unlimited user @{user_obj.username}")
+                return True
+            
             quota_key = f"user:{user_id}:quota:{service}"
             
             # Use Redis transaction to ensure atomic decrement
@@ -485,6 +522,11 @@ class StarsBillingManager:
         Check quota with gentle warnings and hard blocks.
         Returns: 'ok', 'gentle_warning', or 'hard_block'
         """
+        # Check if user is unlimited
+        if self.is_unlimited_user(update.effective_user):
+            logger.info(f"Unlimited access - skipping quota warnings for @{update.effective_user.username}")
+            return 'ok'
+            
         user_id = update.effective_user.id
         current_quota = self.get_user_quota(user_id, service)
         
@@ -507,9 +549,14 @@ class StarsBillingManager:
         service: str
     ) -> bool:
         """Check quota and show upsell if needed. Returns True if quota available."""
+        # Check if user is unlimited
+        if self.is_unlimited_user(update.effective_user):
+            logger.info(f"Unlimited access granted to @{update.effective_user.username}")
+            return True
+            
         user_id = update.effective_user.id
         
-        if self.has_quota(user_id, service):
+        if self.has_quota(user_id, service, user_obj=update.effective_user):
             return True
         
         # No quota, show hard block
@@ -526,15 +573,17 @@ class StarsBillingManager:
         """Show gentle warning when quota is low (≤3)."""
         try:
             user_lang = L.get_user_language(update.effective_user)
-            service_name = "style" if service == "flux" else "video"
+            service_name = L.get("billing.service_name_style", user_lang) if service == "flux" else L.get("billing.service_name_video", user_lang)
             
-            text = f"⚡ You have only {remaining_quota} {service_name} credits left today."
+            text = L.get("billing.low_credits_warning", user_lang, 
+                        remaining=remaining_quota, 
+                        service=service_name)
             
-            # Create invoice links for quick purchase
+            # Create invoice links for quick purchase with translations
             keyboard = [
                 [
-                    InlineKeyboardButton("Buy 1-Day Pass — 499⭐", callback_data="buy_pass_pro_1day"),
-                    InlineKeyboardButton(f"Extra {self.payg_prices[f'{service}_extra']['price_stars']} ⭐", callback_data=f"buy_payg_{service}_extra")
+                    InlineKeyboardButton(L.get("billing.pass_1day_button", user_lang), callback_data="buy_pass_pro_1day"),
+                    InlineKeyboardButton(f"{L.get('billing.extra_button', user_lang)} {self.payg_prices[f'{service}_extra']['price_stars']} ⭐", callback_data=f"buy_payg_{service}_extra")
                 ]
             ]
             
@@ -562,15 +611,16 @@ class StarsBillingManager:
         """Show hard block when quota is depleted (≤0)."""
         try:
             user_lang = L.get_user_language(update.effective_user)
-            service_name = "styles" if service == "flux" else "videos"
+            service_name = L.get("billing.service_styles", user_lang) if service == "flux" else L.get("billing.service_videos", user_lang)
             
-            text = f"🚫 No credits left for {service_name} today.\nGet more:"
+            text = L.get("billing.no_credits_left", user_lang, service=service_name)
             
-            # Create invoice links for all options
+            # Create invoice links for all options with proper translations
+            extra_service = L.get("billing.extra_image", user_lang) if service == "flux" else L.get("billing.extra_video", user_lang)
             keyboard = [
-                [InlineKeyboardButton(f"Extra Image {self.payg_prices[f'{service}_extra']['price_stars']}⭐", callback_data=f"buy_payg_{service}_extra")],
-                [InlineKeyboardButton("1-Day Pass 499⭐", callback_data="buy_pass_pro_1day")],
-                [InlineKeyboardButton("7-Day Pass 2,999⭐", callback_data="buy_pass_creator_7day")]
+                [InlineKeyboardButton(f"{extra_service} {self.payg_prices[f'{service}_extra']['price_stars']}⭐", callback_data=f"buy_payg_{service}_extra")],
+                [InlineKeyboardButton(L.get("billing.pass_1day_button", user_lang), callback_data="buy_pass_pro_1day")],
+                [InlineKeyboardButton(L.get("billing.pass_7day_button", user_lang), callback_data="buy_pass_creator_7day")]
             ]
             
             # Use callback query edit to avoid spamming chat
@@ -587,6 +637,25 @@ class StarsBillingManager:
             
         except Exception as e:
             logger.error(f"Error showing hard block upsell: {e}")
+    
+    def _get_initial_free_quota(self, service: str) -> int:
+        """Get initial free quota for new users."""
+        # Give new users daily free credits
+        if service == "flux":
+            return 5  # 5 free FLUX generations per day
+        elif service == "kling":
+            return 1  # 1 free Kling animation per day
+        return 0
+    
+    def _set_initial_quota(self, user_id: int, service: str, quota: int) -> None:
+        """Set initial daily quota for free users with 24-hour expiration."""
+        try:
+            quota_key = f"user:{user_id}:quota:{service}"
+            # Set with 24-hour expiration for daily free credits
+            redis_client.redis.setex(quota_key, 24 * 3600, quota)
+            logger.info(f"Set daily {service} quota of {quota} for user {user_id}")
+        except Exception as e:
+            logger.error(f"Error setting initial quota for user {user_id}: {e}")
     
     async def _show_upsell_message(
         self, 

@@ -247,16 +247,26 @@ class StyleTransferBot:
             # Store user language preference
             redis_client.set_user_language(user.id, user_lang)
             
+            # Check if this is a new user by looking at their quota
+            flux_quota = stars_billing.get_user_quota(user.id, "flux")
+            kling_quota = stars_billing.get_user_quota(user.id, "kling")
+            
             welcome_msg = L.get("msg.welcome", user_lang, name=user.first_name)
+            
+            # Add quota info for new users who just got free credits
+            if flux_quota <= 5 and kling_quota <= 1:
+                welcome_msg += f"\n\n{L.get('billing.free_trial_header', user_lang)}\n🎨 {flux_quota} style generations\n🎬 {kling_quota} video animation"
+            
             keyboard = self._get_main_menu_keyboard(user_lang, user.id)
             
             await update.message.reply_text(
                 welcome_msg,
-                reply_markup=keyboard
+                reply_markup=keyboard,
+                parse_mode='Markdown'
                 # Removed effect ID to prevent "Effect_id_invalid" crashes
             )
             
-            logger.info(f"User {user.id} started the bot")
+            logger.info(f"User {user.id} started the bot with {flux_quota} FLUX / {kling_quota} Kling quota")
             
         except Exception as e:
             logger.error(f"Error in start command: {e}")
@@ -474,9 +484,13 @@ class StyleTransferBot:
                                flux=flux_quota,
                                kling=kling_quota)
         else:
-            status_text = L.get("billing.no_active_pass", user_lang,
-                               flux=flux_quota,
-                               kling=kling_quota)
+            # Check if user has free daily credits
+            if flux_quota <= 5 and kling_quota <= 1 and (flux_quota > 0 or kling_quota > 0):
+                status_text = L.get("billing.free_trial_status", user_lang, flux=flux_quota, kling=kling_quota)
+            else:
+                status_text = L.get("billing.no_active_pass", user_lang,
+                                   flux=flux_quota,
+                                   kling=kling_quota)
         
         await update.message.reply_text(status_text, parse_mode='Markdown')
     
@@ -490,7 +504,7 @@ class StyleTransferBot:
         user_lang = self._get_user_language(update.effective_user)
         
         # Check if user has FLUX quota
-        if not stars_billing.has_quota(user_id, "flux"):
+        if not stars_billing.has_quota(user_id, "flux", user_obj=update.effective_user):
             await stars_billing.check_quota_and_upsell(update, context, "flux")
             return
         
@@ -508,7 +522,7 @@ class StyleTransferBot:
         user_lang = self._get_user_language(update.effective_user)
         
         # Check if user has Kling quota
-        if not stars_billing.has_quota(user_id, "kling"):
+        if not stars_billing.has_quota(user_id, "kling", user_obj=update.effective_user):
             await stars_billing.check_quota_and_upsell(update, context, "kling")
             return
         
@@ -1040,7 +1054,7 @@ class StyleTransferBot:
                 pass
                 
             # Consume quota atomically
-            if not stars_billing.consume_quota(user_id, service_type):
+            if not stars_billing.consume_quota(user_id, service_type, user_obj=update.effective_user):
                 # Failed to consume quota (race condition or depleted), show hard block
                 await stars_billing._show_hard_block_upsell(update, context, service_type)
                 return
