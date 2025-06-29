@@ -19,6 +19,7 @@ from telegram.ext import (
     Application, CommandHandler, MessageHandler, CallbackQueryHandler,
     filters, ContextTypes, PreCheckoutQueryHandler
 )
+from telegram.error import TimedOut, NetworkError, RetryAfter
 
 from config import config
 from localization import L
@@ -63,18 +64,57 @@ def setup_logging():
 setup_logging()
 logger = logging.getLogger(__name__)
 
-# Add request tracking
 def generate_request_id() -> str:
-    """Generate unique request ID for tracking."""
+    """Generate unique request ID for tracing."""
     return f"req_{int(time.time())}_{uuid.uuid4().hex[:8]}"
 
+async def retry_telegram_request(operation, max_retries=3, initial_delay=1.0):
+    """
+    Retry Telegram API requests with exponential backoff for timeout and network errors.
+    
+    Args:
+        operation: Async function to retry
+        max_retries: Maximum number of retry attempts
+        initial_delay: Initial delay between retries (seconds)
+    
+    Returns:
+        Result of the operation or None if all retries failed
+    """
+    for attempt in range(max_retries + 1):
+        try:
+            return await operation()
+        except (TimedOut, NetworkError) as e:
+            if attempt < max_retries:
+                delay = initial_delay * (2 ** attempt)  # Exponential backoff
+                logger.warning(f"Telegram API timeout/network error (attempt {attempt + 1}/{max_retries + 1}): {e}")
+                logger.info(f"Retrying in {delay:.1f} seconds...")
+                await asyncio.sleep(delay)
+            else:
+                logger.error(f"All {max_retries + 1} attempts failed for Telegram API call: {e}")
+                raise e
+        except RetryAfter as e:
+            if attempt < max_retries:
+                delay = e.retry_after + 1  # Add 1 second buffer
+                logger.warning(f"Telegram rate limit hit (attempt {attempt + 1}/{max_retries + 1}): retry after {e.retry_after}s")
+                logger.info(f"Waiting {delay} seconds before retry...")
+                await asyncio.sleep(delay)
+            else:
+                logger.error(f"Rate limit exceeded after {max_retries + 1} attempts: {e}")
+                raise e
+        except Exception as e:
+            # Don't retry for other types of errors
+            logger.error(f"Non-retryable error in Telegram API call: {type(e).__name__}: {e}")
+            raise e
+    
+    return None
+
 def log_user_action(user_id: int, action: str, details: Dict[str, Any] = None, request_id: str = None):
-    """Log user action with detailed context."""
+    """Log user action with context."""
     log_data = {
         "user_id": user_id,
         "action": action,
+        "request_id": request_id or generate_request_id(),
         "timestamp": datetime.now().isoformat(),
-        "request_id": request_id,
         "details": details or {}
     }
     logger.info(f"👤 USER_ACTION: {json.dumps(log_data)}")
@@ -124,11 +164,21 @@ class StyleTransferBot:
     """Main bot class handling all operations."""
     
     def __init__(self, debug: bool = False):
+        """Initialize the Style Transfer Bot."""
         self.debug = debug
-        if debug:
-            logger.setLevel(logging.DEBUG)
         
-        self.app = Application.builder().token(config.bot_token).build()
+        # Configure application with better timeout settings
+        self.app = (
+            Application.builder()
+            .token(config.bot_token)
+            .connection_pool_size(8)  # Increase connection pool
+            .connect_timeout(30.0)    # 30 second connect timeout
+            .read_timeout(60.0)       # 60 second read timeout
+            .write_timeout(60.0)      # 60 second write timeout
+            .pool_timeout(10.0)       # 10 second pool timeout
+            .build()
+        )
+        
         self._setup_handlers()
     
     def _get_random_success_effect_id(self) -> str:
@@ -927,7 +977,12 @@ class StyleTransferBot:
             # Get photo URL
             try:
                 photo_file_start = time.time()
-                photo_file = await bot.get_file(photo_file_id)
+                
+                # Use retry logic for get_file operation
+                async def get_file_operation():
+                    return await bot.get_file(photo_file_id)
+                
+                photo_file = await retry_telegram_request(get_file_operation)
                 photo_url = photo_file.file_path
                 photo_file_duration = time.time() - photo_file_start
                 
@@ -943,11 +998,18 @@ class StyleTransferBot:
                     "photo_file_id": photo_file_id
                 }, success=False, error=str(e))
                 logger.error(f"Failed to get photo file: {e}")
-                await bot.send_message(
-                    chat_id=chat_id,
-                    text=L.get("msg.error_occurred", user_lang)
-                    # Removed effect ID to prevent "Effect_id_invalid" error
-                )
+                
+                # Use retry logic for error message
+                async def send_error_operation():
+                    return await bot.send_message(
+                        chat_id=chat_id,
+                        text=L.get("msg.error_occurred", user_lang)
+                    )
+                
+                try:
+                    await retry_telegram_request(send_error_operation)
+                except Exception as send_error:
+                    logger.error(f"Failed to send error message after retries: {send_error}")
                 return
             
             # Process based on category
@@ -1110,68 +1172,119 @@ class StyleTransferBot:
                 if category == "animate":
                     # Animation results should be sent as video/animation
                     logger.info(f"Sending animation result as video: {result_url}")
-                    try:
-                        # Try sending as animation first (MP4/GIF) with fun effect
-                        await bot.send_animation(
+                    
+                    # Try sending as animation first with retry logic
+                    async def send_animation_operation():
+                        return await bot.send_animation(
                             chat_id=chat_id,
                             animation=result_url,
                             caption=L.get("msg.success", user_lang),
                             reply_markup=InlineKeyboardMarkup(keyboard),
                             has_spoiler=True
-                            # Removed effect ID to prevent "Effect_id_invalid" crashes
                         )
+                    
+                    try:
+                        await retry_telegram_request(send_animation_operation)
                     except Exception as e:
                         logger.warning(f"Failed to send animation result as animation, trying as video: {e}")
-                        try:
-                            # Fallback: try as video
-                            await bot.send_video(
+                        
+                        # Fallback: try as video with retry logic
+                        async def send_video_operation():
+                            return await bot.send_video(
                                 chat_id=chat_id,
                                 video=result_url,
                                 caption=L.get("msg.success", user_lang),
                                 reply_markup=InlineKeyboardMarkup(keyboard),
                                 has_spoiler=True
-                                # Removed effect ID to prevent "Effect_id_invalid" crashes
                             )
+                        
+                        try:
+                            await retry_telegram_request(send_video_operation)
                         except Exception as e2:
                             logger.error(f"Failed to send animation result as video, sending as document: {e2}")
-                            # Final fallback: send as document
-                            await bot.send_document(
+                            
+                            # Final fallback: send as document with retry logic
+                            async def send_document_operation():
+                                return await bot.send_document(
+                                    chat_id=chat_id,
+                                    document=result_url,
+                                    caption=L.get("msg.success", user_lang) + " (Download to view)",
+                                    reply_markup=InlineKeyboardMarkup(keyboard)
+                                )
+                            
+                            try:
+                                await retry_telegram_request(send_document_operation)
+                            except Exception as e3:
+                                logger.error(f"All animation sending methods failed: {e3}")
+                                # Final fallback: send as text message
+                                async def send_text_fallback():
+                                    return await bot.send_message(
+                                        chat_id=chat_id,
+                                        text=f"🎬 {L.get('msg.success', user_lang)}\n📹 Animation: {result_url}",
+                                        reply_markup=InlineKeyboardMarkup(keyboard)
+                                    )
+                                try:
+                                    await retry_telegram_request(send_text_fallback)
+                                except Exception as final_error:
+                                    logger.error(f"Even text fallback failed: {final_error}")
+                else:
+                    # Regular image results with retry logic
+                    async def send_photo_operation():
+                        return await bot.send_photo(
+                            chat_id=chat_id,
+                            photo=result_url,
+                            caption=L.get("msg.success", user_lang),
+                            reply_markup=InlineKeyboardMarkup(keyboard),
+                            has_spoiler=True
+                        )
+                    
+                    try:
+                        await retry_telegram_request(send_photo_operation)
+                    except Exception as e:
+                        logger.error(f"Failed to send photo result after retries: {e}")
+                        # Try sending as message instead
+                        async def send_message_fallback():
+                            return await bot.send_message(
                                 chat_id=chat_id,
-                                document=result_url,
-                                caption=L.get("msg.success", user_lang) + " (Download to view)",
+                                text=f"✅ {L.get('msg.success', user_lang)}\n🖼️ Result: {result_url}",
                                 reply_markup=InlineKeyboardMarkup(keyboard)
                             )
-                else:
-                    # Regular image results with random success effect
-                    await bot.send_photo(
-                        chat_id=chat_id,
-                        photo=result_url,
-                        caption=L.get("msg.success", user_lang),
-                        reply_markup=InlineKeyboardMarkup(keyboard),
-                        has_spoiler=True
-                        # Removed effect ID to prevent "Effect_id_invalid" crashes
-                    )
+                        try:
+                            await retry_telegram_request(send_message_fallback)
+                        except Exception as fallback_error:
+                            logger.error(f"Even fallback message failed: {fallback_error}")
             else:
                 logger.error(f"❌ Processing failed for user {user_id}, category {category}")
-                await bot.send_message(
-                    chat_id=chat_id,
-                    text=L.get("msg.error", user_lang)
-                    # message_effect_id="5107584321108051014"  # 💔 Broken heart effect - DISABLED due to invalid ID
-                )
+                
+                # Use retry logic for failure message
+                async def send_failure_operation():
+                    return await bot.send_message(
+                        chat_id=chat_id,
+                        text=L.get("msg.error", user_lang)
+                    )
+                
+                try:
+                    await retry_telegram_request(send_failure_operation)
+                except Exception as send_error:
+                    logger.error(f"Failed to send failure message after retries: {send_error}")
                 
         except Exception as e:
             logger.error(f"Error in background processing for user {user_id}: {e}")
             logger.error(f"Exception type: {type(e).__name__}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
-            try:
-                await bot.send_message(
+            
+            # Use retry logic for general error message
+            async def send_general_error_operation():
+                return await bot.send_message(
                     chat_id=chat_id,
                     text=L.get("msg.error_occurred", user_lang)
-                    # Removed effect ID to prevent "Effect_id_invalid" error
                 )
+            
+            try:
+                await retry_telegram_request(send_general_error_operation)
             except Exception as send_error:
-                logger.error(f"Failed to send error message: {send_error}")
+                logger.error(f"Failed to send general error message after retries: {send_error}")
     
     def _is_dress_option(self, option: dict) -> bool:
         """Check if an option is a dress-related option."""
@@ -1562,53 +1675,76 @@ class StyleTransferBot:
                 logger.info(f"Sending video URL: {animation_result}")
                 
                 try:
-                    # Try sending as animation first (MP4/GIF) which works better with URLs
-                    await bot.send_animation(
-                        chat_id=chat_id,
-                        animation=animation_result,
-                        caption="🎬 Your animated result is ready!",
-                        has_spoiler=True
-                        # Removed effect ID to prevent "Effect_id_invalid" crashes
-                    )
+                    # Try sending as animation first (MP4/GIF) with retry logic
+                    async def send_result_animation_operation():
+                        return await bot.send_animation(
+                            chat_id=chat_id,
+                            animation=animation_result,
+                            caption="🎬 Your animated result is ready!",
+                            has_spoiler=True
+                        )
+                    
+                    await retry_telegram_request(send_result_animation_operation)
                 except Exception as e:
                     logger.warning(f"Failed to send as animation, trying as video: {e}")
-                    try:
-                        # Fallback: try as video
-                        await bot.send_video(
+                    
+                    # Fallback: try as video with retry logic
+                    async def send_result_video_operation():
+                        return await bot.send_video(
                             chat_id=chat_id,
                             video=animation_result,
                             caption="🎬 Your animated result is ready!",
                             has_spoiler=True
-                            # Removed effect ID to prevent "Effect_id_invalid" crashes
                         )
+                    
+                    try:
+                        await retry_telegram_request(send_result_video_operation)
                     except Exception as e2:
                         logger.error(f"Failed to send video, sending as document: {e2}")
-                        # Final fallback: send as document
-                        await bot.send_document(
-                            chat_id=chat_id,
-                            document=animation_result,
-                            caption="🎬 Your animated result is ready! (Download to view)"
-                        )
+                        
+                        # Final fallback: send as document with retry logic
+                        async def send_result_document_operation():
+                            return await bot.send_document(
+                                chat_id=chat_id,
+                                document=animation_result,
+                                caption="🎬 Your animated result is ready! (Download to view)"
+                            )
+                        
+                        try:
+                            await retry_telegram_request(send_result_document_operation)
+                        except Exception as e3:
+                            logger.error(f"All animation result sending methods failed: {e3}")
             else:
                 logger.error(f"❌ Animation failed for user {user_id}")
-                await bot.send_message(
-                    chat_id=chat_id,
-                    text="❌ Animation failed. Please try again later."
-                    # Removed effect ID to prevent "Effect_id_invalid" error
-                )
+                
+                # Use retry logic for animation failure message
+                async def send_animation_failure_operation():
+                    return await bot.send_message(
+                        chat_id=chat_id,
+                        text="❌ Animation failed. Please try again later."
+                    )
+                
+                try:
+                    await retry_telegram_request(send_animation_failure_operation)
+                except Exception as send_error:
+                    logger.error(f"Failed to send animation failure message after retries: {send_error}")
                 
         except Exception as e:
             logger.error(f"Error in background animation for user {user_id}: {e}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
-            try:
-                await bot.send_message(
+            
+            # Use retry logic for animation error message
+            async def send_animation_error_operation():
+                return await bot.send_message(
                     chat_id=chat_id,
                     text="❌ Animation failed due to an error."
-                    # Removed effect ID to prevent "Effect_id_invalid" error
                 )
+            
+            try:
+                await retry_telegram_request(send_animation_error_operation)
             except Exception as send_error:
-                logger.error(f"Failed to send error message: {send_error}")
+                logger.error(f"Failed to send animation error message after retries: {send_error}")
     
     def run(self) -> None:
         """Start the bot."""
