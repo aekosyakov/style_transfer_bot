@@ -97,13 +97,13 @@ class StarsBillingManager:
         # Pay-as-you-go prices
         self.payg_prices = {
             "flux_extra": {
-                "price_stars": 25,
+                "price_stars": 1,
                 "quota": 1,
                 "margin_percent": 88,
                 "name_key": "billing.payg.flux_extra"
             },
             "kling_extra": {
-                "price_stars": 50,
+                "price_stars": 2,
                 "quota": 1,
                 "margin_percent": 92,
                 "name_key": "billing.payg.kling_extra"
