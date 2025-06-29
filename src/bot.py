@@ -618,7 +618,10 @@ class StyleTransferBot:
         is_premium = redis_client.is_user_premium(user_id)
         
         keyboard = [
-            [InlineKeyboardButton(L.get("btn.style_transfer", lang), callback_data="category_style_transfer")],
+            [InlineKeyboardButton(L.get("btn.cartoon", lang), callback_data="category_cartoon")],
+            [InlineKeyboardButton(L.get("btn.anime", lang), callback_data="category_anime")],
+            [InlineKeyboardButton(L.get("btn.comics", lang), callback_data="category_comics")],
+            [InlineKeyboardButton(L.get("btn.art_styles", lang), callback_data="category_art_styles")],
             [InlineKeyboardButton(L.get("btn.new_look", lang), callback_data="category_new_look")],
             [InlineKeyboardButton(L.get("btn.new_hairstyle", lang), callback_data="category_new_hairstyle")],
             [InlineKeyboardButton(L.get("btn.change_background", lang), callback_data="category_change_background")],
@@ -1041,22 +1044,22 @@ class StyleTransferBot:
                 
                 logger.info(f"Starting {category} processing")
                 
-                if category == "style_transfer":
-                    # Handle style transfer with random generation support
+                if category in ["cartoon", "anime", "comics", "art_styles"]:
+                    # Handle style transfer for new categorized styles
                     style_prompt = selected_option['prompt']
                     
-                    # Handle special style prompts (like RANDOM_STYLE)
+                    # Handle special style prompts (like RANDOM_CARTOON, RANDOM_ANIME, etc.)
                     if self._is_style_option(selected_option):
-                        style_prompt = self._generate_style_prompt(selected_option, is_retry)
-                        logger.info(f"Generated style prompt: {style_prompt}")
+                        style_prompt = self._generate_style_prompt(selected_option, is_retry, category)
+                        logger.info(f"Generated {category} style prompt: {style_prompt}")
                     
                     # Log the EXACT prompt being sent to API
                     logger.info(f"📝 FINAL_PROMPT for {category}: '{style_prompt}'")
                     
                     api_params = {"photo_url": photo_url, "prompt": style_prompt, "is_retry": is_retry}
                     
-                    logger.info(f"Using FLUX API for style transfer: {option_identifier}")
-                    log_api_call("flux_style_transfer", request_id, user_id, api_params)
+                    logger.info(f"Using FLUX API for {category} style: {option_identifier}")
+                    log_api_call(f"flux_{category}_style", request_id, user_id, api_params)
                     
                     if is_retry:
                         result_url = await flux_api.process_image_with_variation(photo_url, style_prompt)
@@ -1461,41 +1464,86 @@ class StyleTransferBot:
     def _is_style_option(self, option: dict) -> bool:
         """Check if an option is a style-related option."""
         option_identifier = option.get('label_key', '')
-        return option_identifier.startswith('style.')
+        return (option_identifier.startswith('cartoon.') or 
+                option_identifier.startswith('anime.') or 
+                option_identifier.startswith('comics.') or 
+                option_identifier.startswith('art.'))
     
-    def _generate_style_prompt(self, option: dict, is_retry: bool = False) -> str:
+    def _generate_style_prompt(self, option: dict, is_retry: bool = False, category: str = None) -> str:
         """Generate style prompt with random variations."""
         option_identifier = option.get('label_key', '')
         original_prompt = option.get('prompt', '')
         
-        logger.info(f"Generating style prompt for {option_identifier}, original: {original_prompt}")
+        logger.info(f"Generating {category} style prompt for {option_identifier}, original: {original_prompt}")
         
-        if option_identifier == 'style.random' or 'RANDOM_STYLE' in original_prompt:
-            # Random style generation - pick from all available styles
-            all_styles = [
-                "Make this anime style",
+        # Handle random styles by category
+        if option_identifier == 'cartoon.random' or 'RANDOM_CARTOON' in original_prompt:
+            cartoon_styles = [
+                "Make this a retro classic cartoon",
+                "Make this an 80s cartoon style",
+                "Make this a 90s cartoon style", 
+                "Make this a 2000s Disney/Pixar style",
+                "Make this a modern 3D cartoon",
+                "Make this a Saturday morning cartoon",
+                "Make this a pixel art cartoon"
+            ]
+            import random
+            generated_prompt = random.choice(cartoon_styles)
+            logger.info(f"Generated random cartoon: {generated_prompt}")
+            return generated_prompt
+            
+        elif option_identifier == 'anime.random' or 'RANDOM_ANIME' in original_prompt:
+            anime_styles = [
+                "Make this a magical girl/shojo anime style",
+                "Make this a shōnen action anime style",
+                "Make this a Studio Ghibli anime style",
+                "Make this a 90s classic anime style",
+                "Make this a chibi/kawaii anime style",
+                "Make this a cyberpunk anime style",
+                "Make this a webtoon/manhwa style",
+                "Make this a princess/royal anime style"
+            ]
+            import random
+            generated_prompt = random.choice(anime_styles)
+            logger.info(f"Generated random anime: {generated_prompt}")
+            return generated_prompt
+            
+        elif option_identifier == 'comics.random' or 'RANDOM_COMICS' in original_prompt:
+            comic_styles = [
+                "Make this a western comic book style",
+                "Make this a newspaper comic strip style",
+                "Make this a noir comic style",
+                "Make this a black and white manga style",
+                "Make this a pop art comic style",
+                "Make this an adult animation style",
+                "Make this a classic superhero comic style"
+            ]
+            import random
+            generated_prompt = random.choice(comic_styles)
+            logger.info(f"Generated random comic: {generated_prompt}")
+            return generated_prompt
+            
+        elif option_identifier == 'art.random' or 'RANDOM_ART_STYLE' in original_prompt:
+            art_styles = [
+                "Make this a pencil sketch",
                 "Make this digital art",
-                "Make this a pencil sketch", 
                 "Make this pop art",
-                "Make this a comic book",
-                "Make this a 90s cartoon",
                 "Make this an impressionist painting",
+                "Make this a Renaissance painting",
+                "Make this psychedelic art",
+                "Make this Art Nouveau style",
                 "Make this a vintage photo",
                 "Make this sci-fi art",
-                "Make this Art Nouveau style",
-                "Make this psychedelic art",
-                "Make this a Renaissance painting", 
-                "Make this pixel art",
                 "Make this a Japanese woodblock print",
                 "Make this film noir style"
             ]
             import random
-            generated_prompt = random.choice(all_styles)
-            logger.info(f"Generated random style: {generated_prompt}")
+            generated_prompt = random.choice(art_styles)
+            logger.info(f"Generated random art style: {generated_prompt}")
             return generated_prompt
         else:
             # For specific style options, return the original prompt
-            logger.info(f"Using original style prompt: {original_prompt}")
+            logger.info(f"Using original {category} style prompt: {original_prompt}")
             return original_prompt
     
     def _generate_dress_prompt(self, option: dict, is_retry: bool = False) -> str:

@@ -1,24 +1,63 @@
 {
-  "style_transfer": {
+  "cartoon": {
     "free": [
-      {"label_key": "style.random", "prompt": "RANDOM_STYLE"},
-      {"label_key": "style.pencil_sketch", "prompt": "Make this a pencil sketch"},
-      {"label_key": "style.digital_art", "prompt": "Make this digital art"},
-      {"label_key": "style.pop_art", "prompt": "Make this pop art"}
+      {"label_key": "cartoon.random", "prompt": "RANDOM_CARTOON"},
+      {"label_key": "cartoon.retro_classic", "prompt": "Make this a retro classic cartoon"},
+      {"label_key": "cartoon.saturday_morning", "prompt": "Make this a Saturday morning cartoon"}
     ],
     "premium": [
-      {"label_key": "style.anime_style", "prompt": "Make this anime style"},
-      {"label_key": "style.comic_book", "prompt": "Make this a comic book"},
-      {"label_key": "style.cartoon_90s", "prompt": "Make this a 90s cartoon"},
-      {"label_key": "style.impressionist", "prompt": "Make this an impressionist painting"},
-      {"label_key": "style.vintage_photo", "prompt": "Make this a vintage photo"},
-      {"label_key": "style.sci_fi_art", "prompt": "Make this sci-fi art"},
-      {"label_key": "style.art_nouveau", "prompt": "Make this Art Nouveau style"},
-      {"label_key": "style.psychedelic", "prompt": "Make this psychedelic art"},
-      {"label_key": "style.renaissance", "prompt": "Make this a Renaissance painting"},
-      {"label_key": "style.pixel_art", "prompt": "Make this pixel art"},
-      {"label_key": "style.ukiyo_e", "prompt": "Make this a Japanese woodblock print"},
-      {"label_key": "style.film_noir", "prompt": "Make this film noir style"}
+      {"label_key": "cartoon.80s_toon", "prompt": "Make this an 80s cartoon style"},
+      {"label_key": "cartoon.90s_toon", "prompt": "Make this a 90s cartoon style"},
+      {"label_key": "cartoon.2000s_disney", "prompt": "Make this a 2000s Disney/Pixar style"},
+      {"label_key": "cartoon.modern_3d", "prompt": "Make this a modern 3D cartoon"},
+      {"label_key": "cartoon.pixel_art", "prompt": "Make this a pixel art cartoon"}
+    ]
+  },
+  "anime": {
+    "free": [
+      {"label_key": "anime.random", "prompt": "RANDOM_ANIME"},
+      {"label_key": "anime.classic_90s", "prompt": "Make this a 90s classic anime style"},
+      {"label_key": "anime.chibi_kawaii", "prompt": "Make this a chibi/kawaii anime style"}
+    ],
+    "premium": [
+      {"label_key": "anime.magical_girl", "prompt": "Make this a magical girl/shojo anime style"},
+      {"label_key": "anime.shonen_action", "prompt": "Make this a shōnen action anime style"},
+      {"label_key": "anime.studio_ghibli", "prompt": "Make this a Studio Ghibli anime style"},
+      {"label_key": "anime.cyberpunk", "prompt": "Make this a cyberpunk anime style"},
+      {"label_key": "anime.webtoon", "prompt": "Make this a webtoon/manhwa style"},
+      {"label_key": "anime.princess_royal", "prompt": "Make this a princess/royal anime style"}
+    ]
+  },
+  "comics": {
+    "free": [
+      {"label_key": "comics.random", "prompt": "RANDOM_COMICS"},
+      {"label_key": "comics.western_comic", "prompt": "Make this a western comic book style"},
+      {"label_key": "comics.newspaper_strip", "prompt": "Make this a newspaper comic strip style"}
+    ],
+    "premium": [
+      {"label_key": "comics.noir_comic", "prompt": "Make this a noir comic style"},
+      {"label_key": "comics.manga_bw", "prompt": "Make this a black and white manga style"},
+      {"label_key": "comics.pop_art_comic", "prompt": "Make this a pop art comic style"},
+      {"label_key": "comics.adult_animation", "prompt": "Make this an adult animation style"},
+      {"label_key": "comics.superhero_classic", "prompt": "Make this a classic superhero comic style"}
+    ]
+  },
+  "art_styles": {
+    "free": [
+      {"label_key": "art.random", "prompt": "RANDOM_ART_STYLE"},
+      {"label_key": "art.pencil_sketch", "prompt": "Make this a pencil sketch"},
+      {"label_key": "art.digital_art", "prompt": "Make this digital art"},
+      {"label_key": "art.pop_art", "prompt": "Make this pop art"}
+    ],
+    "premium": [
+      {"label_key": "art.impressionist", "prompt": "Make this an impressionist painting"},
+      {"label_key": "art.renaissance", "prompt": "Make this a Renaissance painting"},
+      {"label_key": "art.psychedelic", "prompt": "Make this psychedelic art"},
+      {"label_key": "art.art_nouveau", "prompt": "Make this Art Nouveau style"},
+      {"label_key": "art.vintage_photo", "prompt": "Make this a vintage photo"},
+      {"label_key": "art.sci_fi_art", "prompt": "Make this sci-fi art"},
+      {"label_key": "art.ukiyo_e", "prompt": "Make this a Japanese woodblock print"},
+      {"label_key": "art.film_noir", "prompt": "Make this film noir style"}
     ]
   },
   "new_look": {

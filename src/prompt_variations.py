@@ -25,106 +25,238 @@ class PromptVariationGenerator:
     
     def __init__(self):
         self.variations = {
-            # Style Transfer Variations
-            "style.anime_style": [
-                "Make this modern anime style",
-                "Make this classic anime style", 
-                "Make this kawaii anime style",
-                "Make this realistic anime style",
-                "Make this detailed anime style"
+            # Cartoon Variations
+            "cartoon.retro_classic": [
+                "Make this a vintage retro classic cartoon",
+                "Make this a nostalgic retro classic cartoon",
+                "Make this a timeless retro classic cartoon",
+                "Make this a charming retro classic cartoon",
+                "Make this a colorful retro classic cartoon"
             ],
-            "style.digital_art": [
-                "Make this modern digital art",
-                "Make this stylized digital art",
-                "Make this vibrant digital art", 
-                "Make this detailed digital art",
-                "Make this contemporary digital art"
+            "cartoon.80s_toon": [
+                "Make this a vibrant 80s cartoon style",
+                "Make this a neon 80s cartoon style",
+                "Make this a retro 80s cartoon style",
+                "Make this a classic 80s cartoon style",
+                "Make this a nostalgic 80s cartoon style"
             ],
-            "style.pencil_sketch": [
+            "cartoon.90s_toon": [
+                "Make this a retro 90s cartoon style",
+                "Make this a classic 90s cartoon style",
+                "Make this a vibrant 90s cartoon style",
+                "Make this a nostalgic 90s cartoon style",
+                "Make this a colorful 90s cartoon style"
+            ],
+            "cartoon.2000s_disney": [
+                "Make this a modern 2000s Disney/Pixar style",
+                "Make this a 3D 2000s Disney/Pixar style",
+                "Make this a polished 2000s Disney/Pixar style",
+                "Make this a smooth 2000s Disney/Pixar style",
+                "Make this a detailed 2000s Disney/Pixar style"
+            ],
+            "cartoon.modern_3d": [
+                "Make this a sleek modern 3D cartoon",
+                "Make this a sophisticated modern 3D cartoon",
+                "Make this a polished modern 3D cartoon",
+                "Make this a detailed modern 3D cartoon",
+                "Make this a vibrant modern 3D cartoon"
+            ],
+            "cartoon.saturday_morning": [
+                "Make this a classic Saturday morning cartoon",
+                "Make this a nostalgic Saturday morning cartoon",
+                "Make this a colorful Saturday morning cartoon",
+                "Make this a fun Saturday morning cartoon",
+                "Make this a energetic Saturday morning cartoon"
+            ],
+            "cartoon.pixel_art": [
+                "Make this a retro pixel art cartoon",
+                "Make this an 8-bit pixel art cartoon",
+                "Make this a colorful pixel art cartoon",
+                "Make this a detailed pixel art cartoon",
+                "Make this a game-style pixel art cartoon"
+            ],
+
+            # Anime Variations  
+            "anime.magical_girl": [
+                "Make this a sparkly magical girl/shojo anime style",
+                "Make this an elegant magical girl/shojo anime style",
+                "Make this a colorful magical girl/shojo anime style",
+                "Make this a detailed magical girl/shojo anime style",
+                "Make this a romantic magical girl/shojo anime style"
+            ],
+            "anime.shonen_action": [
+                "Make this an intense shōnen action anime style",
+                "Make this a dynamic shōnen action anime style",
+                "Make this an energetic shōnen action anime style",
+                "Make this a powerful shōnen action anime style",
+                "Make this a heroic shōnen action anime style"
+            ],
+            "anime.studio_ghibli": [
+                "Make this a magical Studio Ghibli anime style",
+                "Make this a whimsical Studio Ghibli anime style",
+                "Make this a detailed Studio Ghibli anime style",
+                "Make this a dreamy Studio Ghibli anime style",
+                "Make this a beautiful Studio Ghibli anime style"
+            ],
+            "anime.classic_90s": [
+                "Make this a nostalgic 90s classic anime style",
+                "Make this a traditional 90s classic anime style",
+                "Make this a retro 90s classic anime style",
+                "Make this a detailed 90s classic anime style",
+                "Make this a authentic 90s classic anime style"
+            ],
+            "anime.chibi_kawaii": [
+                "Make this an adorable chibi/kawaii anime style",
+                "Make this a cute chibi/kawaii anime style",
+                "Make this a super kawaii chibi anime style",
+                "Make this a sweet chibi/kawaii anime style",
+                "Make this a colorful chibi/kawaii anime style"
+            ],
+            "anime.cyberpunk": [
+                "Make this a futuristic cyberpunk anime style",
+                "Make this a neon cyberpunk anime style",
+                "Make this a dark cyberpunk anime style",
+                "Make this a high-tech cyberpunk anime style",
+                "Make this a dystopian cyberpunk anime style"
+            ],
+            "anime.webtoon": [
+                "Make this a modern webtoon/manhwa style",
+                "Make this a colorful webtoon/manhwa style",
+                "Make this a detailed webtoon/manhwa style",
+                "Make this a stylized webtoon/manhwa style",
+                "Make this a romantic webtoon/manhwa style"
+            ],
+            "anime.princess_royal": [
+                "Make this an elegant princess/royal anime style",
+                "Make this a regal princess/royal anime style",
+                "Make this a graceful princess/royal anime style",
+                "Make this a majestic princess/royal anime style",
+                "Make this a beautiful princess/royal anime style"
+            ],
+
+            # Comics Variations
+            "comics.western_comic": [
+                "Make this a classic western comic book style",
+                "Make this a vintage western comic book style",
+                "Make this a colorful western comic book style",
+                "Make this a detailed western comic book style",
+                "Make this a superhero western comic book style"
+            ],
+            "comics.newspaper_strip": [
+                "Make this a classic newspaper comic strip style",
+                "Make this a vintage newspaper comic strip style",
+                "Make this a simple newspaper comic strip style",
+                "Make this a humorous newspaper comic strip style",
+                "Make this a daily newspaper comic strip style"
+            ],
+            "comics.noir_comic": [
+                "Make this a dark noir comic style",
+                "Make this a shadowy noir comic style",
+                "Make this a dramatic noir comic style",
+                "Make this a moody noir comic style",
+                "Make this a atmospheric noir comic style"
+            ],
+            "comics.manga_bw": [
+                "Make this a detailed black and white manga style",
+                "Make this a traditional black and white manga style",
+                "Make this a authentic black and white manga style",
+                "Make this a classic black and white manga style",
+                "Make this a professional black and white manga style"
+            ],
+            "comics.pop_art_comic": [
+                "Make this a vibrant pop art comic style",
+                "Make this a colorful pop art comic style",
+                "Make this a bold pop art comic style",
+                "Make this a retro pop art comic style",
+                "Make this a modern pop art comic style"
+            ],
+            "comics.adult_animation": [
+                "Make this a sophisticated adult animation style",
+                "Make this a mature adult animation style",
+                "Make this a detailed adult animation style",
+                "Make this a stylized adult animation style",
+                "Make this a modern adult animation style"
+            ],
+            "comics.superhero_classic": [
+                "Make this a heroic classic superhero comic style",
+                "Make this a vintage classic superhero comic style",
+                "Make this a dramatic classic superhero comic style",
+                "Make this a powerful classic superhero comic style",
+                "Make this a colorful classic superhero comic style"
+            ],
+
+            # Art Styles Variations
+            "art.pencil_sketch": [
                 "Make this a detailed pencil sketch",
                 "Make this a soft pencil sketch",
                 "Make this a realistic pencil sketch",
                 "Make this an artistic pencil sketch",
                 "Make this a fine pencil sketch"
             ],
-            "style.pop_art": [
+            "art.digital_art": [
+                "Make this modern digital art",
+                "Make this stylized digital art",
+                "Make this vibrant digital art", 
+                "Make this detailed digital art",
+                "Make this contemporary digital art"
+            ],
+            "art.pop_art": [
                 "Make this vibrant pop art",
                 "Make this colorful pop art",
                 "Make this retro pop art",
                 "Make this bold pop art",
                 "Make this modern pop art"
             ],
-            "style.comic_book": [
-                "Make this a superhero comic book",
-                "Make this a vintage comic book",
-                "Make this a modern comic book",
-                "Make this a detailed comic book",
-                "Make this a colorful comic book"
-            ],
-            "style.cartoon_90s": [
-                "Make this a retro 90s cartoon",
-                "Make this a classic 90s cartoon",
-                "Make this a vibrant 90s cartoon",
-                "Make this a nostalgic 90s cartoon",
-                "Make this a colorful 90s cartoon"
-            ],
-            "style.impressionist": [
+            "art.impressionist": [
                 "Make this a soft impressionist painting",
                 "Make this a colorful impressionist painting",
                 "Make this a detailed impressionist painting",
                 "Make this a classical impressionist painting",
                 "Make this a modern impressionist painting"
             ],
-            "style.vintage_photo": [
-                "Make this a sepia vintage photo",
-                "Make this a retro vintage photo",
-                "Make this a classic vintage photo",
-                "Make this an aged vintage photo",
-                "Make this a nostalgic vintage photo"
-            ],
-            "style.sci_fi_art": [
-                "Make this futuristic sci-fi art",
-                "Make this cyberpunk sci-fi art",
-                "Make this space-age sci-fi art",
-                "Make this high-tech sci-fi art",
-                "Make this dystopian sci-fi art"
-            ],
-            "style.art_nouveau": [
-                "Make this elegant Art Nouveau style",
-                "Make this ornate Art Nouveau style",
-                "Make this flowing Art Nouveau style",
-                "Make this decorative Art Nouveau style",
-                "Make this intricate Art Nouveau style"
-            ],
-            "style.psychedelic": [
-                "Make this vibrant psychedelic art",
-                "Make this swirling psychedelic art",
-                "Make this colorful psychedelic art",
-                "Make this trippy psychedelic art",
-                "Make this kaleidoscope psychedelic art"
-            ],
-            "style.renaissance": [
+            "art.renaissance": [
                 "Make this a classical Renaissance painting",
                 "Make this an elegant Renaissance painting",
                 "Make this a detailed Renaissance painting",
                 "Make this a masterful Renaissance painting",
                 "Make this a traditional Renaissance painting"
             ],
-            "style.pixel_art": [
-                "Make this retro pixel art",
-                "Make this 8-bit pixel art",
-                "Make this colorful pixel art",
-                "Make this detailed pixel art",
-                "Make this game-style pixel art"
+            "art.psychedelic": [
+                "Make this vibrant psychedelic art",
+                "Make this swirling psychedelic art",
+                "Make this colorful psychedelic art",
+                "Make this trippy psychedelic art",
+                "Make this kaleidoscope psychedelic art"
             ],
-            "style.ukiyo_e": [
+            "art.art_nouveau": [
+                "Make this elegant Art Nouveau style",
+                "Make this ornate Art Nouveau style",
+                "Make this flowing Art Nouveau style",
+                "Make this decorative Art Nouveau style",
+                "Make this intricate Art Nouveau style"
+            ],
+            "art.vintage_photo": [
+                "Make this a sepia vintage photo",
+                "Make this a retro vintage photo",
+                "Make this a classic vintage photo",
+                "Make this an aged vintage photo",
+                "Make this a nostalgic vintage photo"
+            ],
+            "art.sci_fi_art": [
+                "Make this futuristic sci-fi art",
+                "Make this cyberpunk sci-fi art",
+                "Make this space-age sci-fi art",
+                "Make this high-tech sci-fi art",
+                "Make this dystopian sci-fi art"
+            ],
+            "art.ukiyo_e": [
                 "Make this a traditional Japanese woodblock print",
                 "Make this an elegant Japanese woodblock print",
                 "Make this a classic Japanese woodblock print",
                 "Make this a detailed Japanese woodblock print",
                 "Make this a colorful Japanese woodblock print"
             ],
-            "style.film_noir": [
+            "art.film_noir": [
                 "Make this dramatic film noir style",
                 "Make this moody film noir style",
                 "Make this classic film noir style",
@@ -316,7 +448,28 @@ class PromptVariationGenerator:
         
         # Fallback variations for categories not specifically defined
         self.generic_variations = {
-            "style_transfer": [
+            "cartoon": [
+                ", animated interpretation",
+                ", cartoon style", 
+                ", unique cartoon approach",
+                ", modern cartoon interpretation",
+                ", distinctive cartoon style"
+            ],
+            "anime": [
+                ", anime interpretation",
+                ", anime style", 
+                ", unique anime approach",
+                ", modern anime interpretation",
+                ", distinctive anime style"
+            ],
+            "comics": [
+                ", comic interpretation",
+                ", comic style", 
+                ", unique comic approach",
+                ", modern comic interpretation",
+                ", distinctive comic style"
+            ],
+            "art_styles": [
                 ", artistic interpretation",
                 ", creative style", 
                 ", unique artistic approach",
@@ -391,6 +544,10 @@ class PromptVariationGenerator:
             # Special handling for dress-related prompts
             if self._is_dress_prompt(label_key, original_prompt):
                 return self._generate_dress_variation(label_key, original_prompt)
+            
+            # Handle random placeholders for new categories
+            if any(placeholder in original_prompt for placeholder in ['RANDOM_CARTOON', 'RANDOM_ANIME', 'RANDOM_COMICS', 'RANDOM_ART_STYLE']):
+                return self._generate_random_category_variation(original_prompt)
             
             # Try to get specific variations for this label key
             if label_key in self.variations:
@@ -551,6 +708,70 @@ class PromptVariationGenerator:
             logger.error(f"Error generating dress variation: {e}")
             return original_prompt + ", preserve original face and body proportions exactly"
     
+    def _generate_random_category_variation(self, original_prompt: str) -> str:
+        """Generate variation for random category placeholders."""
+        try:
+            if 'RANDOM_CARTOON' in original_prompt:
+                cartoon_styles = [
+                    "Make this a retro classic cartoon",
+                    "Make this an 80s cartoon style",
+                    "Make this a 90s cartoon style", 
+                    "Make this a 2000s Disney/Pixar style",
+                    "Make this a modern 3D cartoon",
+                    "Make this a Saturday morning cartoon",
+                    "Make this a pixel art cartoon"
+                ]
+                return random.choice(cartoon_styles)
+                
+            elif 'RANDOM_ANIME' in original_prompt:
+                anime_styles = [
+                    "Make this a magical girl/shojo anime style",
+                    "Make this a shōnen action anime style",
+                    "Make this a Studio Ghibli anime style",
+                    "Make this a 90s classic anime style",
+                    "Make this a chibi/kawaii anime style",
+                    "Make this a cyberpunk anime style",
+                    "Make this a webtoon/manhwa style",
+                    "Make this a princess/royal anime style"
+                ]
+                return random.choice(anime_styles)
+                
+            elif 'RANDOM_COMICS' in original_prompt:
+                comic_styles = [
+                    "Make this a western comic book style",
+                    "Make this a newspaper comic strip style",
+                    "Make this a noir comic style",
+                    "Make this a black and white manga style",
+                    "Make this a pop art comic style",
+                    "Make this an adult animation style",
+                    "Make this a classic superhero comic style"
+                ]
+                return random.choice(comic_styles)
+                
+            elif 'RANDOM_ART_STYLE' in original_prompt:
+                art_styles = [
+                    "Make this a pencil sketch",
+                    "Make this digital art",
+                    "Make this pop art",
+                    "Make this an impressionist painting",
+                    "Make this a Renaissance painting",
+                    "Make this psychedelic art",
+                    "Make this Art Nouveau style",
+                    "Make this a vintage photo",
+                    "Make this sci-fi art",
+                    "Make this a Japanese woodblock print",
+                    "Make this film noir style"
+                ]
+                return random.choice(art_styles)
+                
+            else:
+                # Fallback to original if no match
+                return original_prompt + " with artistic variation"
+                
+        except Exception as e:
+            logger.error(f"Error generating random category variation: {e}")
+            return original_prompt
+
     def get_random_seed(self) -> int:
         """Generate a random seed for additional variation."""
         import time
