@@ -2187,13 +2187,34 @@ class StyleTransferBot:
                 await update.callback_query.answer("⚠️ No previous processing to retry", show_alert=True)
                 return
             
-            logger.info(f"User {user_id} requested retry for {last_processing['category']}")
+            # Determine service type from category
+            service_type = "kling" if last_processing['category'] == "animate" else "flux"
+            
+            # Check quota with warnings first
+            quota_status = await stars_billing.check_quota_with_warnings(update, context, service_type)
+            if quota_status == 'hard_block':
+                # No quota, user was shown hard block - stop processing
+                return
+            elif quota_status == 'gentle_warning':
+                # Low quota but can continue - user was shown warning
+                pass
+                
+            # Consume quota atomically before processing
+            if not stars_billing.consume_quota(user_id, service_type, user_obj=update.effective_user):
+                # Failed to consume quota (race condition or depleted), show hard block
+                await stars_billing._show_hard_block_upsell(update, context, service_type)
+                return
+            
+            logger.info(f"User {user_id} requested retry for {last_processing['category']} (quota consumed)")
             
             # Create varied version of the selected option
             varied_option = self._create_varied_option(
                 last_processing['category'],
                 last_processing['selected_option']
             )
+            
+            # Update stored processing parameters for potential refund
+            context.user_data['last_processing']['service_type'] = service_type
             
             # Show processing message
             await update.callback_query.edit_message_caption(
@@ -2288,7 +2309,22 @@ class StyleTransferBot:
                 await update.callback_query.answer("⚠️ No result image to animate", show_alert=True)
                 return
             
-            logger.info(f"User {user_id} requested animation of result image")
+            # Check quota for Kling animation service
+            quota_status = await stars_billing.check_quota_with_warnings(update, context, "kling")
+            if quota_status == 'hard_block':
+                # No quota, user was shown hard block - stop processing
+                return
+            elif quota_status == 'gentle_warning':
+                # Low quota but can continue - user was shown warning
+                pass
+                
+            # Consume quota atomically before processing
+            if not stars_billing.consume_quota(user_id, "kling", user_obj=update.effective_user):
+                # Failed to consume quota (race condition or depleted), show hard block
+                await stars_billing._show_hard_block_upsell(update, context, "kling")
+                return
+            
+            logger.info(f"User {user_id} requested animation of result image (quota consumed)")
             
             # Show processing message
             await update.callback_query.edit_message_caption(
@@ -2322,8 +2358,11 @@ class StyleTransferBot:
         try:
             logger.info(f"🎬 Starting idle animation for user {user_id}")
             
-            # Apply idle animation (empty prompt)
-            animation_result = await kling_api.animate_by_prompt(result_image_url, "", duration=5)
+            # Apply idle animation (empty prompt) using safe generation for automatic refunds
+            animation_result = await stars_billing.safe_generate(
+                user_id, "kling",
+                kling_api.animate_by_prompt, result_image_url, "", duration=5
+            )
             
             if animation_result:
                 logger.info(f"✅ Animation completed for user {user_id}")
