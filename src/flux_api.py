@@ -202,7 +202,29 @@ class FluxAPI:
         safety_tolerance: int = 2
     ) -> Optional[str]:
         """Apply style transfer to image."""
-        # Use the style prompt directly - it should already be in format like "Make this a 90s cartoon"
+        # Apply prompt variations for special placeholders
+        try:
+            from src.prompt_variations import prompt_variation_generator
+            
+            # Check if this is a special placeholder that needs variation
+            if any(placeholder in style for placeholder in [
+                'RANDOM_CARTOON', 'RANDOM_ANIME', 'RANDOM_COMICS', 'RANDOM_ART_STYLE'
+            ]):
+                # Apply prompt variations
+                varied_prompt = prompt_variation_generator.get_varied_prompt(
+                    category="style_transfer", 
+                    label_key="style.transfer", 
+                    original_prompt=style
+                )
+                logger.info(f"🔄 Applied prompt variation for style transfer:")
+                logger.info(f"   - Original: '{style}'")
+                logger.info(f"   - Varied: '{varied_prompt}'")
+                style = varied_prompt
+        except Exception as e:
+            logger.warning(f"Failed to apply prompt variations for style transfer: {e}")
+            # Continue with original prompt if variation fails
+        
+        # Use the (possibly varied) style prompt
         return await self.process_image(image_url, style, safety_tolerance=safety_tolerance)
     
     async def edit_object(
@@ -212,7 +234,35 @@ class FluxAPI:
         safety_tolerance: int = 2
     ) -> Optional[str]:
         """Edit objects in image."""
-        # Use simple direct prompts
+        # Apply prompt variations for special placeholders
+        try:
+            from src.prompt_variations import prompt_variation_generator
+            
+            # Check if this is a special placeholder that needs variation
+            if any(placeholder in object_description for placeholder in [
+                'RANDOM_MENS_OUTFIT', 'CASUAL_MENS_OUTFIT', 'MODERN_MENS_OUTFIT', 
+                'CLASSIC_MENS_OUTFIT', 'EDGY_MENS_OUTFIT', 'EVENING_MENS_OUTFIT',
+                'CULTURAL_MENS_OUTFIT', 'ANIME_MENS_OUTFIT',
+                'RANDOM_DRESS', 'CASUAL_OUTFIT', 'MODERN_DRESS', 'CLASSIC_DRESS',
+                'EDGY_DRESS', 'EVENING_DRESS', 'CULTURAL_DRESS', 'ANIME_DRESS',
+                'RANDOM_HAIRSTYLE', 'MODERN_HAIRSTYLE', 'CLASSIC_HAIRSTYLE',
+                'EDGY_HAIRSTYLE', 'CULTURAL_HAIRSTYLE', 'ANIME_HAIRSTYLE'
+            ]):
+                # Apply prompt variations
+                varied_prompt = prompt_variation_generator.get_varied_prompt(
+                    category="object_edit", 
+                    label_key="object.edit", 
+                    original_prompt=object_description
+                )
+                logger.info(f"🔄 Applied prompt variation for object edit:")
+                logger.info(f"   - Original: '{object_description}'")
+                logger.info(f"   - Varied: '{varied_prompt}'")
+                object_description = varied_prompt
+        except Exception as e:
+            logger.warning(f"Failed to apply prompt variations for object edit: {e}")
+            # Continue with original prompt if variation fails
+        
+        # Use the (possibly varied) prompt
         return await self.process_image(image_url, object_description, safety_tolerance=safety_tolerance)
     
     async def edit_text(
