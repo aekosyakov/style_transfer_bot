@@ -1255,6 +1255,13 @@ class StyleTransferBot:
             user_id = update.effective_user.id
             user_lang = self._get_user_language(update.effective_user)
             
+            # Remove buttons from the result message to prevent confusion
+            try:
+                await update.callback_query.edit_message_reply_markup(reply_markup=None)
+                logger.info(f"🗑️ Removed buttons from result message for user {user_id}")
+            except Exception as e:
+                logger.warning(f"Failed to remove buttons from result message: {e}")
+            
             # Get last processing parameters
             last_processing = context.user_data.get('last_processing')
             if not last_processing:
@@ -1289,6 +1296,13 @@ class StyleTransferBot:
             user_id = update.effective_user.id
             user_lang = self._get_user_language(update.effective_user)
             
+            # Remove buttons from the result message to prevent confusion
+            try:
+                await update.callback_query.edit_message_reply_markup(reply_markup=None)
+                logger.info(f"🗑️ Removed buttons from result message for user {user_id}")
+            except Exception as e:
+                logger.warning(f"Failed to remove buttons from result message: {e}")
+            
             # Get last processing parameters
             last_processing = context.user_data.get('last_processing')
             if not last_processing:
@@ -1322,6 +1336,13 @@ class StyleTransferBot:
         try:
             user_id = update.effective_user.id
             user_lang = self._get_user_language(update.effective_user)
+            
+            # Remove buttons from the result message to prevent confusion
+            try:
+                await update.callback_query.edit_message_reply_markup(reply_markup=None)
+                logger.info(f"🗑️ Removed buttons from result message for user {user_id}")
+            except Exception as e:
+                logger.warning(f"Failed to remove buttons from result message: {e}")
             
             logger.info(f"User {user_id} requested restart")
             
@@ -1381,6 +1402,13 @@ class StyleTransferBot:
             
             user_id = update.effective_user.id
             user_lang = self._get_user_language(update.effective_user)
+            
+            # Remove buttons from the result message to prevent confusion
+            try:
+                await update.callback_query.edit_message_reply_markup(reply_markup=None)
+                logger.info(f"🗑️ Removed buttons from result message for user {user_id}")
+            except Exception as e:
+                logger.warning(f"Failed to remove buttons from result message: {e}")
             
             # Get last result URL from context.user_data instead of deprecated last_result
             last_processing = context.user_data.get('last_processing')
