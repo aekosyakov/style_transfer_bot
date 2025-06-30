@@ -14,32 +14,29 @@ class MensHairstyleGenerator:
     """Generate random men's hairstyles with face-preserving prompts."""
     
     def __init__(self):
-        # Modern & Trendy
+        # Modern & Trendy (massively expanded)
         self.modern_trendy = [
-            "Textured Crop Fade",
-            "Messy Quiff",
-            "Disconnected Undercut",
-            "French Crop with Fringe",
-            "Mid Fade with Curls",
-            "Slicked Back Pompadour",
-            "Short Taper with Line Up",
-            "Faux Hawk Fade",
-            "Side-Parted Comb Over",
-            "Wavy Bro Flow"
+            "Textured Crop Fade", "Messy Quiff", "Disconnected Undercut", "French Crop with Fringe",
+            "Mid Fade with Curls", "Slicked Back Pompadour", "Short Taper with Line Up", "Faux Hawk Fade",
+            "Side-Parted Comb Over", "Wavy Bro Flow", "Buzz Cut with Fade", "Modern Mullet",
+            "Textured Side Sweep", "Volumized Quiff", "Skin Fade Buzz", "Razor Fade Cut",
+            "Choppy Layered Cut", "Tousled Beach Hair", "Angular Fringe Cut", "Spiky Textured Top",
+            "Modern Caesar Cut", "Sleek Side Part", "Wavy Pompadour", "Graduated Bob Cut",
+            "Layered Shag Cut", "Feathered Hair Cut", "Windswept Style", "Messy Bedhead Look",
+            "Contemporary Crew Cut", "Edgy Asymmetrical Cut", "Voluminous Waves", "Slicked Forward Style",
+            "Textured Crop Top", "Modern Bowl Cut", "Disconnected Fade", "Curly Top Fade"
         ]
 
-        # Classic & Timeless
+        # Classic & Timeless (massively expanded)
         self.classic_timeless = [
-            "Ivy League Cut",
-            "Side-Part Taper",
-            "Crew Cut",
-            "Classic Pompadour",
-            "Regulation Cut",
-            "Flat Top",
-            "1950s Slick-Back",
-            "Short Back and Sides",
-            "Gentleman's Brush Up",
-            "Soft Waves with Side Part"
+            "Ivy League Cut", "Side-Part Taper", "Crew Cut", "Classic Pompadour", "Regulation Cut",
+            "Flat Top", "1950s Slick-Back", "Short Back and Sides", "Gentleman's Brush Up", "Soft Waves with Side Part",
+            "Traditional Crew Cut", "Military Buzz Cut", "Classic Caesar Cut", "Vintage Pompadour", "High and Tight",
+            "Executive Side Part", "Distinguished Gray Cut", "Classic Businessman Cut", "Retro Slick Back",
+            "Gentleman's Comb Over", "Classic Taper Cut", "Traditional Flat Top", "Vintage Brush Cut",
+            "Classic Short Cut", "Professional Taper", "Traditional Buzz", "Refined Side Part", "Elegant Pompadour",
+            "Classic Wave Cut", "Timeless Crew", "Vintage Fade", "Distinguished Cut", "Executive Style",
+            "Classic Military Cut", "Traditional Gentleman's Cut", "Vintage Professional Style"
         ]
 
         # Edgy / Statement
@@ -84,24 +81,43 @@ class MensHairstyleGenerator:
             "Hyper-Volume Fantasy Hair"
         ]
 
-        # Hair Colors & Styles
+        # Hair Colors & Styles - MASSIVE EXPANSION for maximum variety
         self.hair_colors = [
-            "jet black",
-            "dark brown",
-            "medium brown", 
-            "light brown",
-            "dirty blonde",
-            "platinum blonde",
-            "strawberry blonde",
-            "auburn red",
-            "copper red",
-            "silver gray",
-            "salt and pepper",
-            "bleached white",
-            "electric blue",
-            "forest green",
-            "deep purple",
-            "crimson red"
+            # Natural Browns - Expanded
+            "jet black", "raven black", "midnight black", "coal black", "onyx black",
+            "dark chocolate brown", "rich espresso brown", "deep coffee brown", "warm chestnut brown", "mahogany brown",
+            "medium ash brown", "golden brown", "caramel brown", "toffee brown", "amber brown",
+            "light caramel brown", "honey brown", "butterscotch brown", "cognac brown", "bronze brown",
+            
+            # Natural Blondes - Expanded  
+            "platinum blonde", "icy blonde", "pearl blonde", "silver blonde", "white blonde",
+            "golden blonde", "sunlit blonde", "champagne blonde", "butter blonde", "cream blonde",
+            "honey blonde", "wheat blonde", "sandy blonde", "beige blonde", "vanilla blonde",
+            "ash blonde", "cool blonde", "Nordic blonde", "strawberry blonde", "ginger blonde",
+            "dirty blonde", "mushroom blonde", "bronde", "dark blonde", "medium blonde",
+            
+            # Natural Reds - Expanded
+            "auburn red", "deep auburn", "dark auburn", "rich auburn", "copper red",
+            "bright copper", "penny copper", "bronze copper", "cinnamon red", "spice red",
+            "russet red", "burgundy red", "wine red", "cherry red", "crimson red",
+            "strawberry red", "ginger red", "fire red", "sunset red", "rust red",
+            
+            # Grays & Mature Colors - Expanded
+            "silver gray", "platinum gray", "steel gray", "charcoal gray", "slate gray",
+            "ash gray", "pewter gray", "titanium gray", "salt and pepper", "pepper gray",
+            "iron gray", "storm gray", "smoke gray", "bleached white", "snow white",
+            
+            # Fashion/Trendy Colors - Expanded
+            "electric blue", "sapphire blue", "navy blue", "royal blue", "midnight blue",
+            "ocean blue", "teal blue", "aqua blue", "steel blue", "ice blue",
+            "forest green", "emerald green", "jade green", "pine green", "mint green",
+            "sage green", "olive green", "lime green", "neon green", "hunter green",
+            "deep purple", "violet purple", "lavender purple", "plum purple", "indigo purple",
+            "royal purple", "amethyst purple", "grape purple", "magenta purple", "orchid purple",
+            
+            # Unique Fashion Colors
+            "rose gold", "copper gold", "bronze gold", "antique gold", "champagne gold",
+            "smoky pink", "dusty rose", "coral pink", "salmon pink", "peach pink"
         ]
 
         # Hair Effects & Styling
@@ -150,8 +166,8 @@ class MensHairstyleGenerator:
             # Always include the base hairstyle
             prompt_parts.append(f"change hairstyle to {base_hairstyle}")
             
-            # Optionally add color
-            if include_color and random.random() < 0.6:  # 60% chance to include color for men
+            # Optionally add color (increased probability for more appealing results)
+            if include_color and random.random() < 0.85:  # 85% chance to include color for men
                 color = random.choice(self.hair_colors)
                 prompt_parts.append(f"with {color} hair color")
             
@@ -201,7 +217,7 @@ class MensHairstyleGenerator:
             
             prompt_parts = [f"change hairstyle to {base_hairstyle}"]
             
-            if include_color and random.random() < 0.5:  # 50% chance for specific categories
+            if include_color and random.random() < 0.80:  # 80% chance for specific categories
                 color = random.choice(self.hair_colors)
                 prompt_parts.append(f"with {color} hair color")
             

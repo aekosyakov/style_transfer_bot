@@ -636,9 +636,25 @@ class PromptVariationGenerator:
         hairstyle_keywords = [
             "RANDOM_HAIRSTYLE", "MODERN_HAIRSTYLE", "CLASSIC_HAIRSTYLE", 
             "EDGY_HAIRSTYLE", "UPDO_HAIRSTYLE", "CULTURAL_HAIRSTYLE", 
-            "ANIME_HAIRSTYLE", "haircut", "hairstyle", "hair."
+            "ANIME_HAIRSTYLE", "haircut", "hairstyle", "hair.",
+            # Gender-specific hairstyle placeholders (CRITICAL FOR DETECTION!)
+            "RANDOM_MENS_HAIRSTYLE", "MODERN_MENS_HAIRSTYLE", "CLASSIC_MENS_HAIRSTYLE",
+            "EDGY_MENS_HAIRSTYLE", "CULTURAL_MENS_HAIRSTYLE", "ANIME_MENS_HAIRSTYLE",
+            "RANDOM_WOMENS_HAIRSTYLE", "MODERN_WOMENS_HAIRSTYLE", "CLASSIC_WOMENS_HAIRSTYLE",
+            "EDGY_WOMENS_HAIRSTYLE", "CULTURAL_WOMENS_HAIRSTYLE", "ANIME_WOMENS_HAIRSTYLE"
         ]
-        return any(keyword in prompt or keyword in label_key for keyword in hairstyle_keywords)
+        
+        is_hairstyle = any(keyword in prompt or keyword in label_key for keyword in hairstyle_keywords)
+        
+        # Debug logging for hairstyle detection
+        matching_keywords = [k for k in hairstyle_keywords if k in prompt or k in label_key]
+        logger.info(f"🔍 HAIRSTYLE_DETECTION: label_key='{label_key}', prompt='{prompt}' -> {is_hairstyle}")
+        if matching_keywords:
+            logger.info(f"   ✅ Matching keywords: {matching_keywords}")
+        else:
+            logger.info(f"   ❌ No matching keywords found")
+            
+        return is_hairstyle
     
     def _is_dress_prompt(self, label_key: str, prompt: str) -> bool:
         """Check if this is a dress/outfit-related prompt."""

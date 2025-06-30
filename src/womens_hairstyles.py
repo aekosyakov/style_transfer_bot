@@ -14,18 +14,16 @@ class WomensHairstyleGenerator:
     """Generate random women's hairstyles with face-preserving prompts."""
     
     def __init__(self):
-        # Modern & Trendy
+        # Modern & Trendy (massively expanded)
         self.modern_trendy = [
-            "Long Textured Waves",
-            "Curtain Bangs Bob",
-            "Wolf Cut with Shaggy Layers",
-            "French Girl Chin Bob",
-            "Sleek High Ponytail",
-            "Airy Pixie with Side Bangs",
-            "Face-Framing Layered Lob",
-            "Blunt Cut with Micro Fringe",
-            "Bubble Braids",
-            "Half-Up Space Buns"
+            "Long Textured Waves", "Curtain Bangs Bob", "Wolf Cut with Shaggy Layers", "French Girl Chin Bob",
+            "Sleek High Ponytail", "Airy Pixie with Side Bangs", "Face-Framing Layered Lob", "Blunt Cut with Micro Fringe",
+            "Bubble Braids", "Half-Up Space Buns", "Textured Beach Waves", "Modern Shag Cut", "Butterfly Haircut",
+            "Wispy Bangs Bob", "Layered Curtain Bangs", "Messy Bun Updo", "Slicked Back Ponytail", "Chunky Highlights Bob",
+            "Face-Framing Layers", "Textured Pixie Cut", "Modern Mullet", "Asymmetrical Bob", "Wavy Lob",
+            "Feathered Layers", "Tousled Waves", "Edgy Pixie", "Voluminous Curls", "Sleek Straight Hair",
+            "Layered Shag", "Bouncy Blowout", "Textured Crop", "Modern Fringe", "Wavy Bob", "Choppy Layers",
+            "Effortless Waves", "Trendy Bangs", "Lived-in Color", "Undone Waves", "Contemporary Cut"
         ]
 
         # Classic & Timeless
@@ -84,27 +82,63 @@ class WomensHairstyleGenerator:
             "Holographic Anime Bob"
         ]
 
-        # Hair Colors & Effects
+        # Hair Colors & Effects - ULTIMATE EXPANSION for infinite variety
         self.hair_colors = [
-            "platinum blonde",
-            "honey blonde", 
-            "strawberry blonde",
-            "ash blonde",
-            "copper red",
-            "auburn red",
-            "burgundy red",
-            "chocolate brown",
-            "ash brown",
-            "caramel brown", 
-            "jet black",
-            "silver gray",
-            "pastel pink",
-            "lavender purple",
-            "ocean blue",
-            "mint green",
-            "rose gold",
-            "rainbow ombré",
-            "galaxy gradient"
+            # Premium Blondes - Expanded
+            "platinum blonde", "ice blonde", "white blonde", "pearl blonde", "silver blonde",
+            "honey blonde", "golden honey", "warm honey", "dark honey", "liquid honey",
+            "strawberry blonde", "rose blonde", "pink blonde", "coral blonde", "peach blonde",
+            "ash blonde", "cool ash blonde", "Nordic blonde", "Scandinavian blonde", "mushroom blonde",
+            "golden blonde", "sun-kissed blonde", "champagne blonde", "butter blonde", "cream blonde",
+            "bronde", "dark bronde", "caramel bronde", "baby blonde", "vanilla blonde",
+            "wheat blonde", "sandy blonde", "beige blonde", "dirty blonde", "medium blonde",
+            
+            # Luxurious Browns - Expanded
+            "chocolate brown", "dark chocolate", "milk chocolate", "white chocolate", "cocoa brown",
+            "espresso brown", "coffee brown", "mocha brown", "latte brown", "cappuccino brown",
+            "caramel brown", "salted caramel", "burnt caramel", "golden caramel", "rich caramel",
+            "chestnut brown", "warm chestnut", "deep chestnut", "mahogany brown", "rich mahogany",
+            "toffee brown", "butterscotch brown", "amber brown", "cognac brown", "bronze brown",
+            "ash brown", "cool brown", "mushroom brown", "taupe brown", "cinnamon brown",
+            
+            # Stunning Reds - Expanded
+            "auburn red", "deep auburn", "dark auburn", "rich auburn", "vibrant auburn",
+            "copper red", "bright copper", "rose copper", "penny copper", "bronze copper",
+            "burgundy red", "wine red", "deep wine", "merlot red", "cabernet red",
+            "cherry red", "bright cherry", "dark cherry", "fire red", "crimson red",
+            "strawberry red", "coral red", "sunset red", "rust red", "ginger red",
+            "cinnamon red", "spice red", "paprika red", "rose gold", "copper rose",
+            
+            # Dramatic Darks & Lights
+            "jet black", "raven black", "midnight black", "coal black", "onyx black",
+            "blue-black", "brown-black", "soft black", "off-black", "charcoal black",
+            "silver gray", "platinum gray", "ash gray", "steel gray", "pewter gray",
+            "pearl white", "ivory white", "cream white", "snow white", "alabaster white",
+            
+            # Pastel Paradise - Expanded
+            "pastel pink", "baby pink", "cotton candy pink", "rose quartz pink", "blush pink",
+            "lavender purple", "lilac purple", "orchid purple", "periwinkle purple", "wisteria purple",
+            "mint green", "sage green", "eucalyptus green", "seafoam green", "pistachio green",
+            "peach blonde", "apricot blonde", "coral blonde", "salmon blonde", "sunset blonde",
+            "lilac gray", "lavender gray", "mauve gray", "dusty rose gray", "smoky lilac",
+            
+            # Fantasy & Fashion Colors - Expanded
+            "ocean blue", "mermaid blue", "teal blue", "aqua blue", "turquoise blue",
+            "sapphire blue", "royal blue", "navy blue", "midnight blue", "steel blue",
+            "emerald green", "forest green", "jade green", "pine green", "hunter green",
+            "deep purple", "violet purple", "royal purple", "amethyst purple", "grape purple",
+            "magenta purple", "fuchsia purple", "plum purple", "eggplant purple", "indigo purple",
+            
+            # Multi-Dimensional Colors
+            "rainbow ombré", "sunset ombré", "galaxy gradient", "aurora borealis", "prism effect",
+            "oil slick", "holographic", "iridescent", "color-changing", "tie-dye effect",
+            "mermaid gradient", "unicorn pastel mix", "fairy tale blend", "sunset gradient", "ocean waves",
+            "cosmic blend", "northern lights", "peacock colors", "butterfly wing", "opal effect",
+            
+            # Sophisticated Tones
+            "rose gold", "copper gold", "bronze gold", "champagne gold", "antique gold",
+            "dusty rose", "mauve", "taupe", "mushroom", "greige",
+            "smoky pink", "dusty purple", "sage", "olive", "khaki"
         ]
 
         # Hair Effects & Accessories
@@ -153,8 +187,8 @@ class WomensHairstyleGenerator:
             # Always include the base hairstyle
             prompt_parts.append(f"change hairstyle to {base_hairstyle}")
             
-            # Optionally add color
-            if include_color and random.random() < 0.7:  # 70% chance to include color
+            # Optionally add color (increased probability for more appealing results)
+            if include_color and random.random() < 0.90:  # 90% chance to include color
                 color = random.choice(self.hair_colors)
                 prompt_parts.append(f"with {color} hair color")
             
@@ -204,7 +238,7 @@ class WomensHairstyleGenerator:
             
             prompt_parts = [f"change hairstyle to {base_hairstyle}"]
             
-            if include_color and random.random() < 0.6:  # 60% chance for specific categories
+            if include_color and random.random() < 0.85:  # 85% chance for specific categories
                 color = random.choice(self.hair_colors)
                 prompt_parts.append(f"with {color} hair color")
             
