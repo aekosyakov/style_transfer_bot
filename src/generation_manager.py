@@ -86,13 +86,15 @@ class GenerationManager:
             return False
         logger.info(f"✅ Successfully consumed FLUX quota for user {user_id}")
         
-        # 3. Store processing context for retry functionality
+        # 3. Store processing context for retry functionality with gender tracking
+        gender = self._determine_gender_from_category(category, selected_option)
         context.user_data['last_processing'] = {
             'photo_file_id': photo_file_id,
             'category': category,
             'selected_option': selected_option,
             'user_id': user_id,
-            'user_lang': user_lang
+            'user_lang': user_lang,
+            'gender': gender  # Track gender for proper retry behavior
         }
         
         # 4. Start generation
@@ -136,13 +138,15 @@ class GenerationManager:
             return False
         logger.info(f"✅ Successfully consumed KLING quota for user {user_id}")
         
-        # 3. Store processing context for retry functionality
+        # 3. Store processing context for retry functionality with gender tracking
+        gender = self._determine_gender_from_category('animate', {'kling_prompt': animation_prompt})
         context.user_data['last_processing'] = {
             'photo_file_id': photo_file_id,
             'category': 'animate',
             'selected_option': {'kling_prompt': animation_prompt},
             'user_id': user_id,
-            'user_lang': user_lang
+            'user_lang': user_lang,
+            'gender': gender  # Track gender for proper retry behavior
         }
         
         # 4. Start generation
@@ -192,13 +196,15 @@ class GenerationManager:
             return False
         logger.info(f"✅ Successfully consumed {service.upper()} quota for user {user_id}")
         
-        # 3. Update processing context for retry functionality
+        # 3. Update processing context for retry functionality with gender tracking
+        gender = self._determine_gender_from_category(category, selected_option)
         context.user_data['last_processing'] = {
             'photo_file_id': photo_file_id,
             'category': category,
             'selected_option': selected_option,
             'user_id': user_id,
-            'user_lang': user_lang
+            'user_lang': user_lang,
+            'gender': gender  # Track gender for proper retry behavior
         }
         
         # 4. Start generation without removing any messages
@@ -914,6 +920,46 @@ class GenerationManager:
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 has_spoiler=True
             )
+
+    def _determine_gender_from_category(self, category: str, selected_option: Dict[str, Any]) -> str:
+        """Determine gender from category and selected option for proper retry behavior."""
+        try:
+            # Check category first
+            if "men" in category.lower():
+                return "men"
+            elif "women" in category.lower():
+                return "women"
+            
+            # Check prompt in selected_option
+            prompt = selected_option.get('prompt', '').upper()
+            if any(mens_keyword in prompt for mens_keyword in [
+                'MENS_OUTFIT', 'MENS_HAIRSTYLE', 'MALE', 'MAN', 'BOY'
+            ]):
+                return "men"
+            elif any(womens_keyword in prompt for womens_keyword in [
+                'DRESS', 'WOMENS', 'FEMALE', 'WOMAN', 'GIRL'
+            ]):
+                return "women"
+            
+            # Check label_key
+            label_key = selected_option.get('label_key', '').lower()
+            if any(mens_keyword in label_key for mens_keyword in ['mens', 'men_', 'male']):
+                return "men"
+            elif any(womens_keyword in label_key for womens_keyword in ['dress', 'womens', 'women_', 'female']):
+                return "women"
+            
+            # Default fallback based on category
+            if category in ["new_look_men", "new_hairstyle_men"]:
+                return "men"
+            elif category in ["new_look_women", "new_hairstyle_women"]:
+                return "women"
+            
+            # Ultimate fallback
+            return "neutral"
+            
+        except Exception as e:
+            logger.error(f"Error determining gender from category {category}: {e}")
+            return "neutral"
 
 
 # Global instance

@@ -1321,10 +1321,12 @@ class StyleTransferBot:
                 await update.callback_query.answer("⚠️ No previous processing to retry", show_alert=True)
                 return
             
-            # Create varied version of the selected option
+            # Create varied version of the selected option with gender preservation
+            gender = last_processing.get('gender', 'neutral')
             varied_option = self._create_varied_option(
                 last_processing['category'],
-                last_processing['selected_option']
+                last_processing['selected_option'],
+                gender
             )
             
             logger.info(f"User {user_id} requested retry for {last_processing['category']}")
@@ -1437,7 +1439,7 @@ class StyleTransferBot:
             logger.error(f"Error in edit handler: {e}")
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
     
-    def _create_varied_option(self, category: str, original_option: dict) -> dict:
+    def _create_varied_option(self, category: str, original_option: dict, gender: str = 'neutral') -> dict:
         """Create a varied version of the selected option for repeat functionality."""
         try:
             from src.prompt_variations import prompt_variation_generator
@@ -1456,14 +1458,15 @@ class StyleTransferBot:
                 varied_option['kling_prompt'] = varied_kling_prompt
                 logger.info(f"Varied kling_prompt: '{original_kling_prompt}' → '{varied_kling_prompt}'")
             
-            # Handle other categories (use prompt)
+            # Handle other categories (use prompt) with gender preservation
             else:
                 original_prompt = varied_option.get('prompt', '')
+                
                 varied_prompt = prompt_variation_generator.get_varied_prompt(
-                    category, label_key, original_prompt, is_kling=False
+                    category, label_key, original_prompt, is_kling=False, preserve_gender=gender
                 )
                 varied_option['prompt'] = varied_prompt
-                logger.info(f"Varied prompt: '{original_prompt}' → '{varied_prompt}'")
+                logger.info(f"Varied prompt (gender: {gender}): '{original_prompt}' → '{varied_prompt}'")
             
             return varied_option
             
