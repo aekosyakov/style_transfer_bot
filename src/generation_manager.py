@@ -334,17 +334,33 @@ class GenerationManager:
                 logger.error(f"   - Error type: Telegram file ID issue")
                 logger.error(f"   - Failed file_id: '{photo_file_id}'")
                 logger.error(f"   - Error details: {str(e)}")
+                logger.error(f"   - Category: {category}")
+                logger.error(f"   - Is retry: {is_retry}")
+                logger.error(f"   - Context keys: {list(context.user_data.keys()) if context else 'No context'}")
                 
-                # Send helpful message for file ID errors
-                error_text = (
-                    "📷 **Photo Upload Required**\n\n"
-                    "The photo you uploaded earlier is no longer available. "
-                    "Please upload a new photo to continue.\n\n"
-                    "This can happen if:\n"
-                    "• Too much time has passed since upload\n"
-                    "• The photo was uploaded in a different session\n\n"
-                    "Simply send a new photo to get started!"
-                )
+                # Enhanced error message for chained edits
+                if is_retry or (context and context.user_data.get('last_processing')):
+                    error_text = (
+                        "⚠️ **Photo Session Expired**\n\n"
+                        "The edited image is no longer available for further editing. "
+                        "This can happen during chained edits.\n\n"
+                        "**Solutions:**\n"
+                        "• Upload a fresh photo to start over\n"
+                        "• Try the operation again immediately\n"
+                        "• Use a different photo format (JPEG works best)\n\n"
+                        "💡 **Tip**: For multiple edits, work quickly to avoid timeouts."
+                    )
+                else:
+                    # Standard error message for initial uploads
+                    error_text = (
+                        "📷 **Photo Upload Required**\n\n"
+                        "The photo you uploaded earlier is no longer available. "
+                        "Please upload a new photo to continue.\n\n"
+                        "This can happen if:\n"
+                        "• Too much time has passed since upload\n"
+                        "• The photo was uploaded in a different session\n\n"
+                        "Simply send a new photo to get started!"
+                    )
                 
                 keyboard = [
                     [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
@@ -587,6 +603,18 @@ class GenerationManager:
                     result_photo = sent_message.photo[-1]
                     result_file_id = result_photo.file_id
                     
+                    # ENHANCED DEBUGGING FOR CHAINED EDITS
+                    old_current_photo = context.user_data.get('current_photo')
+                    old_last_processing_id = context.user_data.get('last_processing', {}).get('photo_file_id')
+                    
+                    logger.info(f"🔄 CONTEXT_UPDATE_DEBUG for user {user_id}:")
+                    logger.info(f"   - Category: {category}")
+                    logger.info(f"   - Old current_photo: '{old_current_photo}'")
+                    logger.info(f"   - Old last_processing photo_file_id: '{old_last_processing_id}'")
+                    logger.info(f"   - New result photo_file_id: '{result_file_id}'")
+                    logger.info(f"   - Result photo dimensions: {result_photo.width}x{result_photo.height}")
+                    logger.info(f"   - Result file size: {getattr(result_photo, 'file_size', 'N/A')}")
+                    
                     # Update current_photo to the result image
                     context.user_data['current_photo'] = result_file_id
                     
@@ -597,6 +625,7 @@ class GenerationManager:
                     logger.info(f"🔄 Updated context for user {user_id}:")
                     logger.info(f"   - Result photo file_id: {result_file_id}")
                     logger.info(f"   - Updated current_photo and last_processing for Edit/Animate workflow")
+                    logger.info(f"   - Context now ready for chained edits using result image as base")
             elif result_url == "CONTENT_FILTERED_E005":
                 logger.warning(f"🚫 Content filtering detected for user {user_id}")
                 # Delete processing message on content filter
@@ -671,17 +700,33 @@ class GenerationManager:
                 logger.error(f"   - Error type: Telegram file ID issue")
                 logger.error(f"   - Failed file_id: '{photo_file_id}'")
                 logger.error(f"   - Error details: {str(e)}")
+                logger.error(f"   - Category: {category}")
+                logger.error(f"   - Is retry: {is_retry}")
+                logger.error(f"   - Context keys: {list(context.user_data.keys()) if context else 'No context'}")
                 
-                # Send helpful message for file ID errors
-                error_text = (
-                    "📷 **Photo Upload Required**\n\n"
-                    "The photo you uploaded earlier is no longer available. "
-                    "Please upload a new photo to continue.\n\n"
-                    "This can happen if:\n"
-                    "• Too much time has passed since upload\n"
-                    "• The photo was uploaded in a different session\n\n"
-                    "Simply send a new photo to get started!"
-                )
+                # Enhanced error message for chained edits
+                if is_retry or (context and context.user_data.get('last_processing')):
+                    error_text = (
+                        "⚠️ **Photo Session Expired**\n\n"
+                        "The edited image is no longer available for further editing. "
+                        "This can happen during chained edits.\n\n"
+                        "**Solutions:**\n"
+                        "• Upload a fresh photo to start over\n"
+                        "• Try the operation again immediately\n"
+                        "• Use a different photo format (JPEG works best)\n\n"
+                        "💡 **Tip**: For multiple edits, work quickly to avoid timeouts."
+                    )
+                else:
+                    # Standard error message for initial uploads
+                    error_text = (
+                        "📷 **Photo Upload Required**\n\n"
+                        "The photo you uploaded earlier is no longer available. "
+                        "Please upload a new photo to continue.\n\n"
+                        "This can happen if:\n"
+                        "• Too much time has passed since upload\n"
+                        "• The photo was uploaded in a different session\n\n"
+                        "Simply send a new photo to get started!"
+                    )
                 
                 keyboard = [
                     [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]

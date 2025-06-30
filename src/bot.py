@@ -1114,13 +1114,21 @@ class StyleTransferBot:
             
             photo_file_id = context.user_data.get('current_photo')
             
-            # DETAILED LOGGING FOR DEBUGGING
+            # ENHANCED DEBUGGING FOR CHAINED EDITS
             logger.info(f"📷 PHOTO_RETRIEVAL_DEBUG for user {user_id}:")
             logger.info(f"   - Retrieved file_id: '{photo_file_id}'")
             logger.info(f"   - File_id type: {type(photo_file_id)}")
             logger.info(f"   - File_id length: {len(photo_file_id) if photo_file_id else 'None'}")
             logger.info(f"   - Context user_data keys: {list(context.user_data.keys())}")
-            logger.info(f"   - All context user_data: {context.user_data}")
+            logger.info(f"   - Current category: {category}")
+            logger.info(f"   - Selected option: {selected_option}")
+            logger.info(f"   - Last processing data: {context.user_data.get('last_processing')}")
+            if context.user_data.get('last_processing'):
+                last_proc = context.user_data['last_processing']
+                logger.info(f"   - Last processing photo_file_id: '{last_proc.get('photo_file_id')}'")
+                logger.info(f"   - Last processing category: {last_proc.get('category')}")
+                logger.info(f"   - File_id match: {photo_file_id == last_proc.get('photo_file_id')}")
+            # logger.info(f"   - All context user_data: {context.user_data}")  # Commented to reduce noise
             
             if not photo_file_id:
                 logger.warning(f"No photo found in context for user {user_id}")
@@ -1401,6 +1409,16 @@ class StyleTransferBot:
             
             logger.info(f"User {user_id} requested edit (using result image)")
             
+            # ENHANCED DEBUGGING FOR CHAINED EDITS
+            logger.info(f"🔍 EDIT_BUTTON_DEBUG for user {user_id}:")
+            logger.info(f"   - Current context current_photo: {context.user_data.get('current_photo')}")
+            logger.info(f"   - Current context last_processing: {context.user_data.get('last_processing')}")
+            logger.info(f"   - Message type: {type(update.callback_query.message)}")
+            logger.info(f"   - Message has photo: {bool(update.callback_query.message.photo)}")
+            if update.callback_query.message.photo:
+                logger.info(f"   - Photo count: {len(update.callback_query.message.photo)}")
+                logger.info(f"   - All photo file_ids: {[p.file_id for p in update.callback_query.message.photo]}")
+            
             # Extract the result image from current message and set as new current_photo
             try:
                 # Get the photo from the current message (result message)
@@ -1409,8 +1427,24 @@ class StyleTransferBot:
                     result_photo = update.callback_query.message.photo[-1]
                     result_file_id = result_photo.file_id
                     
+                    # ENHANCED LOGGING FOR FILE_ID TRACKING
+                    logger.info(f"📷 EDIT_FILE_ID_EXTRACTION for user {user_id}:")
+                    logger.info(f"   - Extracted file_id: '{result_file_id}'")
+                    logger.info(f"   - File_id length: {len(result_file_id)}")
+                    logger.info(f"   - Photo dimensions: {result_photo.width}x{result_photo.height}")
+                    logger.info(f"   - File size: {getattr(result_photo, 'file_size', 'N/A')}")
+                    logger.info(f"   - Previous current_photo: '{context.user_data.get('current_photo')}'")
+                    
                     # Set this result image as the new current_photo for editing
                     context.user_data['current_photo'] = result_file_id
+                    
+                    # ALSO UPDATE last_processing to match for consistency
+                    if 'last_processing' in context.user_data:
+                        old_photo_id = context.user_data['last_processing'].get('photo_file_id')
+                        context.user_data['last_processing']['photo_file_id'] = result_file_id
+                        logger.info(f"🔄 EDIT_CONTEXT_UPDATE for user {user_id}:")
+                        logger.info(f"   - Updated current_photo: {result_file_id}")
+                        logger.info(f"   - Updated last_processing photo_file_id: {old_photo_id} → {result_file_id}")
                     
                     logger.info(f"📷 EDIT_MODE for user {user_id}:")
                     logger.info(f"   - Using result image as base: {result_file_id}")
@@ -1429,14 +1463,29 @@ class StyleTransferBot:
                     
                 else:
                     logger.warning(f"No photo found in result message for user {user_id}")
+                    logger.error(f"🚨 EDIT_NO_PHOTO_ERROR for user {user_id}:")
+                    logger.error(f"   - Message content: {update.callback_query.message}")
+                    logger.error(f"   - Message photo: {update.callback_query.message.photo}")
+                    logger.error(f"   - Message document: {getattr(update.callback_query.message, 'document', None)}")
+                    logger.error(f"   - Message video: {getattr(update.callback_query.message, 'video', None)}")
                     await update.callback_query.answer("❌ No image to edit", show_alert=True)
                     
             except Exception as photo_error:
                 logger.error(f"Error extracting result photo for user {user_id}: {photo_error}")
+                logger.error(f"🚨 EDIT_EXTRACTION_ERROR for user {user_id}:")
+                logger.error(f"   - Error type: {type(photo_error).__name__}")
+                logger.error(f"   - Error message: {str(photo_error)}")
+                import traceback
+                logger.error(f"   - Full traceback: {traceback.format_exc()}")
                 await update.callback_query.answer("❌ Error accessing image", show_alert=True)
             
         except Exception as e:
             logger.error(f"Error in edit handler: {e}")
+            logger.error(f"🚨 EDIT_HANDLER_ERROR for user {user_id if 'user_id' in locals() else 'unknown'}:")
+            logger.error(f"   - Error type: {type(e).__name__}")
+            logger.error(f"   - Error message: {str(e)}")
+            import traceback
+            logger.error(f"   - Full traceback: {traceback.format_exc()}")
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
     
     def _create_varied_option(self, category: str, original_option: dict, gender: str = 'neutral') -> dict:
