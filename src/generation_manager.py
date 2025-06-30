@@ -233,6 +233,9 @@ class GenerationManager:
     ) -> None:
         """Start image processing - clean implementation."""
         try:
+            # Remove the category/option selection message
+            await self._remove_selection_message(update)
+            
             # Send new processing message
             processing_message = await self._send_processing_message(update, context, user_lang, "image")
             
@@ -263,6 +266,9 @@ class GenerationManager:
     ) -> None:
         """Start video processing - clean implementation."""
         try:
+            # Remove the category/option selection message
+            await self._remove_selection_message(update)
+            
             # Send new processing message
             processing_message = await self._send_processing_message(update, context, user_lang, "video")
             
@@ -280,6 +286,14 @@ class GenerationManager:
         except Exception as e:
             logger.error(f"Failed to start video processing: {e}")
             await update.callback_query.edit_message_text("❌ Failed to start processing. Please try again.")
+    
+    async def _remove_selection_message(self, update: Update) -> None:
+        """Remove the category/option selection message."""
+        try:
+            await update.callback_query.delete_message()
+            logger.info(f"🗑️ Deleted selection message for user {update.effective_user.id}")
+        except Exception as e:
+            logger.warning(f"Failed to delete selection message: {e}")
     
     async def _send_processing_message(
         self,
