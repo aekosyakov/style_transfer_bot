@@ -1229,7 +1229,7 @@ class StyleTransferBot:
         )
     
     async def _handle_retry(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle retry button - repeat with similar but varied processing using clean generation manager."""
+        """Handle retry button - repeat with similar but varied processing, keep original message."""
         try:
             from generation_manager import generation_manager
             
@@ -1250,17 +1250,11 @@ class StyleTransferBot:
             
             logger.info(f"User {user_id} requested retry for {last_processing['category']}")
             
-            # Use generation manager with clean quota handling
-            if last_processing['category'] == "animate":
-                animation_prompt = varied_option.get('kling_prompt', '')
-                await generation_manager.generate_video(
-                    update, context, last_processing['photo_file_id'], animation_prompt, user_lang
-                )
-            else:
-                await generation_manager.generate_image(
-                    update, context, last_processing['photo_file_id'], 
-                    last_processing['category'], varied_option, user_lang, is_retry=True
-                )
+            # Use special retry method that doesn't remove the result message
+            await generation_manager.retry_generation(
+                update, context, last_processing['photo_file_id'], 
+                last_processing['category'], varied_option, user_lang
+            )
             
             await update.callback_query.answer("🔄 Creating new variation...")
             
@@ -1269,7 +1263,7 @@ class StyleTransferBot:
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
     
     async def _handle_repeat_video(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle repeat video button - repeat the same video generation."""
+        """Handle repeat video button - repeat the same video generation, keep original message."""
         try:
             from generation_manager import generation_manager
             
@@ -1291,11 +1285,11 @@ class StyleTransferBot:
             
             # Use the original option (not varied) for exact repeat
             original_option = last_processing['selected_option']
-            animation_prompt = original_option.get('kling_prompt', '')
             
-            # Use generation manager with clean quota handling
-            await generation_manager.generate_video(
-                update, context, last_processing['photo_file_id'], animation_prompt, user_lang
+            # Use special retry method that doesn't remove the result message
+            await generation_manager.retry_generation(
+                update, context, last_processing['photo_file_id'], 
+                last_processing['category'], original_option, user_lang
             )
             
             await update.callback_query.answer("🔄 Repeating video...")
@@ -1305,18 +1299,18 @@ class StyleTransferBot:
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
     
     async def _handle_restart(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle restart button - show categories menu."""
+        """Handle restart button - reply to result message with categories menu."""
         try:
             user_id = update.effective_user.id
             user_lang = self._get_user_language(update.effective_user)
             
             logger.info(f"User {user_id} requested restart")
             
-            # Show enhancement menu
+            # Show enhancement menu as a reply to keep the original result
             keyboard = self._get_enhancement_keyboard(user_lang, user_id)
             
-            await update.callback_query.edit_message_caption(
-                caption=L.get("msg.photo_received", user_lang),
+            await update.callback_query.message.reply_text(
+                L.get("msg.photo_received", user_lang),
                 reply_markup=keyboard
             )
             
@@ -1362,7 +1356,7 @@ class StyleTransferBot:
             return original_option
 
     async def _handle_animate_result(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle animate result button - apply idle animation to the result image using clean generation manager."""
+        """Handle animate result button - apply idle animation to the result image, keep original message."""
         try:
             from generation_manager import generation_manager
             
@@ -1377,9 +1371,10 @@ class StyleTransferBot:
             
             logger.info(f"User {user_id} requested animation of result image")
             
-            # Use generation manager for clean video generation (idle animation = empty prompt)
-            await generation_manager.generate_video(
-                update, context, last_processing['photo_file_id'], "", user_lang
+            # Use special retry method that doesn't remove the result message (idle animation = empty prompt)
+            animate_option = {'kling_prompt': ''}
+            await generation_manager.retry_generation(
+                update, context, last_processing['photo_file_id'], "animate", animate_option, user_lang
             )
             
             await update.callback_query.answer("📽 Animating...")

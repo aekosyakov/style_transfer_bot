@@ -151,6 +151,62 @@ class GenerationManager:
         )
         return True
     
+    async def retry_generation(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+        photo_file_id: str,
+        category: str,
+        selected_option: Dict[str, Any],
+        user_lang: str
+    ) -> bool:
+        """
+        Retry generation without removing any existing messages (for retry/repeat buttons).
+        Returns True if generation started, False if payment needed.
+        """
+        user_id = update.effective_user.id
+        
+        # 1. Single quota check
+        if category == "animate":
+            service = "kling"
+        else:
+            service = "flux"
+            
+        if not stars_billing.has_quota(user_id, service, user_obj=update.effective_user):
+            # Store payment callback and show payment options
+            logger.info(f"🚫 User {user_id} has insufficient {service.upper()} quota for retry")
+            callback = PaymentCallback(
+                self.retry_generation,
+                update, context, photo_file_id, category, selected_option, user_lang
+            )
+            self.pending_callbacks[user_id] = callback
+            logger.info(f"💾 Stored retry payment callback for user {user_id}")
+            await self._show_payment_options(update, context, service)
+            return False
+        
+        # 2. Consume quota
+        logger.info(f"⚡ Attempting to consume {service.upper()} quota for retry for user {user_id}")
+        if not stars_billing.consume_quota(user_id, service, user_obj=update.effective_user):
+            logger.error(f"❌ Failed to consume {service.upper()} quota for user {user_id}")
+            await update.callback_query.answer("❌ Failed to process request. Please try again.", show_alert=True)
+            return False
+        logger.info(f"✅ Successfully consumed {service.upper()} quota for user {user_id}")
+        
+        # 3. Update processing context for retry functionality
+        context.user_data['last_processing'] = {
+            'photo_file_id': photo_file_id,
+            'category': category,
+            'selected_option': selected_option,
+            'user_id': user_id,
+            'user_lang': user_lang
+        }
+        
+        # 4. Start generation without removing any messages
+        await self._start_retry_processing(
+            update, context, photo_file_id, category, selected_option, user_lang
+        )
+        return True
+    
     async def handle_payment_success(
         self,
         update: Update,
@@ -281,6 +337,50 @@ class GenerationManager:
         except Exception as e:
             logger.error(f"Failed to start video processing: {e}")
             await update.callback_query.edit_message_text("❌ Failed to start processing. Please try again.")
+    
+    async def _start_retry_processing(
+        self,
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+        photo_file_id: str,
+        category: str,
+        selected_option: Dict[str, Any],
+        user_lang: str
+    ) -> None:
+        """Start retry processing without removing any messages."""
+        try:
+            # Send new processing message (don't remove any existing messages)
+            processing_message = await self._send_processing_message(update, context, user_lang, 
+                                                                   "video" if category == "animate" else "image")
+            
+            # Start background processing based on category
+            if category == "animate":
+                animation_prompt = selected_option.get('kling_prompt', '')
+                asyncio.create_task(self._process_video_background(
+                    update.effective_chat.id,
+                    context.bot,
+                    photo_file_id,
+                    animation_prompt,
+                    update.effective_user.id,
+                    user_lang,
+                    processing_message
+                ))
+            else:
+                asyncio.create_task(self._process_image_background(
+                    update.effective_chat.id,
+                    context.bot,
+                    photo_file_id,
+                    category,
+                    selected_option,
+                    update.effective_user.id,
+                    user_lang,
+                    is_retry=True,
+                    processing_message=processing_message
+                ))
+            
+        except Exception as e:
+            logger.error(f"Failed to start retry processing: {e}")
+            await update.callback_query.answer("❌ Failed to start processing. Please try again.", show_alert=True)
     
     async def _remove_selection_message(self, update: Update) -> None:
         """Remove the category/option selection message."""
