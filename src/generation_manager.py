@@ -304,8 +304,50 @@ class GenerationManager:
             ))
             
         except Exception as e:
-            logger.error(f"Failed to start image processing: {e}")
-            await update.callback_query.edit_message_text("❌ Failed to start processing. Please try again.")
+            logger.error(f"❌ Image processing exception for user {update.effective_user.id}: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Delete processing message on exception
+            if processing_message:
+                try:
+                    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=processing_message.message_id)
+                    logger.info(f"🗑️ Deleted processing message for user {update.effective_user.id} (exception)")
+                except Exception as delete_e:
+                    logger.warning(f"Failed to delete processing message: {delete_e}")
+            
+            # Check if this is a Telegram file ID error
+            if "wrong string length" in str(e).lower() or "wrong remote file identifier" in str(e).lower():
+                logger.warning(f"🔄 File ID error detected for user {update.effective_user.id}, requesting new photo upload")
+                
+                # Send helpful message for file ID errors
+                error_text = (
+                    "📷 **Photo Upload Required**\n\n"
+                    "The photo you uploaded earlier is no longer available. "
+                    "Please upload a new photo to continue.\n\n"
+                    "This can happen if:\n"
+                    "• Too much time has passed since upload\n"
+                    "• The photo was uploaded in a different session\n\n"
+                    "Simply send a new photo to get started!"
+                )
+                
+                keyboard = [
+                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
+                ]
+                
+                await context.bot.send_message(
+                    update.effective_chat.id, 
+                    error_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                # Don't refund quota for file ID errors since no generation was attempted
+                return
+            
+            # Refund quota on other exceptions
+            stars_billing.refund_quota(update.effective_user.id, "flux", 1)
+            logger.info(f"💰 Refunded FLUX quota for user {update.effective_user.id} due to exception")
+            await context.bot.send_message(update.effective_chat.id, L.get("msg.error_occurred", user_lang))
     
     async def _start_video_processing(
         self,
@@ -335,8 +377,50 @@ class GenerationManager:
             ))
             
         except Exception as e:
-            logger.error(f"Failed to start video processing: {e}")
-            await update.callback_query.edit_message_text("❌ Failed to start processing. Please try again.")
+            logger.error(f"❌ Video processing exception for user {update.effective_user.id}: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Delete processing message on exception
+            if processing_message:
+                try:
+                    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=processing_message.message_id)
+                    logger.info(f"🗑️ Deleted processing message for user {update.effective_user.id} (exception)")
+                except Exception as delete_e:
+                    logger.warning(f"Failed to delete processing message: {delete_e}")
+            
+            # Check if this is a Telegram file ID error
+            if "wrong string length" in str(e).lower() or "wrong remote file identifier" in str(e).lower():
+                logger.warning(f"🔄 File ID error detected for user {update.effective_user.id}, requesting new photo upload")
+                
+                # Send helpful message for file ID errors
+                error_text = (
+                    "📷 **Photo Upload Required**\n\n"
+                    "The photo you uploaded earlier is no longer available. "
+                    "Please upload a new photo to continue.\n\n"
+                    "This can happen if:\n"
+                    "• Too much time has passed since upload\n"
+                    "• The photo was uploaded in a different session\n\n"
+                    "Simply send a new photo to get started!"
+                )
+                
+                keyboard = [
+                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
+                ]
+                
+                await context.bot.send_message(
+                    update.effective_chat.id, 
+                    error_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                # Don't refund quota for file ID errors since no generation was attempted
+                return
+            
+            # Refund quota on other exceptions
+            stars_billing.refund_quota(update.effective_user.id, "kling", 1)
+            logger.info(f"💰 Refunded KLING quota for user {update.effective_user.id} due to exception")
+            await context.bot.send_message(update.effective_chat.id, L.get("msg.error_occurred", user_lang))
     
     async def _start_retry_processing(
         self,
@@ -379,8 +463,22 @@ class GenerationManager:
                 ))
             
         except Exception as e:
-            logger.error(f"Failed to start retry processing: {e}")
-            await update.callback_query.answer("❌ Failed to start processing. Please try again.", show_alert=True)
+            logger.error(f"❌ Retry processing exception for user {update.effective_user.id}: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Delete processing message on exception
+            if processing_message:
+                try:
+                    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=processing_message.message_id)
+                    logger.info(f"🗑️ Deleted processing message for user {update.effective_user.id} (exception)")
+                except Exception as delete_e:
+                    logger.warning(f"Failed to delete processing message: {delete_e}")
+            
+            # Refund quota on exception
+            stars_billing.refund_quota(update.effective_user.id, "flux", 1)
+            logger.info(f"💰 Refunded FLUX quota for user {update.effective_user.id} due to exception")
+            await context.bot.send_message(update.effective_chat.id, L.get("msg.error_occurred", user_lang))
     
     async def _remove_selection_message(self, update: Update) -> None:
         """Remove the category/option selection message."""
@@ -410,7 +508,7 @@ class GenerationManager:
             )
             return processing_message
         except Exception as e:
-            logger.error(f"Failed to send processing message: {e}")
+            logger.error(f"❌ Failed to send processing message: {e}")
             return None
     
     async def _process_image_background(
@@ -430,6 +528,42 @@ class GenerationManager:
         try:
             # Get photo URL
             logger.info(f"📁 Getting photo file for user {user_id}: {photo_file_id}")
+            
+            # Validate file ID format first
+            if not photo_file_id or len(photo_file_id) < 10:
+                logger.error(f"❌ Invalid photo file ID format for user {user_id}: {photo_file_id}")
+                # Delete processing message on error
+                if processing_message:
+                    try:
+                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                        logger.info(f"🗑️ Deleted processing message for user {user_id} (invalid file ID)")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete processing message: {e}")
+                
+                # Send error message asking for new photo
+                error_text = (
+                    "📷 **Photo Upload Required**\n\n"
+                    "The photo you uploaded earlier is no longer available. "
+                    "Please upload a new photo to continue.\n\n"
+                    "This can happen if:\n"
+                    "• Too much time has passed since upload\n"
+                    "• The photo was uploaded in a different session\n\n"
+                    "Simply send a new photo to get started!"
+                )
+                
+                keyboard = [
+                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
+                ]
+                
+                await bot.send_message(
+                    chat_id, 
+                    error_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                logger.info(f"📤 Sent photo upload request to user {user_id}")
+                return
+            
             photo_file = await bot.get_file(photo_file_id)
             photo_url = photo_file.file_path
             logger.info(f"📁 Got photo URL for user {user_id}: {photo_url}")
@@ -516,7 +650,35 @@ class GenerationManager:
                 except Exception as delete_e:
                     logger.warning(f"Failed to delete processing message: {delete_e}")
             
-            # Refund quota on exception
+            # Check if this is a Telegram file ID error
+            if "wrong string length" in str(e).lower() or "wrong remote file identifier" in str(e).lower():
+                logger.warning(f"🔄 File ID error detected for user {user_id}, requesting new photo upload")
+                
+                # Send helpful message for file ID errors
+                error_text = (
+                    "📷 **Photo Upload Required**\n\n"
+                    "The photo you uploaded earlier is no longer available. "
+                    "Please upload a new photo to continue.\n\n"
+                    "This can happen if:\n"
+                    "• Too much time has passed since upload\n"
+                    "• The photo was uploaded in a different session\n\n"
+                    "Simply send a new photo to get started!"
+                )
+                
+                keyboard = [
+                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
+                ]
+                
+                await bot.send_message(
+                    chat_id, 
+                    error_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                # Don't refund quota for file ID errors since no generation was attempted
+                return
+            
+            # Refund quota on other exceptions
             stars_billing.refund_quota(user_id, "flux", 1)
             logger.info(f"💰 Refunded FLUX quota for user {user_id} due to exception")
             await bot.send_message(chat_id, L.get("msg.error_occurred", user_lang))
@@ -536,6 +698,42 @@ class GenerationManager:
         try:
             # Get photo URL
             logger.info(f"📁 Getting photo file for user {user_id}: {photo_file_id}")
+            
+            # Validate file ID format first
+            if not photo_file_id or len(photo_file_id) < 10:
+                logger.error(f"❌ Invalid photo file ID format for user {user_id}: {photo_file_id}")
+                # Delete processing message on error
+                if processing_message:
+                    try:
+                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                        logger.info(f"🗑️ Deleted processing message for user {user_id} (invalid file ID)")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete processing message: {e}")
+                
+                # Send error message asking for new photo
+                error_text = (
+                    "📷 **Photo Upload Required**\n\n"
+                    "The photo you uploaded earlier is no longer available. "
+                    "Please upload a new photo to continue.\n\n"
+                    "This can happen if:\n"
+                    "• Too much time has passed since upload\n"
+                    "• The photo was uploaded in a different session\n\n"
+                    "Simply send a new photo to get started!"
+                )
+                
+                keyboard = [
+                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
+                ]
+                
+                await bot.send_message(
+                    chat_id, 
+                    error_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                logger.info(f"📤 Sent photo upload request to user {user_id}")
+                return
+            
             photo_file = await bot.get_file(photo_file_id)
             photo_url = photo_file.file_path
             logger.info(f"📁 Got photo URL for user {user_id}: {photo_url}")
@@ -586,7 +784,35 @@ class GenerationManager:
                 except Exception as delete_e:
                     logger.warning(f"Failed to delete processing message: {delete_e}")
             
-            # Refund quota on exception
+            # Check if this is a Telegram file ID error
+            if "wrong string length" in str(e).lower() or "wrong remote file identifier" in str(e).lower():
+                logger.warning(f"🔄 File ID error detected for user {user_id}, requesting new photo upload")
+                
+                # Send helpful message for file ID errors
+                error_text = (
+                    "📷 **Photo Upload Required**\n\n"
+                    "The photo you uploaded earlier is no longer available. "
+                    "Please upload a new photo to continue.\n\n"
+                    "This can happen if:\n"
+                    "• Too much time has passed since upload\n"
+                    "• The photo was uploaded in a different session\n\n"
+                    "Simply send a new photo to get started!"
+                )
+                
+                keyboard = [
+                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
+                ]
+                
+                await bot.send_message(
+                    chat_id, 
+                    error_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                # Don't refund quota for file ID errors since no generation was attempted
+                return
+            
+            # Refund quota on other exceptions
             stars_billing.refund_quota(user_id, "kling", 1)
             logger.info(f"💰 Refunded KLING quota for user {user_id} due to exception")
             await bot.send_message(chat_id, L.get("msg.error_occurred", user_lang))
