@@ -30,6 +30,7 @@
   "msg.upgrade": "💎 Upgrade to Premium",
   "msg.processing": "🔄 Processing your image... This may take a moment!",
   "msg.success": "✨ Your enhanced image is ready!",
+  "msg.video_ready": "Your enhanced video is ready!",
   "msg.error": "❌ Processing failed. Please try again.",
   "msg.error_occurred": "❌ An error occurred during processing.",
   "msg.error_photo": "Error processing photo. Please try again.",
@@ -81,6 +82,7 @@
   "category.animate": "animation",
 
   "btn.retry": "🔄 New Variation",
+  "btn.repeat": "🔄 Repeat",
   "btn.restart": "🏠 Restart", 
   "btn.animate_result": "📽 Animate",
   "btn.new_photo": "📸 New Photo",

@@ -474,16 +474,20 @@ class GenerationManager:
         result_url: str,
         user_lang: str
     ) -> None:
-        """Send video result."""
+        """Send video result with repeat and restart buttons."""
         keyboard = [
-            [InlineKeyboardButton(L.get("btn.new_photo", user_lang), callback_data="main_menu")]
+            [InlineKeyboardButton(L.get("btn.repeat", user_lang), callback_data="repeat_video")],
+            [InlineKeyboardButton(L.get("btn.restart", user_lang), callback_data="restart")]
         ]
+        
+        # Video success message
+        video_caption = f"🎬 {L.get('msg.video_ready', user_lang)}"
         
         try:
             await bot.send_animation(
                 chat_id=chat_id,
                 animation=result_url,
-                caption=L.get("msg.success", user_lang),
+                caption=video_caption,
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 has_spoiler=True
             )
@@ -492,7 +496,7 @@ class GenerationManager:
             await bot.send_video(
                 chat_id=chat_id,
                 video=result_url,
-                caption=L.get("msg.success", user_lang),
+                caption=video_caption,
                 reply_markup=InlineKeyboardMarkup(keyboard),
                 has_spoiler=True
             )

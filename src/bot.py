@@ -703,6 +703,8 @@ class StyleTransferBot:
                 await self._show_bug_report(update, context)
             elif data == "retry":
                 await self._handle_retry(update, context)
+            elif data == "repeat_video":
+                await self._handle_repeat_video(update, context)
             elif data == "restart":
                 await self._handle_restart(update, context)
             elif data == "animate_result":
@@ -1264,6 +1266,42 @@ class StyleTransferBot:
             
         except Exception as e:
             logger.error(f"Error in retry handler: {e}")
+            await update.callback_query.answer("❌ Error occurred", show_alert=True)
+    
+    async def _handle_repeat_video(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle repeat video button - repeat the same video generation."""
+        try:
+            from generation_manager import generation_manager
+            
+            user_id = update.effective_user.id
+            user_lang = self._get_user_language(update.effective_user)
+            
+            # Get last processing parameters
+            last_processing = context.user_data.get('last_processing')
+            if not last_processing:
+                await update.callback_query.answer("⚠️ No previous video to repeat", show_alert=True)
+                return
+            
+            # Check if the last processing was a video
+            if last_processing['category'] != "animate":
+                await update.callback_query.answer("⚠️ Last operation was not a video", show_alert=True)
+                return
+            
+            logger.info(f"User {user_id} requested repeat video")
+            
+            # Use the original option (not varied) for exact repeat
+            original_option = last_processing['selected_option']
+            animation_prompt = original_option.get('kling_prompt', '')
+            
+            # Use generation manager with clean quota handling
+            await generation_manager.generate_video(
+                update, context, last_processing['photo_file_id'], animation_prompt, user_lang
+            )
+            
+            await update.callback_query.answer("🔄 Repeating video...")
+            
+        except Exception as e:
+            logger.error(f"Error in repeat video handler: {e}")
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
     
     async def _handle_restart(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
