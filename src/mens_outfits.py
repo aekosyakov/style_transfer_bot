@@ -16,86 +16,86 @@ class MensOutfitGenerator:
     def __init__(self):
         # Modern & Trendy Silhouettes
         self.modern_trendy = [
-            "Slim-Fit Double-Breasted Suit with Turtleneck",
-            "Streetwear Layered Hoodie with Cargo Joggers",
-            "Oversized Bomber Jacket and Ripped Jeans",
-            "Techwear Utility Vest and Tapered Pants",
-            "Relaxed Fit Shirt with Wide-Leg Trousers",
-            "Monochrome Tracksuit with Chunky Sneakers",
-            "Denim Trucker Jacket and Graphic Tee",
-            "Varsity Jacket with Patchwork Details",
-            "Boxy Cropped Blazer and Pleated Trousers",
-            "Printed Resort Shirt and Tailored Shorts"
+            "Modern Business Suit",
+            "Streetwear Hoodie",
+            "Bomber Jacket",
+            "Utility Vest",
+            "Oversized Shirt",
+            "Athletic Tracksuit",
+            "Denim Jacket",
+            "Varsity Jacket",
+            "Cropped Blazer",
+            "Resort Shirt"
         ]
         
         # Classic & Timeless
         self.classic_timeless = [
-            "Three-Piece Wool Suit with Pocket Square",
-            "Oxford Shirt and Slim Chinos",
-            "Double-Breasted Navy Blazer with Gray Slacks",
-            "Cable Knit Sweater and Straight Jeans",
-            "Trench Coat over Business Suit",
-            "Single-Breasted Tuxedo with Bow Tie",
-            "Argyle V-Neck Sweater with Collared Shirt",
-            "Polo Shirt and Tailored Shorts",
-            "Leather Moto Jacket and Black Jeans",
-            "Cashmere Cardigan and Dress Pants"
+            "Three-Piece Suit",
+            "Oxford Shirt",
+            "Navy Blazer",
+            "Knit Sweater",
+            "Trench Coat",
+            "Classic Tuxedo",
+            "V-Neck Sweater",
+            "Polo Shirt",
+            "Leather Jacket",
+            "Cardigan"
         ]
         
         # Edgy / Statement Styles
         self.edgy_statement = [
-            "Faux Leather Biker Jacket with Zipper Details",
-            "Neon Windbreaker with Graphic Joggers",
-            "Oversized Flannel Shirt with Chains",
-            "Mesh Layered Tank Top and Cargo Pants",
-            "Distressed Denim Set with Bandana",
-            "Harness Vest over Longline Tee",
-            "Futuristic Holographic Bomber",
-            "Studded Denim Jacket and Leather Pants",
-            "Tie-Dye Hoodie with Ripped Skinny Jeans",
-            "Vinyl Trench Coat and Platform Boots"
+            "Biker Jacket",
+            "Neon Windbreaker",
+            "Flannel Shirt",
+            "Mesh Tank Top",
+            "Distressed Denim",
+            "Harness Vest",
+            "Holographic Bomber",
+            "Studded Jacket",
+            "Tie-Dye Hoodie",
+            "Vinyl Coat"
         ]
         
         # Evening & Occasion Showstoppers
         self.evening_occasion = [
-            "Velvet Smoking Jacket with Satin Lapels",
-            "Classic Black Tie Tuxedo",
-            "White Dinner Jacket with Silk Scarf",
-            "Sequin Blazer with Slim-Fit Pants",
-            "Embroidered Mandarin Collar Suit",
-            "Double-Breasted Dinner Suit",
-            "Velvet Bow Tie and Silk Waistcoat",
-            "Silk Jacquard Party Shirt with Dress Pants",
-            "All-White Summer Suit",
-            "Midnight Blue Velvet Suit"
+            "Velvet Smoking Jacket",
+            "Black Tie Tuxedo",
+            "White Dinner Jacket",
+            "Sequin Blazer",
+            "Mandarin Collar Suit",
+            "Dinner Suit",
+            "Silk Waistcoat",
+            "Party Shirt",
+            "White Summer Suit",
+            "Velvet Suit"
         ]
         
         # Cultural & Traditional Icons
         self.cultural_traditional = [
-            "Japanese Kimono with Obi Sash",
-            "West African Agbada Robe",
-            "Scottish Tartan Kilt with Prince Charlie Jacket",
-            "Indian Sherwani with Embroidered Stole",
-            "Chinese Tang Suit with Brocade Patterns",
-            "Moroccan Djellaba with Fez Hat",
-            "Middle Eastern Thobe with Bisht Cloak",
-            "Mexican Charro Suit",
-            "Russian Cossack Tunic with Sash",
-            "Greek Fustanella with Waistcoat"
+            "Japanese Kimono",
+            "African Agbada",
+            "Scottish Kilt",
+            "Indian Sherwani",
+            "Chinese Tang Suit",
+            "Moroccan Djellaba",
+            "Middle Eastern Thobe",
+            "Mexican Charro",
+            "Russian Tunic",
+            "Greek Fustanella"
         ]
         
         # Stylized Character-Inspired (content-safe descriptions)
         self.anime_inspired = [
-            "Martial Arts Gi with High Collar",
-            "Cyberpunk Street Ninja Outfit",
-            "High-Collar Military-Style Uniform",
-            "Fantasy Mage Robe with Armor Accents",
-            "Pilot Jumpsuit with Utility Harness",
-            "Layered Punk Ensemble with Studs",
-            "Samurai-Inspired Uniform",
-            "Stage Jacket with Glitter Accents",
-            "Aristocrat Tailcoat with Gothic Details",
-            "Steampunk Inventor's Suit with Goggles"
+            "Martial Arts Gi",
+            "Cyberpunk Outfit",
+            "Military Uniform",
+            "Fantasy Robe",
+            "Pilot Jumpsuit",
+            "Punk Ensemble",
+            "Samurai Uniform",
+            "Stage Jacket",
+            "Gothic Tailcoat",
+            "Steampunk Suit"
         ]
         
         # Outfit Colors & Fabrics
@@ -264,14 +264,14 @@ class MensOutfitGenerator:
     def get_casual_outfit(self) -> str:
         """Get a casual men's outfit change."""
         casual_outfits = [
-            "casual t-shirt and jeans",
-            "polo shirt and chinos",
-            "hoodie and joggers",
-            "button-up shirt and shorts",
-            "sweater and casual pants",
-            "denim jacket and khakis",
-            "henley shirt and cargo pants",
-            "flannel shirt and dark jeans"
+            "casual t-shirt",
+            "polo shirt",
+            "hoodie",
+            "button-up shirt",
+            "sweater",
+            "denim jacket",
+            "henley shirt",
+            "flannel shirt"
         ]
         
         try:
