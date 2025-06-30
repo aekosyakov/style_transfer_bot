@@ -617,8 +617,8 @@ class GenerationManager:
     ) -> None:
         """Send image result with retry, restart, and animate buttons."""
         keyboard = [
-            [InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="retry")],
-            [InlineKeyboardButton(L.get("btn.restart", user_lang), callback_data="restart")],
+            [InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="retry"), 
+             InlineKeyboardButton(L.get("btn.restart", user_lang), callback_data="restart")],
             [InlineKeyboardButton(L.get("btn.animate", user_lang), callback_data="animate_result")]
         ]
         
@@ -639,8 +639,8 @@ class GenerationManager:
     ) -> None:
         """Send video result with repeat and restart buttons."""
         keyboard = [
-            [InlineKeyboardButton(L.get("btn.repeat", user_lang), callback_data="repeat_video")],
-            [InlineKeyboardButton(L.get("btn.restart", user_lang), callback_data="restart")]
+            [InlineKeyboardButton(L.get("btn.repeat", user_lang), callback_data="repeat_video"),
+             InlineKeyboardButton(L.get("btn.restart", user_lang), callback_data="restart")]
         ]
         
         # Video success message
