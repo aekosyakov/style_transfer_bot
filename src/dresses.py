@@ -14,88 +14,116 @@ class DressGenerator:
     """Generate random dresses with face and body-preserving prompts."""
     
     def __init__(self):
-        # Modern & Trendy Silhouettes
-        self.modern_trendy = [
-            "Slip-Dress Midi ('90s Revive) dress",
-            "Cut-Out Bodycon Mini dress",
-            "Cottagecore Puff-Sleeve Sundress",
-            "Asymmetric Hem Ribbed Knit dress",
-            "Corset-Waist Satin Midi dress",
-            "Tiered Babydoll Mini dress",
-            "Shirt-Dress With Oversize Pockets",
-            "One-Shoulder Column Dress",
-            "Cargo-Utility Maxi dress with D-rings",
-            "Plissé Pleated Halter Midi dress"
+        # 80s Power Pop - Neon brights, puff sleeves & big shoulders
+        self.eighties_power_pop = [
+            "Power Shoulder Dress",
+            "Neon Mini Dress",
+            "Puff Sleeve Midi",
+            "Bold Shoulder Dress",
+            "Electric Blue Dress",
+            "Dynasty Dress",
+            "Material Girl Dress",
+            "Miami Vice Dress",
+            "Geometric Print Dress",
+            "Bright Blazer Dress"
         ]
         
-        # Classic & Timeless
-        self.classic_timeless = [
-            "Little Black Dress (LBD) Sheath",
-            "A-Line Tea-Length dress",
-            "Wrap Dress (Diane von Furstenberg style)",
-            "Fit-and-Flare Knee-Length dress",
-            "Column Evening Gown",
-            "Princess-Seamed Ball Gown",
-            "Boat-Neck Shift Dress",
-            "Pencil Dress with Cap Sleeves",
-            "Empire-Waist Regency Gown",
-            "Vintage 1950s Full-Skirt Swing dress"
+        # 90s Revival - Slip dresses, spaghetti straps & bias cuts
+        self.nineties_revival = [
+            "Slip Dress",
+            "Spaghetti Strap Dress",
+            "Bias Cut Midi",
+            "Minimalist Dress",
+            "Kate Moss Dress",
+            "Grunge Dress",
+            "Simple Tank Dress",
+            "Ribbed Midi",
+            "Basic Slip",
+            "Downtown Dress"
         ]
         
-        # Fun / Edgy Statement Styles
-        self.edgy_statement = [
-            "PVC Vinyl Mini (Cyber-Club) dress",
-            "Neon Mesh Layered Slip dress",
-            "Fringe Flapper Re-Boot dress",
-            "Holographic Skater Dress",
-            "Two-Tone Split Dye Bodycon dress",
-            "Laser-Cut Scuba A-Line dress",
-            "Oversized Hoodie Dress With Thigh-High Slits",
-            "Patchwork Denim Midi dress",
-            "Cage-Strap Harness Dress",
-            "LED Fiber-Optic Party Gown"
+        # Old Money Style - Logo-less silks & cashmeres in cream, navy, taupe
+        self.old_money_style = [
+            "Silk Shift Dress",
+            "Cashmere Dress",
+            "Navy Sheath",
+            "Cream Midi",
+            "Taupe Dress",
+            "Preppy Dress",
+            "Tennis Club Dress",
+            "Country Club Dress",
+            "Polo Dress",
+            "Yacht Club Dress"
         ]
         
-        # Evening & Occasion Showstoppers
-        self.evening_occasion = [
-            "Sequin Mermaid Gown",
-            "High-Slit Jersey Goddess dress",
-            "Tulle Ruffled Ball Dress",
-            "Velvet Off-Shoulder Trumpet dress",
-            "Feather-Trim Cocktail Mini dress",
-            "Beaded Fluted Column dress",
-            "Cape-Back Crepe Gown",
-            "Illusion Lace Bodice A-Line dress",
-            "One-Sleeve Draped Satin dress",
-            "Metallic Foil Plunge Maxi dress"
+        # Disco Glam - Sequins, lamé, mirror-ball sparkle
+        self.disco_glam = [
+            "Sequin Dress",
+            "Lamé Dress",
+            "Mirror Ball Dress",
+            "Sparkle Dress",
+            "Disco Mini",
+            "Metallic Dress",
+            "Studio 54 Dress",
+            "Glitter Dress",
+            "Shimmery Dress",
+            "Dance Floor Dress"
         ]
         
-        # Cultural & Traditional Icons
-        self.cultural_traditional = [
-            "Cheongsam / Qipao Midi dress",
-            "Kimono-Sleeve Obi-Belt Dress",
-            "Sari-Drape Gown Hybrid",
-            "Hanbok Jeogori & Chima Fusion dress",
-            "Dirndl Bodice Dress",
-            "Kaftan Embroidered Maxi dress",
-            "Boubou West-African Flow dress",
-            "Flamenco Ruffle Bata de Cola dress",
-            "Greek Chiton-Inspired Drape dress",
-            "Maasai Beaded Collar Dress"
+        # Y2K Futurist - Iridescent mesh, vinyl & asymmetric hems
+        self.y2k_futurist = [
+            "Iridescent Dress",
+            "Mesh Dress",
+            "Vinyl Dress",
+            "Asymmetric Dress",
+            "Cyber Dress",
+            "Holographic Dress",
+            "Tech Dress",
+            "Future Dress",
+            "Matrix Dress",
+            "Space Age Dress"
         ]
         
-        # Anime & Game-Inspired
-        self.anime_inspired = [
-            "Magical-Girl Layered Ruffle Skirt (Sailor silhouette) dress",
-            "Battle-Ready Bodysuit + Skater Skirt (Asuka plugsuit vibe)",
-            "Victorian Lolita One-Piece (Sweet Lolita) dress",
-            "Cyberpunk High-Collar Coat-Dress (Arasaka chic)",
-            "School Uniform Seifuku Sailor Dress",
-            "Traditional Hime-Sama Gown (Princess long train)",
-            "Mecha Pilot Flight Dress (utility pockets)",
-            "Fantasy Mage Robe-Dress With Capelet",
-            "Idol Stage Frilly Mini With Bows dress",
-            "Gothic Lolita Cage-Crinoline Dress"
+        # Hollywood Glamour - Satin columns, sweetheart necks & opera gloves
+        self.hollywood_glamour = [
+            "Satin Column Dress",
+            "Sweetheart Dress",
+            "Red Carpet Dress",
+            "Opera Glove Dress",
+            "Old Hollywood Dress",
+            "Marilyn Dress",
+            "Grace Kelly Dress",
+            "Movie Star Dress",
+            "Glamour Dress",
+            "Classic Gown"
+        ]
+        
+        # Urban Streetstyle - Oversized tee-dresses, cargo pockets, sporty trims
+        self.urban_streetstyle = [
+            "Oversized Tee Dress",
+            "Cargo Pocket Dress",
+            "Sporty Dress",
+            "Street Dress",
+            "Urban Dress",
+            "Hoodie Dress",
+            "Athletic Dress",
+            "Utility Dress",
+            "Off-Duty Dress",
+            "City Girl Dress"
+        ]
+        
+        # Gen-Z Viral Mix - Cut-outs, corset-front minis, cargo maxis & bold graphic prints
+        self.genz_viral_mix = [
+            "Cut-Out Dress",
+            "Corset Front Mini",
+            "Cargo Maxi Dress",
+            "Graphic Print Dress",
+            "TikTok Dress",
+            "E-Girl Dress",
+            "Viral Trend Dress",
+            "Social Media Dress",
+            "Gen Z Dress",
+            "Trending Dress"
         ]
         
         # Dress Colors & Fabrics
@@ -157,12 +185,14 @@ class DressGenerator:
         
         # All categories combined for easy access
         self.all_categories = {
-            "modern_trendy": self.modern_trendy,
-            "classic_timeless": self.classic_timeless,
-            "edgy_statement": self.edgy_statement,
-            "evening_occasion": self.evening_occasion,
-            "cultural_traditional": self.cultural_traditional,
-            "anime_inspired": self.anime_inspired
+            "eighties_power_pop": self.eighties_power_pop,
+            "nineties_revival": self.nineties_revival,
+            "old_money_style": self.old_money_style,
+            "disco_glam": self.disco_glam,
+            "y2k_futurist": self.y2k_futurist,
+            "hollywood_glamour": self.hollywood_glamour,
+            "urban_streetstyle": self.urban_streetstyle,
+            "genz_viral_mix": self.genz_viral_mix
         }
     
     def get_random_dress(self, include_color: bool = True, include_material: bool = True, include_effects: bool = False) -> str:
