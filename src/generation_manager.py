@@ -167,11 +167,6 @@ class GenerationManager:
             del self.pending_callbacks[user_id]
             logger.info(f"🗑️ Removed callback for user {user_id}, remaining pending: {len(self.pending_callbacks)}")
             
-            # Show processing message before starting generation
-            user_lang = L.get_user_language(update.effective_user)
-            logger.info(f"📱 Sending processing message to user {user_id}")
-            await update.message.reply_text(f"⚡ {L.get('msg.processing', user_lang)}")
-            
             logger.info(f"🚀 Executing payment callback for user {user_id}")
             try:
                 await callback.execute()
