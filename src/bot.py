@@ -1561,7 +1561,7 @@ class StyleTransferBot:
                 return
             
             # Start background processing
-            asyncio.create_task(self._process_image_background(
+            asyncio.create_task(generation_manager._process_image_background(
                 update.effective_chat.id,
                 context.bot,
                 auto_resume_context['photo_file_id'],
@@ -1570,7 +1570,8 @@ class StyleTransferBot:
                 user_id,
                 auto_resume_context['user_lang'],
                 context,
-                is_retry=False
+                is_retry=False,
+                processing_message=None
             ))
             
             logger.info(f"✅ Auto-resume processing started for user {user_id}")

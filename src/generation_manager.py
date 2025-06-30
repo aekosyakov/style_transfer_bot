@@ -299,6 +299,7 @@ class GenerationManager:
                 selected_option,
                 update.effective_user.id,
                 user_lang,
+                context,
                 is_retry,
                 processing_message
             ))
@@ -466,6 +467,7 @@ class GenerationManager:
                     selected_option,
                     update.effective_user.id,
                     user_lang,
+                    context,
                     is_retry=True,
                     processing_message=processing_message
                 ))
@@ -528,6 +530,7 @@ class GenerationManager:
         selected_option: Dict[str, Any],
         user_id: int,
         user_lang: str,
+        context: ContextTypes.DEFAULT_TYPE = None,
         is_retry: bool = False,
         processing_message = None
     ) -> None:
@@ -568,9 +571,26 @@ class GenerationManager:
                     except Exception as e:
                         logger.warning(f"Failed to delete processing message: {e}")
                 
-                # Send success result
-                await self._send_image_result(bot, chat_id, result_url, user_lang, category, selected_option)
+                # Send success result and get the sent message
+                sent_message = await self._send_image_result(bot, chat_id, result_url, user_lang, category, selected_option)
                 logger.info(f"📤 Sent image result to user {user_id}")
+                
+                # CRITICAL FIX: Update context to use result image for future operations
+                if context and sent_message and sent_message.photo:
+                    # Get the largest photo (highest resolution) from the sent result
+                    result_photo = sent_message.photo[-1]
+                    result_file_id = result_photo.file_id
+                    
+                    # Update current_photo to the result image
+                    context.user_data['current_photo'] = result_file_id
+                    
+                    # Update last_processing to point to the result image for animation
+                    if 'last_processing' in context.user_data:
+                        context.user_data['last_processing']['photo_file_id'] = result_file_id
+                        
+                    logger.info(f"🔄 Updated context for user {user_id}:")
+                    logger.info(f"   - Result photo file_id: {result_file_id}")
+                    logger.info(f"   - Updated current_photo and last_processing for Edit/Animate workflow")
             elif result_url == "CONTENT_FILTERED_E005":
                 logger.warning(f"🚫 Content filtering detected for user {user_id}")
                 # Delete processing message on content filter
@@ -844,7 +864,7 @@ class GenerationManager:
         user_lang: str,
         category: str,
         selected_option: Dict[str, Any]
-    ) -> None:
+    ):
         """Send image result with retry, restart, and animate buttons."""
         keyboard = [
             [InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="retry"), 
@@ -852,13 +872,14 @@ class GenerationManager:
             [InlineKeyboardButton(L.get("btn.animate", user_lang), callback_data="animate_result")]
         ]
         
-        await bot.send_photo(
+        sent_message = await bot.send_photo(
             chat_id=chat_id,
             photo=result_url,
             caption=L.get("msg.success", user_lang),
             reply_markup=InlineKeyboardMarkup(keyboard),
             has_spoiler=True
         )
+        return sent_message
     
     async def _send_video_result(
         self,
