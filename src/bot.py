@@ -212,6 +212,7 @@ class StyleTransferBot:
         
         # Message handlers
         self.app.add_handler(MessageHandler(filters.PHOTO, self.handle_photo))
+        self.app.add_handler(MessageHandler(filters.DOCUMENT, self.handle_document))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_text))
         
         # Callback query handlers
@@ -648,6 +649,58 @@ class StyleTransferBot:
             
         except Exception as e:
             logger.error(f"Error handling photo: {e}")
+            user_lang = self._get_user_language(update.effective_user)
+            await update.message.reply_text(L.get("msg.error_photo", user_lang))
+    
+    async def handle_document(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        """Handle document messages that might be images."""
+        try:
+            user_id = update.effective_user.id
+            user_lang = self._get_user_language(update.effective_user)
+            
+            document = update.message.document
+            
+            # Check if the document is an image
+            if not document.mime_type or not document.mime_type.startswith('image/'):
+                logger.info(f"User {user_id} sent non-image document: {document.mime_type}")
+                await update.message.reply_text(
+                    "📷 Please send an image file (JPEG, PNG, GIF, etc.) or use the camera button to take a photo."
+                )
+                return
+            
+            # Check file size (Telegram limit is 20MB for bots, but we'll be conservative)
+            if document.file_size and document.file_size > 10 * 1024 * 1024:  # 10MB limit
+                await update.message.reply_text(
+                    "📏 Image file is too large. Please send an image smaller than 10MB."
+                )
+                return
+            
+            # Store document file_id in context (same as photo)
+            context.user_data['current_photo'] = document.file_id
+            
+            # DETAILED LOGGING FOR DEBUGGING
+            logger.info(f"📁 DOCUMENT_UPLOAD_DEBUG for user {user_id}:")
+            logger.info(f"   - Document file_id: '{document.file_id}'")
+            logger.info(f"   - File_id length: {len(document.file_id)}")
+            logger.info(f"   - Document file_unique_id: '{document.file_unique_id}'")
+            logger.info(f"   - Document mime_type: {document.mime_type}")
+            logger.info(f"   - Document file_name: {document.file_name}")
+            logger.info(f"   - Document file_size: {document.file_size}")
+            logger.info(f"   - Context user_data keys: {list(context.user_data.keys())}")
+            logger.info(f"   - Stored in context: '{context.user_data.get('current_photo')}'")
+            
+            # Show enhancement options (same as photo upload)
+            keyboard = self._get_enhancement_keyboard(user_lang, user_id)
+            
+            await update.message.reply_text(
+                L.get("msg.photo_received", user_lang),
+                reply_markup=keyboard
+            )
+            
+            logger.info(f"User {user_id} uploaded image document: {document.file_id}")
+            
+        except Exception as e:
+            logger.error(f"Error handling document: {e}")
             user_lang = self._get_user_language(update.effective_user)
             await update.message.reply_text(L.get("msg.error_photo", user_lang))
     
