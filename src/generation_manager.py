@@ -233,8 +233,8 @@ class GenerationManager:
     ) -> None:
         """Start image processing - clean implementation."""
         try:
-            # Show processing message
-            await self._show_processing_message(update, context, user_lang, "image")
+            # Send new processing message
+            processing_message = await self._send_processing_message(update, context, user_lang, "image")
             
             # Start background processing
             asyncio.create_task(self._process_image_background(
@@ -245,7 +245,8 @@ class GenerationManager:
                 selected_option,
                 update.effective_user.id,
                 user_lang,
-                is_retry
+                is_retry,
+                processing_message
             ))
             
         except Exception as e:
@@ -262,8 +263,8 @@ class GenerationManager:
     ) -> None:
         """Start video processing - clean implementation."""
         try:
-            # Show processing message
-            await self._show_processing_message(update, context, user_lang, "video")
+            # Send new processing message
+            processing_message = await self._send_processing_message(update, context, user_lang, "video")
             
             # Start background processing
             asyncio.create_task(self._process_video_background(
@@ -272,35 +273,36 @@ class GenerationManager:
                 photo_file_id,
                 animation_prompt,
                 update.effective_user.id,
-                user_lang
+                user_lang,
+                processing_message
             ))
             
         except Exception as e:
             logger.error(f"Failed to start video processing: {e}")
             await update.callback_query.edit_message_text("❌ Failed to start processing. Please try again.")
     
-    async def _show_processing_message(
+    async def _send_processing_message(
         self,
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
         user_lang: str,
         generation_type: str
-    ) -> None:
-        """Show processing message with appropriate chat action."""
+    ):
+        """Send new processing message with appropriate chat action."""
         try:
             # Send chat action
             action = "record_video" if generation_type == "video" else "upload_photo"
             await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=action)
             
-            # Show processing message
-            await update.callback_query.edit_message_text(L.get("msg.processing", user_lang))
+            # Send new processing message
+            processing_message = await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=L.get("msg.processing", user_lang)
+            )
+            return processing_message
         except Exception as e:
-            if "no text in the message to edit" in str(e).lower():
-                await update.callback_query.edit_message_caption(
-                    caption=L.get("msg.processing", user_lang)
-                )
-            else:
-                raise e
+            logger.error(f"Failed to send processing message: {e}")
+            return None
     
     async def _process_image_background(
         self,
@@ -311,7 +313,8 @@ class GenerationManager:
         selected_option: Dict[str, Any],
         user_id: int,
         user_lang: str,
-        is_retry: bool = False
+        is_retry: bool = False,
+        processing_message = None
     ) -> None:
         """Background image processing with automatic quota refund on failure."""
         logger.info(f"🖼️ Starting background image processing for user {user_id}, category: {category}, retry: {is_retry}")
@@ -330,11 +333,27 @@ class GenerationManager:
             
             if result_url:
                 logger.info(f"✅ Image generation successful for user {user_id}: {result_url}")
+                # Delete processing message before sending result
+                if processing_message:
+                    try:
+                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                        logger.info(f"🗑️ Deleted processing message for user {user_id}")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete processing message: {e}")
+                
                 # Send success result
                 await self._send_image_result(bot, chat_id, result_url, user_lang, category, selected_option)
                 logger.info(f"📤 Sent image result to user {user_id}")
             else:
                 logger.error(f"❌ Image generation failed for user {user_id} (empty result)")
+                # Delete processing message on error
+                if processing_message:
+                    try:
+                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                        logger.info(f"🗑️ Deleted processing message for user {user_id} (error)")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete processing message: {e}")
+                
                 # Processing failed - quota already refunded by safe_generate
                 await bot.send_message(chat_id, L.get("msg.error", user_lang))
                 
@@ -342,6 +361,15 @@ class GenerationManager:
             logger.error(f"❌ Image processing exception for user {user_id}: {e}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Delete processing message on exception
+            if processing_message:
+                try:
+                    await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                    logger.info(f"🗑️ Deleted processing message for user {user_id} (exception)")
+                except Exception as delete_e:
+                    logger.warning(f"Failed to delete processing message: {delete_e}")
+            
             # Refund quota on exception
             stars_billing.refund_quota(user_id, "flux", 1)
             logger.info(f"💰 Refunded FLUX quota for user {user_id} due to exception")
@@ -354,7 +382,8 @@ class GenerationManager:
         photo_file_id: str,
         animation_prompt: str,
         user_id: int,
-        user_lang: str
+        user_lang: str,
+        processing_message = None
     ) -> None:
         """Background video processing with automatic quota refund on failure."""
         logger.info(f"🎬 Starting background video processing for user {user_id}, prompt: {animation_prompt}")
@@ -374,11 +403,27 @@ class GenerationManager:
             
             if result_url:
                 logger.info(f"✅ Video generation successful for user {user_id}: {result_url}")
+                # Delete processing message before sending result
+                if processing_message:
+                    try:
+                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                        logger.info(f"🗑️ Deleted processing message for user {user_id}")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete processing message: {e}")
+                
                 # Send success result
                 await self._send_video_result(bot, chat_id, result_url, user_lang)
                 logger.info(f"📤 Sent video result to user {user_id}")
             else:
                 logger.error(f"❌ Video generation failed for user {user_id} (empty result)")
+                # Delete processing message on error
+                if processing_message:
+                    try:
+                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                        logger.info(f"🗑️ Deleted processing message for user {user_id} (error)")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete processing message: {e}")
+                
                 # Processing failed - quota already refunded by safe_generate
                 await bot.send_message(chat_id, L.get("msg.error", user_lang))
                 
@@ -386,6 +431,15 @@ class GenerationManager:
             logger.error(f"❌ Video processing exception for user {user_id}: {e}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Delete processing message on exception
+            if processing_message:
+                try:
+                    await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                    logger.info(f"🗑️ Deleted processing message for user {user_id} (exception)")
+                except Exception as delete_e:
+                    logger.warning(f"Failed to delete processing message: {delete_e}")
+            
             # Refund quota on exception
             stars_billing.refund_quota(user_id, "kling", 1)
             logger.info(f"💰 Refunded KLING quota for user {user_id} due to exception")
