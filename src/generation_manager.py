@@ -452,11 +452,11 @@ class GenerationManager:
         category: str,
         selected_option: Dict[str, Any]
     ) -> None:
-        """Send image result with retry and animate buttons."""
+        """Send image result with retry, restart, and animate buttons."""
         keyboard = [
             [InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="retry")],
-            [InlineKeyboardButton(L.get("btn.animate", user_lang), callback_data="animate_result")],
-            [InlineKeyboardButton(L.get("btn.new_photo", user_lang), callback_data="main_menu")]
+            [InlineKeyboardButton(L.get("btn.restart", user_lang), callback_data="restart")],
+            [InlineKeyboardButton(L.get("btn.animate", user_lang), callback_data="animate_result")]
         ]
         
         await bot.send_photo(
