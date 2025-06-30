@@ -1044,30 +1044,10 @@ class StyleTransferBot:
                         raise e
                 return
             
-            # Check quota with warnings before processing
-            service_type = "kling" if category == "animate" else "flux"
-            quota_status = await stars_billing.check_quota_with_warnings(update, context, service_type)
-            
-            if quota_status == 'hard_block':
-                # No quota, user was shown hard block - stop processing
-                return
-            elif quota_status == 'gentle_warning':
-                # Low quota but can continue - user was shown warning
-                pass
-                
-            # Consume quota atomically
-            if not stars_billing.consume_quota(user_id, service_type, user_obj=update.effective_user):
-                # Failed to consume quota (race condition or depleted), show hard block
-                await stars_billing._show_hard_block_upsell(update, context, service_type)
-                return
-
-            # Get photo from context
+            # Get photo from context BEFORE quota check for auto-resume
             photo_file_id = context.user_data.get('current_photo')
             if not photo_file_id:
                 logger.warning(f"No photo found in context for user {user_id}")
-                
-                # Refund quota since processing won't happen
-                stars_billing.refund_quota(user_id, service_type)
                 
                 try:
                     await update.callback_query.edit_message_text(
@@ -1086,7 +1066,8 @@ class StyleTransferBot:
             
             logger.info(f"Processing photo {photo_file_id} for user {user_id}")
             
-            # Store processing parameters for retry functionality
+            # Store processing parameters BEFORE quota check for auto-resume functionality
+            service_type = "kling" if category == "animate" else "flux"
             context.user_data['last_processing'] = {
                 'photo_file_id': photo_file_id,
                 'category': category,
@@ -1095,6 +1076,22 @@ class StyleTransferBot:
                 'user_lang': user_lang,
                 'service_type': service_type  # Store for refund on failure
             }
+            
+            # Check quota with warnings AFTER storing context
+            quota_status = await stars_billing.check_quota_with_warnings(update, context, service_type)
+            
+            if quota_status == 'hard_block':
+                # No quota, user was shown hard block - stop processing
+                return
+            elif quota_status == 'gentle_warning':
+                # Low quota but can continue - user was shown warning
+                pass
+                
+            # Consume quota atomically
+            if not stars_billing.consume_quota(user_id, service_type, user_obj=update.effective_user):
+                # Failed to consume quota (race condition or depleted), show hard block
+                await stars_billing._show_hard_block_upsell(update, context, service_type)
+                return
             
             # Send chat action and show processing message
             try:
