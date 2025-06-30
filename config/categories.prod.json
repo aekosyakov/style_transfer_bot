@@ -80,15 +80,16 @@
   "new_look_women": {
     "free": [
       {"label_key": "dress.random", "prompt": "RANDOM_DRESS"},
-      {"label_key": "dress.casual_outfit", "prompt": "CASUAL_OUTFIT"}
+      {"label_key": "dress.nineties_revival", "prompt": "NINETIES_REVIVAL_DRESS"}
     ],
     "premium": [
-      {"label_key": "dress.modern_dress", "prompt": "MODERN_DRESS"},
-      {"label_key": "dress.classic_dress", "prompt": "CLASSIC_DRESS"},
-      {"label_key": "dress.edgy_dress", "prompt": "EDGY_DRESS"},
-      {"label_key": "dress.evening_dress", "prompt": "EVENING_DRESS"},
-      {"label_key": "dress.cultural_dress", "prompt": "CULTURAL_DRESS"},
-      {"label_key": "dress.anime_dress", "prompt": "ANIME_DRESS"}
+      {"label_key": "dress.eighties_power_pop", "prompt": "EIGHTIES_POWER_POP_DRESS"},
+      {"label_key": "dress.old_money_style", "prompt": "OLD_MONEY_STYLE_DRESS"},
+      {"label_key": "dress.disco_glam", "prompt": "DISCO_GLAM_DRESS"},
+      {"label_key": "dress.y2k_futurist", "prompt": "Y2K_FUTURIST_DRESS"},
+      {"label_key": "dress.hollywood_glamour", "prompt": "HOLLYWOOD_GLAMOUR_DRESS"},
+      {"label_key": "dress.urban_streetstyle", "prompt": "URBAN_STREETSTYLE_DRESS"},
+      {"label_key": "dress.genz_viral_mix", "prompt": "GENZ_VIRAL_MIX_DRESS"}
     ]
   },
   "new_look_men": {

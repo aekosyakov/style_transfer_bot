@@ -643,9 +643,11 @@ class PromptVariationGenerator:
     def _is_dress_prompt(self, label_key: str, prompt: str) -> bool:
         """Check if this is a dress/outfit-related prompt."""
         dress_keywords = [
-            "RANDOM_DRESS", "MODERN_DRESS", "CLASSIC_DRESS", 
-            "EDGY_DRESS", "EVENING_DRESS", "CULTURAL_DRESS", 
-            "ANIME_DRESS", "CASUAL_OUTFIT", "dress.", "outfit",
+            "RANDOM_DRESS", "NINETIES_REVIVAL_DRESS", "EIGHTIES_POWER_POP_DRESS",
+            "OLD_MONEY_STYLE_DRESS", "DISCO_GLAM_DRESS", "Y2K_FUTURIST_DRESS",
+            "HOLLYWOOD_GLAMOUR_DRESS", "URBAN_STREETSTYLE_DRESS", "GENZ_VIRAL_MIX_DRESS",
+            "MODERN_DRESS", "CLASSIC_DRESS", "EDGY_DRESS", "EVENING_DRESS", 
+            "CULTURAL_DRESS", "ANIME_DRESS", "CASUAL_OUTFIT", "dress.", "outfit",
             "RANDOM_MENS_OUTFIT", "CASUAL_MENS_OUTFIT", "MODERN_MENS_OUTFIT",
             "CLASSIC_MENS_OUTFIT", "EDGY_MENS_OUTFIT", "EVENING_MENS_OUTFIT",
             "CULTURAL_MENS_OUTFIT", "ANIME_MENS_OUTFIT", "mens."
@@ -737,18 +739,36 @@ class PromptVariationGenerator:
             # Determine which type of dress generation to use
             if "RANDOM_DRESS" in original_prompt:
                 return dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
+            # New trendy categories
+            elif "NINETIES_REVIVAL_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("nineties_revival", include_color=True, include_material=True)
+            elif "EIGHTIES_POWER_POP_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("eighties_power_pop", include_color=True, include_material=True)
+            elif "OLD_MONEY_STYLE_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)
+            elif "DISCO_GLAM_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("disco_glam", include_color=True, include_material=True)
+            elif "Y2K_FUTURIST_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("y2k_futurist", include_color=True, include_material=True)
+            elif "HOLLYWOOD_GLAMOUR_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("hollywood_glamour", include_color=True, include_material=True)
+            elif "URBAN_STREETSTYLE_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("urban_streetstyle", include_color=True, include_material=True)
+            elif "GENZ_VIRAL_MIX_DRESS" in original_prompt:
+                return dress_generator.get_dress_by_category("genz_viral_mix", include_color=True, include_material=True)
+            # Legacy categories (for backward compatibility)
             elif "MODERN_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("modern_trendy", include_color=True, include_material=True)
+                return dress_generator.get_dress_by_category("nineties_revival", include_color=True, include_material=True)  # Map to closest new category
             elif "CLASSIC_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("classic_timeless", include_color=True, include_material=True)
+                return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)  # Map to closest new category
             elif "EDGY_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("edgy_statement", include_color=True, include_material=True)
+                return dress_generator.get_dress_by_category("y2k_futurist", include_color=True, include_material=True)  # Map to closest new category
             elif "EVENING_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("evening_occasion", include_color=True, include_material=True)
+                return dress_generator.get_dress_by_category("hollywood_glamour", include_color=True, include_material=True)  # Map to closest new category
             elif "CULTURAL_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("cultural_traditional", include_color=True, include_material=True)
+                return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)  # Map to closest new category
             elif "ANIME_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("anime_inspired", include_color=True, include_material=True)
+                return dress_generator.get_dress_by_category("genz_viral_mix", include_color=True, include_material=True)  # Map to closest new category
             elif "CASUAL_OUTFIT" in original_prompt:
                 return dress_generator.get_casual_outfit()
             elif "change_outfit" in label_key or "outfit" in original_prompt:
