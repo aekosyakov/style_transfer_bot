@@ -76,7 +76,16 @@ class GenerationManager:
             await update.callback_query.edit_message_text("❌ Failed to process request. Please try again.")
             return False
         
-        # 3. Start generation
+        # 3. Store processing context for retry functionality
+        context.user_data['last_processing'] = {
+            'photo_file_id': photo_file_id,
+            'category': category,
+            'selected_option': selected_option,
+            'user_id': user_id,
+            'user_lang': user_lang
+        }
+        
+        # 4. Start generation
         await self._start_image_processing(
             update, context, photo_file_id, category, selected_option, user_lang, is_retry
         )
@@ -112,7 +121,16 @@ class GenerationManager:
             await update.callback_query.edit_message_text("❌ Failed to process request. Please try again.")
             return False
         
-        # 3. Start generation
+        # 3. Store processing context for retry functionality
+        context.user_data['last_processing'] = {
+            'photo_file_id': photo_file_id,
+            'category': 'animate',
+            'selected_option': {'kling_prompt': animation_prompt},
+            'user_id': user_id,
+            'user_lang': user_lang
+        }
+        
+        # 4. Start generation
         await self._start_video_processing(
             update, context, photo_file_id, animation_prompt, user_lang
         )
@@ -386,8 +404,8 @@ class GenerationManager:
         """Send image result with retry and animate buttons."""
         keyboard = [
             [
-                InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="btn.retry"),
-                InlineKeyboardButton(L.get("btn.animate", user_lang), callback_data="btn.animate")
+                InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="retry"),
+                InlineKeyboardButton(L.get("btn.animate", user_lang), callback_data="animate_result")
             ],
             [InlineKeyboardButton(L.get("btn.new_photo", user_lang), callback_data="main_menu")]
         ]
