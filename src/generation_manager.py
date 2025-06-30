@@ -305,6 +305,11 @@ class GenerationManager:
             
         except Exception as e:
             logger.error(f"❌ Image processing exception for user {update.effective_user.id}: {e}")
+            logger.error(f"📷 GET_FILE_ERROR_DEBUG for user {update.effective_user.id}:")
+            logger.error(f"   - Exception type: {type(e).__name__}")
+            logger.error(f"   - Exception message: {str(e)}")
+            logger.error(f"   - File_id that failed: '{photo_file_id}'")
+            logger.error(f"   - File_id length: {len(photo_file_id) if photo_file_id else 'None'}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
             
@@ -317,8 +322,11 @@ class GenerationManager:
                     logger.warning(f"Failed to delete processing message: {delete_e}")
             
             # Check if this is a Telegram file ID error
-            if "wrong string length" in str(e).lower() or "wrong remote file identifier" in str(e).lower():
-                logger.warning(f"🔄 File ID error detected for user {update.effective_user.id}, requesting new photo upload")
+            if "wrong string length" in str(e).lower() or "wrong remote file identifier" in str(e).lower() or "bad request" in str(e).lower():
+                logger.error(f"🔄 TELEGRAM_FILE_ID_ERROR for user {update.effective_user.id}:")
+                logger.error(f"   - Error type: Telegram file ID issue")
+                logger.error(f"   - Failed file_id: '{photo_file_id}'")
+                logger.error(f"   - Error details: {str(e)}")
                 
                 # Send helpful message for file ID errors
                 error_text = (
@@ -529,44 +537,20 @@ class GenerationManager:
             # Get photo URL
             logger.info(f"📁 Getting photo file for user {user_id}: {photo_file_id}")
             
-            # Validate file ID format first
-            if not photo_file_id or len(photo_file_id) < 10:
-                logger.error(f"❌ Invalid photo file ID format for user {user_id}: {photo_file_id}")
-                # Delete processing message on error
-                if processing_message:
-                    try:
-                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
-                        logger.info(f"🗑️ Deleted processing message for user {user_id} (invalid file ID)")
-                    except Exception as e:
-                        logger.warning(f"Failed to delete processing message: {e}")
-                
-                # Send error message asking for new photo
-                error_text = (
-                    "📷 **Photo Upload Required**\n\n"
-                    "The photo you uploaded earlier is no longer available. "
-                    "Please upload a new photo to continue.\n\n"
-                    "This can happen if:\n"
-                    "• Too much time has passed since upload\n"
-                    "• The photo was uploaded in a different session\n\n"
-                    "Simply send a new photo to get started!"
-                )
-                
-                keyboard = [
-                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
-                ]
-                
-                await bot.send_message(
-                    chat_id, 
-                    error_text,
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode='Markdown'
-                )
-                logger.info(f"📤 Sent photo upload request to user {user_id}")
-                return
+            # DETAILED LOGGING FOR DEBUGGING
+            logger.info(f"📷 GET_FILE_DEBUG for user {user_id}:")
+            logger.info(f"   - Input file_id: '{photo_file_id}'")
+            logger.info(f"   - File_id type: {type(photo_file_id)}")
+            logger.info(f"   - File_id length: {len(photo_file_id) if photo_file_id else 'None'}")
+            logger.info(f"   - File_id repr: {repr(photo_file_id)}")
             
             photo_file = await bot.get_file(photo_file_id)
             photo_url = photo_file.file_path
             logger.info(f"📁 Got photo URL for user {user_id}: {photo_url}")
+            logger.info(f"📷 GET_FILE_SUCCESS for user {user_id}:")
+            logger.info(f"   - Photo file object: {photo_file}")
+            logger.info(f"   - Photo file_path: {photo_url}")
+            logger.info(f"   - Photo file_size: {getattr(photo_file, 'file_size', 'N/A')}")
             
             # Process based on category
             logger.info(f"⚙️ Starting image generation for user {user_id}, category: {category}")
@@ -639,6 +623,11 @@ class GenerationManager:
                 
         except Exception as e:
             logger.error(f"❌ Image processing exception for user {user_id}: {e}")
+            logger.error(f"📷 GET_FILE_ERROR_DEBUG for user {user_id}:")
+            logger.error(f"   - Exception type: {type(e).__name__}")
+            logger.error(f"   - Exception message: {str(e)}")
+            logger.error(f"   - File_id that failed: '{photo_file_id}'")
+            logger.error(f"   - File_id length: {len(photo_file_id) if photo_file_id else 'None'}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
             
@@ -651,8 +640,11 @@ class GenerationManager:
                     logger.warning(f"Failed to delete processing message: {delete_e}")
             
             # Check if this is a Telegram file ID error
-            if "wrong string length" in str(e).lower() or "wrong remote file identifier" in str(e).lower():
-                logger.warning(f"🔄 File ID error detected for user {user_id}, requesting new photo upload")
+            if "wrong string length" in str(e).lower() or "wrong remote file identifier" in str(e).lower() or "bad request" in str(e).lower():
+                logger.error(f"🔄 TELEGRAM_FILE_ID_ERROR for user {user_id}:")
+                logger.error(f"   - Error type: Telegram file ID issue")
+                logger.error(f"   - Failed file_id: '{photo_file_id}'")
+                logger.error(f"   - Error details: {str(e)}")
                 
                 # Send helpful message for file ID errors
                 error_text = (
@@ -699,44 +691,19 @@ class GenerationManager:
             # Get photo URL
             logger.info(f"📁 Getting photo file for user {user_id}: {photo_file_id}")
             
-            # Validate file ID format first
-            if not photo_file_id or len(photo_file_id) < 10:
-                logger.error(f"❌ Invalid photo file ID format for user {user_id}: {photo_file_id}")
-                # Delete processing message on error
-                if processing_message:
-                    try:
-                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
-                        logger.info(f"🗑️ Deleted processing message for user {user_id} (invalid file ID)")
-                    except Exception as e:
-                        logger.warning(f"Failed to delete processing message: {e}")
-                
-                # Send error message asking for new photo
-                error_text = (
-                    "📷 **Photo Upload Required**\n\n"
-                    "The photo you uploaded earlier is no longer available. "
-                    "Please upload a new photo to continue.\n\n"
-                    "This can happen if:\n"
-                    "• Too much time has passed since upload\n"
-                    "• The photo was uploaded in a different session\n\n"
-                    "Simply send a new photo to get started!"
-                )
-                
-                keyboard = [
-                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
-                ]
-                
-                await bot.send_message(
-                    chat_id, 
-                    error_text,
-                    reply_markup=InlineKeyboardMarkup(keyboard),
-                    parse_mode='Markdown'
-                )
-                logger.info(f"📤 Sent photo upload request to user {user_id}")
-                return
+            # DETAILED LOGGING FOR DEBUGGING
+            logger.info(f"📷 GET_FILE_VIDEO_DEBUG for user {user_id}:")
+            logger.info(f"   - Input file_id: '{photo_file_id}'")
+            logger.info(f"   - File_id type: {type(photo_file_id)}")
+            logger.info(f"   - File_id length: {len(photo_file_id) if photo_file_id else 'None'}")
+            logger.info(f"   - File_id repr: {repr(photo_file_id)}")
             
             photo_file = await bot.get_file(photo_file_id)
             photo_url = photo_file.file_path
             logger.info(f"📁 Got photo URL for user {user_id}: {photo_url}")
+            logger.info(f"📷 GET_FILE_VIDEO_SUCCESS for user {user_id}:")
+            logger.info(f"   - Photo file object: {photo_file}")
+            logger.info(f"   - Photo file_path: {photo_url}")
             
             # Generate video
             logger.info(f"⚙️ Starting video generation for user {user_id}")

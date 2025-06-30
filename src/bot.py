@@ -626,6 +626,16 @@ class StyleTransferBot:
             # Store photo info in context
             context.user_data['current_photo'] = photo.file_id
             
+            # DETAILED LOGGING FOR DEBUGGING
+            logger.info(f"📷 PHOTO_UPLOAD_DEBUG for user {user_id}:")
+            logger.info(f"   - Photo file_id: '{photo.file_id}'")
+            logger.info(f"   - File_id length: {len(photo.file_id)}")
+            logger.info(f"   - Photo file_unique_id: '{photo.file_unique_id}'")
+            logger.info(f"   - Photo width: {photo.width}, height: {photo.height}")
+            logger.info(f"   - Photo file_size: {photo.file_size}")
+            logger.info(f"   - Context user_data keys: {list(context.user_data.keys())}")
+            logger.info(f"   - Stored in context: '{context.user_data.get('current_photo')}'")
+            
             # Show enhancement options
             keyboard = self._get_enhancement_keyboard(user_lang, user_id)
             
@@ -1050,6 +1060,15 @@ class StyleTransferBot:
             from generation_manager import generation_manager
             
             photo_file_id = context.user_data.get('current_photo')
+            
+            # DETAILED LOGGING FOR DEBUGGING
+            logger.info(f"📷 PHOTO_RETRIEVAL_DEBUG for user {user_id}:")
+            logger.info(f"   - Retrieved file_id: '{photo_file_id}'")
+            logger.info(f"   - File_id type: {type(photo_file_id)}")
+            logger.info(f"   - File_id length: {len(photo_file_id) if photo_file_id else 'None'}")
+            logger.info(f"   - Context user_data keys: {list(context.user_data.keys())}")
+            logger.info(f"   - All context user_data: {context.user_data}")
+            
             if not photo_file_id:
                 logger.warning(f"No photo found in context for user {user_id}")
                 
