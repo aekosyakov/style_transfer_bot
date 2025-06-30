@@ -212,7 +212,7 @@ class StyleTransferBot:
         
         # Message handlers
         self.app.add_handler(MessageHandler(filters.PHOTO, self.handle_photo))
-        self.app.add_handler(MessageHandler(filters.DOCUMENT, self.handle_document))
+        self.app.add_handler(MessageHandler(filters.Document.ALL, self.handle_document))
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_text))
         
         # Callback query handlers
