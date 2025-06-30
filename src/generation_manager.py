@@ -65,6 +65,15 @@ class GenerationManager:
         """
         user_id = update.effective_user.id
         
+        # 🔍 COMPREHENSIVE LOGGING FOR GENERATE_IMAGE DEBUGGING
+        logger.info(f"🎨 GENERATE_IMAGE_DEBUG: Starting image generation for user {user_id}")
+        logger.info(f"   📦 Category: '{category}'")
+        logger.info(f"   🏷️  Label key: '{selected_option.get('label_key', 'N/A')}'")
+        logger.info(f"   📝 Prompt: '{selected_option.get('prompt', 'N/A')}'")
+        logger.info(f"   🔄 Is retry: {is_retry}")
+        logger.info(f"   🖼️  Photo file_id: '{photo_file_id}'")
+        logger.info(f"   🗣️  User language: '{user_lang}'")
+        
         # 1. Single quota check
         if not stars_billing.has_quota(user_id, "flux", user_obj=update.effective_user):
             # Store payment callback and show payment options
@@ -865,27 +874,44 @@ class GenerationManager:
     ) -> Optional[str]:
         """Generate image based on category using safe_generate for auto-refund."""
         prompt = selected_option.get('prompt', '')
+        label_key = selected_option.get('label_key', '')
+        
+        # 🔍 COMPREHENSIVE LOGGING FOR HAIRSTYLE DEBUGGING
+        logger.info(f"🎯 GENERATION_DEBUG: Starting image generation")
+        logger.info(f"   📦 Category: {category}")
+        logger.info(f"   🏷️  Label key: {label_key}")
+        logger.info(f"   📝 Raw prompt: '{prompt}'")
+        logger.info(f"   🔄 Is retry: {is_retry}")
+        logger.info(f"   👤 User ID: {user_id}")
+        logger.info(f"   🖼️  Photo URL: {photo_url[:50]}...")
         
         # Use safe_generate to handle quota refund automatically
         if category in ["style_transfer", "cartoon", "anime", "comics", "art_styles"]:
+            logger.info(f"🎨 Using STYLE_TRANSFER flow")
             if is_retry:
+                logger.info(f"🔄 Calling process_image_with_variation for style retry")
                 return await stars_billing.safe_generate(
                     user_id, "flux",
                     flux_api.process_image_with_variation, photo_url, prompt
                 )
             else:
+                logger.info(f"✨ Calling style_transfer for new style")
                 return await stars_billing.safe_generate(
                     user_id, "flux",
                     flux_api.style_transfer, photo_url, prompt
                 )
         
         elif category in ["new_look_women", "new_look_men", "new_hairstyle", "new_hairstyle_women", "new_hairstyle_men", "new_hairstyle_random"]:
+            logger.info(f"💇‍♀️ Using OBJECT_EDIT flow (this should handle hairstyles)")
             if is_retry:
+                logger.info(f"🔄 Calling process_image_with_variation for object retry")
                 return await stars_billing.safe_generate(
                     user_id, "flux",
                     flux_api.process_image_with_variation, photo_url, prompt
                 )
             else:
+                logger.info(f"✏️  Calling edit_object for new object edit")
+                logger.info(f"   🎯 This should trigger prompt variation in edit_object if prompt='{prompt}'")
                 return await stars_billing.safe_generate(
                     user_id, "flux",
                     flux_api.edit_object, photo_url, prompt

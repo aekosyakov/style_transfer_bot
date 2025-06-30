@@ -234,12 +234,17 @@ class FluxAPI:
         safety_tolerance: int = 2
     ) -> Optional[str]:
         """Edit objects in image."""
+        # 🔍 DETAILED LOGGING FOR EDIT_OBJECT DEBUGGING
+        logger.info(f"🛠️  EDIT_OBJECT_DEBUG: Starting edit_object")
+        logger.info(f"   📝 Input object_description: '{object_description}'")
+        logger.info(f"   🖼️  Image URL: {image_url[:50]}...")
+        
         # Apply prompt variations for special placeholders
         try:
             from src.prompt_variations import prompt_variation_generator
             
-            # Check if this is a special placeholder that needs variation
-            if any(placeholder in object_description for placeholder in [
+            # List of placeholders to check
+            placeholders_to_check = [
                 'RANDOM_MENS_OUTFIT', 'CASUAL_MENS_OUTFIT', 'MODERN_MENS_OUTFIT', 
                 'CLASSIC_MENS_OUTFIT', 'EDGY_MENS_OUTFIT', 'EVENING_MENS_OUTFIT',
                 'CULTURAL_MENS_OUTFIT', 'ANIME_MENS_OUTFIT',
@@ -252,7 +257,17 @@ class FluxAPI:
                 'EDGY_MENS_HAIRSTYLE', 'CULTURAL_MENS_HAIRSTYLE', 'ANIME_MENS_HAIRSTYLE',
                 'RANDOM_WOMENS_HAIRSTYLE', 'MODERN_WOMENS_HAIRSTYLE', 'CLASSIC_WOMENS_HAIRSTYLE',
                 'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE'
-            ]):
+            ]
+            
+            logger.info(f"🔍 Checking if object_description contains any placeholders...")
+            matching_placeholders = [p for p in placeholders_to_check if p in object_description]
+            logger.info(f"   🎯 Matching placeholders found: {matching_placeholders}")
+            
+            # Check if this is a special placeholder that needs variation
+            if any(placeholder in object_description for placeholder in placeholders_to_check):
+                logger.info(f"✅ PLACEHOLDER DETECTED! Will apply prompt variation")
+                logger.info(f"   📝 Original prompt: '{object_description}'")
+                
                 # Apply prompt variations
                 varied_prompt = prompt_variation_generator.get_varied_prompt(
                     category="object_edit", 
@@ -263,11 +278,18 @@ class FluxAPI:
                 logger.info(f"   - Original: '{object_description}'")
                 logger.info(f"   - Varied: '{varied_prompt}'")
                 object_description = varied_prompt
+            else:
+                logger.info(f"❌ NO PLACEHOLDER DETECTED - using original prompt as-is")
+                logger.info(f"   📝 Will send to Flux directly: '{object_description}'")
+                
         except Exception as e:
-            logger.warning(f"Failed to apply prompt variations for object edit: {e}")
+            logger.error(f"❌ Failed to apply prompt variations for object edit: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             # Continue with original prompt if variation fails
         
         # Use the (possibly varied) prompt
+        logger.info(f"🚀 FINAL: Sending to process_image with prompt: '{object_description[:100]}...'")
         return await self.process_image(image_url, object_description, safety_tolerance=safety_tolerance)
     
     async def edit_text(

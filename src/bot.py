@@ -1056,6 +1056,14 @@ class StyleTransferBot:
             
             logger.info(f"Selected option: {selected_option}")
             
+            # 🔍 DETAILED LOGGING FOR OPTION SELECTION DEBUGGING
+            logger.info(f"🎯 OPTION_SELECTION_DEBUG for user {user_id}:")
+            logger.info(f"   📦 Category: '{category}'")
+            logger.info(f"   🏷️  Label key: '{selected_option.get('label_key', 'N/A')}'")
+            logger.info(f"   📝 Prompt: '{selected_option.get('prompt', 'N/A')}'")
+            logger.info(f"   🔄 Is retry: False (this is new selection)")
+            logger.info(f"   🖼️  Photo file_id: '{context.user_data.get('current_photo', 'N/A')}'")
+            
             # Check if this is a premium option and user has premium access
             # Use label_key if available, fallback to label for backward compatibility
             option_identifier = selected_option.get('label_key', selected_option.get('label', ''))
