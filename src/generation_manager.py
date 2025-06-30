@@ -578,7 +578,7 @@ class GenerationManager:
                     flux_api.style_transfer, photo_url, prompt
                 )
         
-        elif category in ["new_look_women", "new_hairstyle", "new_hairstyle_women", "new_hairstyle_men", "new_hairstyle_random"]:
+        elif category in ["new_look_women", "new_look_men", "new_hairstyle", "new_hairstyle_women", "new_hairstyle_men", "new_hairstyle_random"]:
             if is_retry:
                 return await stars_billing.safe_generate(
                     user_id, "flux",

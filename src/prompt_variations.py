@@ -19,6 +19,12 @@ except ImportError:
     logger.warning("Could not import dress_generator, dress variations will be limited")
     dress_generator = None
 
+try:
+    from src.mens_outfits import mens_outfit_generator
+except ImportError:
+    logger.warning("Could not import mens_outfit_generator, mens outfit variations will be limited")
+    mens_outfit_generator = None
+
 
 class PromptVariationGenerator:
     """Generate varied prompts while maintaining semantic similarity."""
@@ -638,7 +644,10 @@ class PromptVariationGenerator:
         dress_keywords = [
             "RANDOM_DRESS", "MODERN_DRESS", "CLASSIC_DRESS", 
             "EDGY_DRESS", "EVENING_DRESS", "CULTURAL_DRESS", 
-            "ANIME_DRESS", "CASUAL_OUTFIT", "dress.", "outfit"
+            "ANIME_DRESS", "CASUAL_OUTFIT", "dress.", "outfit",
+            "RANDOM_MENS_OUTFIT", "CASUAL_MENS_OUTFIT", "MODERN_MENS_OUTFIT",
+            "CLASSIC_MENS_OUTFIT", "EDGY_MENS_OUTFIT", "EVENING_MENS_OUTFIT",
+            "CULTURAL_MENS_OUTFIT", "ANIME_MENS_OUTFIT", "mens."
         ]
         return any(keyword in prompt or keyword in label_key for keyword in dress_keywords)
     
@@ -676,6 +685,39 @@ class PromptVariationGenerator:
     
     def _generate_dress_variation(self, label_key: str, original_prompt: str) -> str:
         """Generate dress variation using the specialized dress generator."""
+        # Handle men's outfit prompts
+        if any(keyword in original_prompt for keyword in ["RANDOM_MENS_OUTFIT", "CASUAL_MENS_OUTFIT", "MODERN_MENS_OUTFIT", "CLASSIC_MENS_OUTFIT", "EDGY_MENS_OUTFIT", "EVENING_MENS_OUTFIT", "CULTURAL_MENS_OUTFIT", "ANIME_MENS_OUTFIT"]):
+            if not mens_outfit_generator:
+                logger.warning("Men's outfit generator not available, using fallback")
+                return original_prompt + ", preserve original face and body"
+            
+            try:
+                # Determine which type of men's outfit generation to use
+                if "RANDOM_MENS_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_random_outfit(include_color=True, include_material=True, include_effects=False)
+                elif "CASUAL_MENS_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_casual_outfit()
+                elif "MODERN_MENS_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("modern_trendy", include_color=True, include_material=True)
+                elif "CLASSIC_MENS_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("classic_timeless", include_color=True, include_material=True)
+                elif "EDGY_MENS_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("edgy_statement", include_color=True, include_material=True)
+                elif "EVENING_MENS_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("evening_occasion", include_color=True, include_material=True)
+                elif "CULTURAL_MENS_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("cultural_traditional", include_color=True, include_material=True)
+                elif "ANIME_MENS_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("anime_inspired", include_color=True, include_material=True)
+                else:
+                    # General men's outfit variation
+                    return mens_outfit_generator.get_random_outfit(include_color=True, include_material=True, include_effects=False)
+                    
+            except Exception as e:
+                logger.error(f"Error generating men's outfit variation: {e}")
+                return original_prompt + ", preserve original face and body proportions exactly"
+        
+        # Handle women's dress prompts (existing logic)
         if not dress_generator:
             logger.warning("Dress generator not available, using fallback")
             return original_prompt + ", preserve original face and body"
