@@ -1332,7 +1332,7 @@ class StyleTransferBot:
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
     
     async def _handle_restart(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle restart button - reply to result message with categories menu."""
+        """Handle edit button - use result image as base for new edits."""
         try:
             user_id = update.effective_user.id
             user_lang = self._get_user_language(update.effective_user)
@@ -1344,20 +1344,44 @@ class StyleTransferBot:
             except Exception as e:
                 logger.warning(f"Failed to remove buttons from result message: {e}")
             
-            logger.info(f"User {user_id} requested restart")
+            logger.info(f"User {user_id} requested edit (using result image)")
             
-            # Show enhancement menu as a reply to keep the original result
-            keyboard = self._get_enhancement_keyboard(user_lang, user_id)
-            
-            await update.callback_query.message.reply_text(
-                L.get("msg.photo_received", user_lang),
-                reply_markup=keyboard
-            )
-            
-            await update.callback_query.answer("🏠 Restarted!")
+            # Extract the result image from current message and set as new current_photo
+            try:
+                # Get the photo from the current message (result message)
+                if update.callback_query.message.photo:
+                    # Get the largest photo version (highest resolution)
+                    result_photo = update.callback_query.message.photo[-1]
+                    result_file_id = result_photo.file_id
+                    
+                    # Set this result image as the new current_photo for editing
+                    context.user_data['current_photo'] = result_file_id
+                    
+                    logger.info(f"📷 EDIT_MODE for user {user_id}:")
+                    logger.info(f"   - Using result image as base: {result_file_id}")
+                    logger.info(f"   - Result photo dimensions: {result_photo.width}x{result_photo.height}")
+                    logger.info(f"   - File size: {getattr(result_photo, 'file_size', 'N/A')}")
+                    
+                    # Show enhancement menu as a reply using the result image as base
+                    keyboard = self._get_enhancement_keyboard(user_lang, user_id)
+                    
+                    await update.callback_query.message.reply_text(
+                        L.get("msg.photo_received", user_lang),
+                        reply_markup=keyboard
+                    )
+                    
+                    await update.callback_query.answer("✏️ Edit mode activated!")
+                    
+                else:
+                    logger.warning(f"No photo found in result message for user {user_id}")
+                    await update.callback_query.answer("❌ No image to edit", show_alert=True)
+                    
+            except Exception as photo_error:
+                logger.error(f"Error extracting result photo for user {user_id}: {photo_error}")
+                await update.callback_query.answer("❌ Error accessing image", show_alert=True)
             
         except Exception as e:
-            logger.error(f"Error in restart handler: {e}")
+            logger.error(f"Error in edit handler: {e}")
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
     
     def _create_varied_option(self, category: str, original_option: dict) -> dict:
