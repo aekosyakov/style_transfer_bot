@@ -133,6 +133,23 @@ class FluxAPI:
                     
             except Exception as e:
                 api_call_duration = time.time() - api_call_start
+                
+                # Check for content filtering error (E005)
+                if "E005" in str(e) or "flagged as sensitive" in str(e):
+                    api_error_details = {
+                        "error": "content_filtered",
+                        "error_code": "E005",
+                        "exception_type": type(e).__name__,
+                        "exception_message": str(e),
+                        "api_duration": api_call_duration,
+                        "total_duration": time.time() - start_time,
+                        "model_id": model_id
+                    }
+                    logger.warning(f"🚫 FLUX_CONTENT_FILTERED: {api_error_details}")
+                    logger.warning(f"Content flagged as sensitive by Replicate: {e}")
+                    # Return special indicator for content filtering
+                    return "CONTENT_FILTERED_E005"
+                
                 api_error_details = {
                     "error": "api_exception",
                     "exception_type": type(e).__name__,

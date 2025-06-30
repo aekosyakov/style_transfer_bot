@@ -783,8 +783,16 @@ class StarsBillingManager:
             elapsed = time.time() - start_time
             
             if result:
-                logger.info(f"✅ Safe generation succeeded for user {user_id} in {elapsed:.2f}s")
-                return result
+                # Check if result is content filtering indicator
+                if result == "CONTENT_FILTERED_E005":
+                    logger.warning(f"🚫 Content filtered for user {user_id} after {elapsed:.2f}s - refunding quota")
+                    # Refund quota for content filtering since it's not user's fault
+                    logger.info(f"💰 Refunding {service} quota for user {user_id} due to content filtering")
+                    self.refund_quota(user_id, service, 1)
+                    return result  # Pass through the indicator
+                else:
+                    logger.info(f"✅ Safe generation succeeded for user {user_id} in {elapsed:.2f}s")
+                    return result
             else:
                 logger.warning(f"⚠️ Safe generation failed (empty result) for user {user_id} after {elapsed:.2f}s")
                 # Refund quota on empty result

@@ -453,6 +453,43 @@ class GenerationManager:
                 # Send success result
                 await self._send_image_result(bot, chat_id, result_url, user_lang, category, selected_option)
                 logger.info(f"📤 Sent image result to user {user_id}")
+            elif result_url == "CONTENT_FILTERED_E005":
+                logger.warning(f"🚫 Content filtering detected for user {user_id}")
+                # Delete processing message on content filter
+                if processing_message:
+                    try:
+                        await bot.delete_message(chat_id=chat_id, message_id=processing_message.message_id)
+                        logger.info(f"🗑️ Deleted processing message for user {user_id} (content filtered)")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete processing message: {e}")
+                
+                # Send helpful content filtering message
+                filter_text = (
+                    "🚫 **Content Filter Notice**\n\n"
+                    "Your image or style request was flagged by our AI safety system. "
+                    "This can happen with:\n\n"
+                    "• Certain types of clothing or fashion requests\n"
+                    "• Complex style combinations\n"
+                    "• Photos with text or logos\n\n"
+                    "💡 **Try:**\n"
+                    "• A different photo\n"
+                    "• A simpler style request\n"
+                    "• Uploading a photo without text/logos\n\n"
+                    "Your credits have been refunded automatically."
+                )
+                
+                keyboard = [
+                    [InlineKeyboardButton("🔄 Try Different Style", callback_data="restart")],
+                    [InlineKeyboardButton("📤 Upload New Photo", callback_data="upload_prompt")]
+                ]
+                
+                await bot.send_message(
+                    chat_id, 
+                    filter_text,
+                    reply_markup=InlineKeyboardMarkup(keyboard),
+                    parse_mode='Markdown'
+                )
+                logger.info(f"📤 Sent content filter explanation to user {user_id}")
             else:
                 logger.error(f"❌ Image generation failed for user {user_id} (empty result)")
                 # Delete processing message on error
