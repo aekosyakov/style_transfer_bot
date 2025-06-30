@@ -14,8 +14,8 @@ from datetime import datetime
 from stars_billing import stars_billing
 from localization import L
 from redis_client import redis_client
-import flux_api
-import kling_api
+from flux_api import flux_api
+from kling_api import kling_api
 
 logger = logging.getLogger(__name__)
 
