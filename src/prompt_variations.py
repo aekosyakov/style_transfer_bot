@@ -661,8 +661,53 @@ class PromptVariationGenerator:
             return original_prompt + ", preserve original face"
         
         try:
-            # Determine which type of hairstyle generation to use
-            if "RANDOM_HAIRSTYLE" in original_prompt:
+            # IMPORTANT: Check gender-specific patterns FIRST before general patterns
+            # to avoid both men's and women's hairstyles matching "RANDOM_HAIRSTYLE"
+            
+            # Gender-specific random hairstyles
+            if "RANDOM_MENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating random men's hairstyle")
+                return hairstyle_generator.get_mens_hairstyle(include_color=True, include_effects=False)
+            elif "RANDOM_WOMENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating random women's hairstyle")
+                return hairstyle_generator.get_womens_hairstyle(include_color=True, include_effects=False)
+            
+            # Gender-specific category hairstyles
+            elif "MODERN_MENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating modern men's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('men', 'modern_trendy', include_color=True)
+            elif "CLASSIC_MENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating classic men's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('men', 'classic_timeless', include_color=True)
+            elif "EDGY_MENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating edgy men's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('men', 'edgy_statement', include_color=True)
+            elif "CULTURAL_MENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating cultural men's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('men', 'cultural_traditional', include_color=True)
+            elif "ANIME_MENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating anime men's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('men', 'anime_inspired', include_color=True)
+            
+            elif "MODERN_WOMENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating modern women's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('women', 'modern_trendy', include_color=True)
+            elif "CLASSIC_WOMENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating classic women's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('women', 'classic_timeless', include_color=True)
+            elif "EDGY_WOMENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating edgy women's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('women', 'edgy_statement', include_color=True)
+            elif "CULTURAL_WOMENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating cultural women's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('women', 'cultural_traditional', include_color=True)
+            elif "ANIME_WOMENS_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating anime women's hairstyle")
+                return hairstyle_generator.get_hairstyle_by_gender_and_category('women', 'anime_inspired', include_color=True)
+            
+            # Gender-neutral/general patterns (check AFTER gender-specific patterns)
+            elif "RANDOM_HAIRSTYLE" in original_prompt:
+                logger.info("🎯 Generating general random hairstyle")
                 return hairstyle_generator.get_random_hairstyle(include_color=True, include_effects=False)
             elif "MODERN_HAIRSTYLE" in original_prompt:
                 return hairstyle_generator.get_hairstyle_by_category("modern_trendy", include_color=True)
@@ -680,6 +725,7 @@ class PromptVariationGenerator:
                 return hairstyle_generator.get_color_only_change()
             else:
                 # General hairstyle variation
+                logger.info("🎯 Generating general hairstyle variation")
                 return hairstyle_generator.get_random_hairstyle(include_color=False, include_effects=False)
                 
         except Exception as e:
