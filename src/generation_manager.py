@@ -558,7 +558,7 @@ class GenerationManager:
                 photo_url, category, selected_option, user_id, is_retry
             )
             
-            if result_url:
+            if result_url and result_url != "CONTENT_FILTERED_E005":
                 logger.info(f"✅ Image generation successful for user {user_id}: {result_url}")
                 # Delete processing message before sending result
                 if processing_message:
