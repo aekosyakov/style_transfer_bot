@@ -246,7 +246,12 @@ class FluxAPI:
                 'RANDOM_DRESS', 'CASUAL_OUTFIT', 'MODERN_DRESS', 'CLASSIC_DRESS',
                 'EDGY_DRESS', 'EVENING_DRESS', 'CULTURAL_DRESS', 'ANIME_DRESS',
                 'RANDOM_HAIRSTYLE', 'MODERN_HAIRSTYLE', 'CLASSIC_HAIRSTYLE',
-                'EDGY_HAIRSTYLE', 'CULTURAL_HAIRSTYLE', 'ANIME_HAIRSTYLE'
+                'EDGY_HAIRSTYLE', 'CULTURAL_HAIRSTYLE', 'ANIME_HAIRSTYLE',
+                # Gender-specific hairstyle placeholders (MISSING - THIS WAS THE BUG!)
+                'RANDOM_MENS_HAIRSTYLE', 'MODERN_MENS_HAIRSTYLE', 'CLASSIC_MENS_HAIRSTYLE',
+                'EDGY_MENS_HAIRSTYLE', 'CULTURAL_MENS_HAIRSTYLE', 'ANIME_MENS_HAIRSTYLE',
+                'RANDOM_WOMENS_HAIRSTYLE', 'MODERN_WOMENS_HAIRSTYLE', 'CLASSIC_WOMENS_HAIRSTYLE',
+                'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE'
             ]):
                 # Apply prompt variations
                 varied_prompt = prompt_variation_generator.get_varied_prompt(
