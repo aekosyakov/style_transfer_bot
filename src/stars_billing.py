@@ -2,6 +2,7 @@
 
 import logging
 import json
+import time
 from typing import Dict, Any, Optional, Tuple
 from datetime import datetime, timedelta
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -345,6 +346,8 @@ class StarsBillingManager:
     ) -> None:
         """Handle successful Stars payment."""
         try:
+            logger.info(f"⭐ Stars payment handler called")
+            
             if not update.message.successful_payment:
                 logger.error("No successful payment in update")
                 return
@@ -353,6 +356,8 @@ class StarsBillingManager:
             payload = payment.invoice_payload
             user_id = update.effective_user.id
             user_lang = L.get_user_language(update.effective_user)
+            
+            logger.info(f"💰 Processing Stars payment for user {user_id}, payload: {payload}")
             
             # Parse payload: stars_{item_type}_{item_id}_{user_id}
             # Note: item_id might contain underscores, so we need to be careful
@@ -365,7 +370,7 @@ class StarsBillingManager:
             # Reconstruct item_id by joining parts[2] through parts[-2] (excluding last part which is user_id)
             item_id = "_".join(parts[2:-1])  # pass/payg identifier
             
-            logger.info(f"Parsed payment: item_type={item_type}, item_id={item_id}, payload={payload}")
+            logger.info(f"📋 Parsed payment: item_type={item_type}, item_id={item_id}, payload={payload}")
             
             success = False
             
@@ -382,6 +387,7 @@ class StarsBillingManager:
                         duration_text = f"{hours}-Hour"
                     
                     # Check for pending callback and execute it
+                    logger.info(f"🎟️ Pass payment successful for user {user_id}, delegating to generation manager")
                     from generation_manager import generation_manager
                     await generation_manager.handle_payment_success(update, context)
                     
@@ -393,18 +399,23 @@ class StarsBillingManager:
                     service_name = "style" if service == "flux" else "video"
                     
                     # Check for pending callback and execute it
+                    logger.info(f"💳 PAYG payment successful for user {user_id}, service: {service}, delegating to generation manager")
                     from generation_manager import generation_manager
                     await generation_manager.handle_payment_success(update, context)
             
             if not success:
                 # Refund should be handled by Telegram automatically for Stars
-                logger.error(f"Failed to process Stars payment for user {user_id}")
+                logger.error(f"❌ Failed to process Stars payment for user {user_id}")
                 await update.message.reply_text(
                     L.get("billing.processing_error", user_lang)
                 )
+            else:
+                logger.info(f"✅ Successfully processed Stars payment for user {user_id}")
             
         except Exception as e:
-            logger.error(f"Error handling successful Stars payment: {e}")
+            logger.error(f"❌ Exception in Stars payment handler: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
     
     async def show_billing_menu(
         self, 
@@ -764,21 +775,30 @@ class StarsBillingManager:
             Result from generation_func or None if failed
         """
         try:
-            logger.info(f"Safe generation started for user {user_id}, service {service}")
+            logger.info(f"🔧 Safe generation started for user {user_id}, service: {service}, func: {generation_func.__name__}")
+            start_time = time.time()
+            
             result = await generation_func(*args, **kwargs)
             
+            elapsed = time.time() - start_time
+            
             if result:
-                logger.info(f"Safe generation succeeded for user {user_id}")
+                logger.info(f"✅ Safe generation succeeded for user {user_id} in {elapsed:.2f}s")
                 return result
             else:
-                logger.warning(f"Safe generation failed (empty result) for user {user_id}")
+                logger.warning(f"⚠️ Safe generation failed (empty result) for user {user_id} after {elapsed:.2f}s")
                 # Refund quota on empty result
+                logger.info(f"💰 Refunding {service} quota for user {user_id} due to empty result")
                 self.refund_quota(user_id, service, 1)
                 return None
                 
         except Exception as e:
-            logger.error(f"Safe generation exception for user {user_id}: {e}")
+            elapsed = time.time() - start_time if 'start_time' in locals() else 0
+            logger.error(f"❌ Safe generation exception for user {user_id} after {elapsed:.2f}s: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             # Refund quota on exception
+            logger.info(f"💰 Refunding {service} quota for user {user_id} due to exception")
             self.refund_quota(user_id, service, 1) 
             return None
     

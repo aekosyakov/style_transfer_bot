@@ -31,10 +31,15 @@ class PaymentCallback:
     
     async def execute(self):
         """Execute the stored callback."""
+        logger.info(f"📞 Executing payment callback: {self.callback_func.__name__}")
         try:
-            return await self.callback_func(*self.args, **self.kwargs)
+            result = await self.callback_func(*self.args, **self.kwargs)
+            logger.info(f"✅ Payment callback execution successful")
+            return result
         except Exception as e:
-            logger.error(f"Payment callback execution failed: {e}")
+            logger.error(f"❌ Payment callback execution failed: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
 
 
@@ -63,18 +68,23 @@ class GenerationManager:
         # 1. Single quota check
         if not stars_billing.has_quota(user_id, "flux", user_obj=update.effective_user):
             # Store payment callback and show payment options
+            logger.info(f"🚫 User {user_id} has insufficient FLUX quota, storing payment callback")
             callback = PaymentCallback(
                 self.generate_image,
                 update, context, photo_file_id, category, selected_option, user_lang, is_retry
             )
             self.pending_callbacks[user_id] = callback
+            logger.info(f"💾 Stored payment callback for user {user_id}, total pending: {len(self.pending_callbacks)}")
             await self._show_payment_options(update, context, "flux")
             return False
         
         # 2. Consume quota
+        logger.info(f"⚡ Attempting to consume FLUX quota for user {user_id}")
         if not stars_billing.consume_quota(user_id, "flux", user_obj=update.effective_user):
+            logger.error(f"❌ Failed to consume FLUX quota for user {user_id}")
             await update.callback_query.edit_message_text("❌ Failed to process request. Please try again.")
             return False
+        logger.info(f"✅ Successfully consumed FLUX quota for user {user_id}")
         
         # 3. Store processing context for retry functionality
         context.user_data['last_processing'] = {
@@ -108,18 +118,23 @@ class GenerationManager:
         # 1. Single quota check
         if not stars_billing.has_quota(user_id, "kling", user_obj=update.effective_user):
             # Store payment callback and show payment options
+            logger.info(f"🚫 User {user_id} has insufficient KLING quota, storing payment callback")
             callback = PaymentCallback(
                 self.generate_video,
                 update, context, photo_file_id, animation_prompt, user_lang
             )
             self.pending_callbacks[user_id] = callback
+            logger.info(f"💾 Stored payment callback for user {user_id}, total pending: {len(self.pending_callbacks)}")
             await self._show_payment_options(update, context, "kling")
             return False
         
         # 2. Consume quota
+        logger.info(f"⚡ Attempting to consume KLING quota for user {user_id}")
         if not stars_billing.consume_quota(user_id, "kling", user_obj=update.effective_user):
+            logger.error(f"❌ Failed to consume KLING quota for user {user_id}")
             await update.callback_query.edit_message_text("❌ Failed to process request. Please try again.")
             return False
+        logger.info(f"✅ Successfully consumed KLING quota for user {user_id}")
         
         # 3. Store processing context for retry functionality
         context.user_data['last_processing'] = {
@@ -143,14 +158,30 @@ class GenerationManager:
     ) -> None:
         """Handle successful payment - execute stored callback."""
         user_id = update.effective_user.id
+        logger.info(f"💳 Payment success handler called for user {user_id}")
         
         callback = self.pending_callbacks.get(user_id)
         if callback:
+            logger.info(f"✅ Found pending callback for user {user_id}, executing generation")
             # Remove callback and execute it
             del self.pending_callbacks[user_id]
-            await callback.execute()
+            logger.info(f"🗑️ Removed callback for user {user_id}, remaining pending: {len(self.pending_callbacks)}")
+            
+            # Show processing message before starting generation
+            user_lang = L.get_user_language(update.effective_user)
+            logger.info(f"📱 Sending processing message to user {user_id}")
+            await update.message.reply_text(f"⚡ {L.get('msg.processing', user_lang)}")
+            
+            logger.info(f"🚀 Executing payment callback for user {user_id}")
+            try:
+                await callback.execute()
+                logger.info(f"✅ Successfully executed payment callback for user {user_id}")
+            except Exception as e:
+                logger.error(f"❌ Failed to execute payment callback for user {user_id}: {e}")
+                await update.message.reply_text("❌ Failed to start processing after payment. Please try again.")
         else:
             # No callback found - just show success message
+            logger.warning(f"⚠️ No pending callback found for user {user_id} after payment")
             await update.message.reply_text("✅ Payment successful! Send a photo to start.")
     
     async def _show_payment_options(
@@ -283,27 +314,37 @@ class GenerationManager:
         is_retry: bool = False
     ) -> None:
         """Background image processing with automatic quota refund on failure."""
+        logger.info(f"🖼️ Starting background image processing for user {user_id}, category: {category}, retry: {is_retry}")
         try:
             # Get photo URL
+            logger.info(f"📁 Getting photo file for user {user_id}: {photo_file_id}")
             photo_file = await bot.get_file(photo_file_id)
             photo_url = photo_file.file_path
+            logger.info(f"📁 Got photo URL for user {user_id}: {photo_url}")
             
             # Process based on category
+            logger.info(f"⚙️ Starting image generation for user {user_id}, category: {category}")
             result_url = await self._generate_image_by_category(
                 photo_url, category, selected_option, user_id, is_retry
             )
             
             if result_url:
+                logger.info(f"✅ Image generation successful for user {user_id}: {result_url}")
                 # Send success result
                 await self._send_image_result(bot, chat_id, result_url, user_lang, category, selected_option)
+                logger.info(f"📤 Sent image result to user {user_id}")
             else:
+                logger.error(f"❌ Image generation failed for user {user_id} (empty result)")
                 # Processing failed - quota already refunded by safe_generate
                 await bot.send_message(chat_id, L.get("msg.error", user_lang))
                 
         except Exception as e:
-            logger.error(f"Image processing error for user {user_id}: {e}")
+            logger.error(f"❌ Image processing exception for user {user_id}: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             # Refund quota on exception
             stars_billing.refund_quota(user_id, "flux", 1)
+            logger.info(f"💰 Refunded FLUX quota for user {user_id} due to exception")
             await bot.send_message(chat_id, L.get("msg.error_occurred", user_lang))
     
     async def _process_video_background(
@@ -316,28 +357,38 @@ class GenerationManager:
         user_lang: str
     ) -> None:
         """Background video processing with automatic quota refund on failure."""
+        logger.info(f"🎬 Starting background video processing for user {user_id}, prompt: {animation_prompt}")
         try:
             # Get photo URL
+            logger.info(f"📁 Getting photo file for user {user_id}: {photo_file_id}")
             photo_file = await bot.get_file(photo_file_id)
             photo_url = photo_file.file_path
+            logger.info(f"📁 Got photo URL for user {user_id}: {photo_url}")
             
             # Generate video
+            logger.info(f"⚙️ Starting video generation for user {user_id}")
             result_url = await stars_billing.safe_generate(
                 user_id, "kling",
                 kling_api.animate_by_prompt, photo_url, animation_prompt
             )
             
             if result_url:
+                logger.info(f"✅ Video generation successful for user {user_id}: {result_url}")
                 # Send success result
                 await self._send_video_result(bot, chat_id, result_url, user_lang)
+                logger.info(f"📤 Sent video result to user {user_id}")
             else:
+                logger.error(f"❌ Video generation failed for user {user_id} (empty result)")
                 # Processing failed - quota already refunded by safe_generate
                 await bot.send_message(chat_id, L.get("msg.error", user_lang))
                 
         except Exception as e:
-            logger.error(f"Video processing error for user {user_id}: {e}")
+            logger.error(f"❌ Video processing exception for user {user_id}: {e}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             # Refund quota on exception
             stars_billing.refund_quota(user_id, "kling", 1)
+            logger.info(f"💰 Refunded KLING quota for user {user_id} due to exception")
             await bot.send_message(chat_id, L.get("msg.error_occurred", user_lang))
     
     async def _generate_image_by_category(
@@ -403,10 +454,8 @@ class GenerationManager:
     ) -> None:
         """Send image result with retry and animate buttons."""
         keyboard = [
-            [
-                InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="retry"),
-                InlineKeyboardButton(L.get("btn.animate", user_lang), callback_data="animate_result")
-            ],
+            [InlineKeyboardButton(L.get("btn.retry", user_lang), callback_data="retry")],
+            [InlineKeyboardButton(L.get("btn.animate", user_lang), callback_data="animate_result")],
             [InlineKeyboardButton(L.get("btn.new_photo", user_lang), callback_data="main_menu")]
         ]
         
