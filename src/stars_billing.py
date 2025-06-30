@@ -381,15 +381,9 @@ class StarsBillingManager:
                     else:
                         duration_text = f"{hours}-Hour"
                     
-                    # Check for interrupted processing and auto-resume
-                    interrupted_context = await self._get_interrupted_processing(user_id)
-                    if interrupted_context:
-                        # Auto-resume processing without credit mentions
-                        await update.message.reply_text("🔄 Resuming your generation...")
-                        await self._resume_interrupted_processing(update, context, interrupted_context)
-                    else:
-                        # Show simple activation message
-                        await update.message.reply_text(f"💎 {duration_text} Pro activated until 23:59 UTC!\nSend a photo to start.")
+                    # Check for pending callback and execute it
+                    from generation_manager import generation_manager
+                    await generation_manager.handle_payment_success(update, context)
                     
             elif item_type == "payg":
                 payg_info = self.payg_prices[item_id]
@@ -398,15 +392,9 @@ class StarsBillingManager:
                 if success:
                     service_name = "style" if service == "flux" else "video"
                     
-                    # Check for interrupted processing and auto-resume
-                    interrupted_context = await self._get_interrupted_processing(user_id)
-                    if interrupted_context and interrupted_context.get('service_type') == service:
-                        # Auto-resume processing without credit mentions
-                        await update.message.reply_text("🔄 Resuming your generation...")
-                        await self._resume_interrupted_processing(update, context, interrupted_context)
-                    else:
-                        # Show simple purchase confirmation
-                        await update.message.reply_text(f"⚡ Extra {service_name} purchased!\nSend a photo to start.")
+                    # Check for pending callback and execute it
+                    from generation_manager import generation_manager
+                    await generation_manager.handle_payment_success(update, context)
             
             if not success:
                 # Refund should be handled by Telegram automatically for Stars
@@ -688,24 +676,7 @@ class StarsBillingManager:
             
             text = L.get("billing.no_credits_left", user_lang, service=service_name)
             
-            # Store interrupted processing context for auto-resume after payment
-            user_id = update.effective_user.id
-            last_processing = context.user_data.get('last_processing')
-            if last_processing:
-                # Store interrupted context in Redis for auto-resume
-                interrupted_key = f"user:{user_id}:interrupted_processing"
-                interrupted_data = {
-                    "photo_file_id": last_processing.get('photo_file_id'),
-                    "category": last_processing.get('category'),
-                    "selected_option": json.dumps(last_processing.get('selected_option', {})),
-                    "user_lang": last_processing.get('user_lang', user_lang),
-                    "service_type": service,
-                    "timestamp": datetime.now().isoformat()
-                }
-                redis_client.redis.hset(interrupted_key, mapping=interrupted_data)
-                redis_client.redis.expire(interrupted_key, self.redis_ttl["interrupted_processing"])
-                logger.info(f"Stored interrupted processing context for user {user_id}")
-            
+            # No complex context storage - clean approach
             # Create invoice links for all options with dynamic pricing
             extra_service = L.get("billing.extra_image", user_lang) if service == "flux" else L.get("billing.extra_video", user_lang)
             extra_price = self.payg_prices[f'{service}_extra']['price_stars']
@@ -811,112 +782,7 @@ class StarsBillingManager:
             self.refund_quota(user_id, service, 1) 
             return None
     
-    async def _get_interrupted_processing(self, user_id: int) -> Optional[Dict[str, Any]]:
-        """Get interrupted processing context for auto-resume."""
-        try:
-            interrupted_key = f"user:{user_id}:interrupted_processing"
-            interrupted_data = redis_client.redis.hgetall(interrupted_key)
-            
-            if not interrupted_data:
-                return None
-            
-            # Parse the stored data
-            selected_option_str = interrupted_data.get("selected_option", "{}")
-            if isinstance(selected_option_str, bytes):
-                selected_option_str = selected_option_str.decode('utf-8')
-            
-            context = {
-                "photo_file_id": interrupted_data.get("photo_file_id"),
-                "category": interrupted_data.get("category"),
-                "selected_option": json.loads(selected_option_str),
-                "user_lang": interrupted_data.get("user_lang"),
-                "service_type": interrupted_data.get("service_type"),
-                "timestamp": interrupted_data.get("timestamp")
-            }
-            
-            logger.info(f"Retrieved interrupted processing context for user {user_id}")
-            return context
-            
-        except Exception as e:
-            logger.error(f"Error getting interrupted processing context for user {user_id}: {e}")
-            return None
-    
-    async def _resume_interrupted_processing(
-        self, 
-        update: Update, 
-        context: ContextTypes.DEFAULT_TYPE,
-        interrupted_context: Dict[str, Any]
-    ) -> None:
-        """Resume interrupted processing after successful payment."""
-        try:
-            user_id = update.effective_user.id
-            
-            # Clean up the interrupted processing context
-            interrupted_key = f"user:{user_id}:interrupted_processing"
-            redis_client.redis.delete(interrupted_key)
-            
-            logger.info(f"🔄 Auto-resuming processing for user {user_id}: {interrupted_context['category']}")
-            
-            # Prepare processing context  
-            context.user_data['current_photo'] = interrupted_context['photo_file_id']
-            context.user_data['last_processing'] = {
-                'photo_file_id': interrupted_context['photo_file_id'],
-                'category': interrupted_context['category'],
-                'selected_option': interrupted_context['selected_option'],
-                'user_id': user_id,
-                'user_lang': interrupted_context['user_lang'],
-                'service_type': interrupted_context['service_type']
-            }
-            
-            # Check and consume quota for the resumed processing
-            service_type = interrupted_context['service_type']
-            if not self.consume_quota(user_id, service_type, user_obj=update.effective_user):
-                logger.error(f"Failed to consume quota for auto-resume for user {user_id}")
-                await update.message.reply_text("❌ Failed to start processing. Please try again.")
-                return
-            
-            await update.message.reply_text("⚡ Processing your image now...")
-            
-            # Actually start the background processing
-            import asyncio
-            from src.bot import StyleTransferBot
-            
-            # Get the bot instance and start processing
-            # We need to create a temporary bot instance to access the processing method
-            try:
-                # Import the global bot instance if available
-                import src.bot as bot_module
-                if hasattr(bot_module, 'bot_instance'):
-                    bot_instance = bot_module.bot_instance
-                else:
-                    # Create a temporary instance for processing
-                    bot_instance = StyleTransferBot()
-                
-                # Start background processing with the interrupted context
-                asyncio.create_task(bot_instance._process_image_background(
-                    update.effective_chat.id,
-                    context.bot,
-                    interrupted_context['photo_file_id'],
-                    interrupted_context['category'],
-                    interrupted_context['selected_option'],
-                    user_id,
-                    interrupted_context['user_lang'],
-                    context
-                ))
-                
-                logger.info(f"✅ Auto-resume background processing started for user {user_id}")
-                
-            except Exception as processing_error:
-                logger.error(f"Failed to start background processing for auto-resume: {processing_error}")
-                # Refund quota since processing failed to start
-                self.refund_quota(user_id, service_type)
-                await update.message.reply_text("❌ Failed to start processing. Please try again.")
-            
-        except Exception as e:
-            logger.error(f"Error setting up auto-resume: {e}")
-            await update.message.reply_text(
-                "✅ Credit added! Please try your generation again.",
-            )
+    # Auto-resume methods removed - using clean callback system instead
 
 
 # Global Stars billing manager instance
