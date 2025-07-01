@@ -25,6 +25,18 @@ except ImportError:
     logger.warning("Could not import mens_outfit_generator, mens outfit variations will be limited")
     mens_outfit_generator = None
 
+try:
+    from src.mens_hairstyles import mens_hairstyle_generator
+except ImportError:
+    logger.warning("Could not import mens_hairstyle_generator, mens hairstyle variations will be limited")
+    mens_hairstyle_generator = None
+
+try:
+    from src.womens_hairstyles import womens_hairstyle_generator
+except ImportError:
+    logger.warning("Could not import womens_hairstyle_generator, womens hairstyle variations will be limited")
+    womens_hairstyle_generator = None
+
 
 class PromptVariationGenerator:
     """Generate varied prompts while maintaining semantic similarity."""
