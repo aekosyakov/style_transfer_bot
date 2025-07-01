@@ -1345,7 +1345,7 @@ class StyleTransferBot:
             logger.info(f"   - Detected gender: {gender}")
             logger.info(f"   - Original option: {last_processing['selected_option']}")
             
-            # 🎲 SMART RANDOM HAIRSTYLE LOGIC
+            # 🎲 SMART RANDOM GENERATION LOGIC
             if self._is_hairstyle_category(category):
                 logger.info(f"🎯 HAIRSTYLE DETECTED! Generating smart random hairstyle for user {user_id}")
                 
@@ -1369,7 +1369,7 @@ class StyleTransferBot:
                     logger.info(f"🎲 Generating random gender hairstyle (neutral/unknown)")
                     random_option = {
                         'label_key': 'hair.random_any',
-                        'prompt': 'RANDOM_HAIRSTYLE'  # This will trigger random gender selection
+                        'prompt': 'RANDOM_HAIRSTYLE'
                     }
                     answer_text = "🎲 Generating random hairstyle..."
                 
@@ -1383,9 +1383,46 @@ class StyleTransferBot:
                 
                 await update.callback_query.answer(answer_text)
                 
+            elif self._is_dress_category(category):
+                logger.info(f"🎯 DRESS/OUTFIT DETECTED! Generating smart random outfit for user {user_id}")
+                
+                # Create random dress/outfit option based on gender preference
+                if gender == 'men':
+                    logger.info(f"👨 Generating random men's outfit")
+                    random_option = {
+                        'label_key': 'mens.random',
+                        'prompt': 'RANDOM_MENS_OUTFIT'
+                    }
+                    answer_text = "🎲 Generating random men's outfit..."
+                elif gender == 'women':
+                    logger.info(f"👩 Generating random women's dress")
+                    random_option = {
+                        'label_key': 'dress.random',
+                        'prompt': 'RANDOM_DRESS'
+                    }
+                    answer_text = "🎲 Generating random women's dress..."
+                else:
+                    # Fallback to random gender outfit
+                    logger.info(f"🎲 Generating random gender outfit (neutral/unknown)")
+                    random_option = {
+                        'label_key': 'outfit.random_any',
+                        'prompt': 'RANDOM_DRESS'  # Will be handled by variation system
+                    }
+                    answer_text = "🎲 Generating random outfit..."
+                
+                # Use dress/outfit category for generation
+                dress_category = self._get_dress_category_from_original(category, gender)
+                
+                await generation_manager.retry_generation(
+                    update, context, last_processing['photo_file_id'], 
+                    dress_category, random_option, user_lang
+                )
+                
+                await update.callback_query.answer(answer_text)
+                
             else:
-                # Not a hairstyle category - use original varied logic
-                logger.info(f"📝 Non-hairstyle category, using varied option logic")
+                # Not a hairstyle or dress category - use original varied logic
+                logger.info(f"📝 Non-specific category, using varied option logic")
                 varied_option = self._create_varied_option(
                     last_processing['category'],
                     last_processing['selected_option'],
@@ -1420,6 +1457,24 @@ class StyleTransferBot:
         else:
             # Fallback to random gender hairstyle
             return 'new_hairstyle_random'
+
+    def _is_dress_category(self, category: str) -> bool:
+        """Check if the category is dress/outfit-related."""
+        dress_categories = [
+            'new_look', 'new_look_women', 'new_look_men', 
+            'new_look_random'
+        ]
+        return category in dress_categories
+
+    def _get_dress_category_from_original(self, original_category: str, gender: str) -> str:
+        """Map original category to appropriate dress/outfit category based on gender."""
+        if gender == 'men':
+            return 'new_look_men'
+        elif gender == 'women':
+            return 'new_look_women'
+        else:
+            # Fallback to random gender outfit
+            return 'new_look_random'
 
     async def _handle_repeat_video(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle repeat video button - repeat the same video generation, keep original message."""
