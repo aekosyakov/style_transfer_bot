@@ -201,8 +201,8 @@ class MensOutfitGenerator:
                 effect = random.choice(self.outfit_effects)
                 prompt_parts.append(effect)
             
-            # Combine with face and body preservation instruction
-            full_prompt = " ".join(prompt_parts) + ", preserve original face and body proportions exactly"
+            # Combine with face, body, and skin color preservation instruction
+            full_prompt = " ".join(prompt_parts) + ", preserve original face, body proportions, and skin color exactly"
             
             # Log the generation
             generation_info = {
@@ -220,7 +220,7 @@ class MensOutfitGenerator:
         except Exception as e:
             logger.error(f"Error generating random men's outfit: {e}")
             # Fallback to simple outfit
-            return "change outfit to casual shirt and jeans, preserve original face and body proportions exactly"
+            return "change outfit to casual shirt and jeans, preserve original face, body proportions, and skin color exactly"
 
     def get_outfit_by_category(self, category_name: str, include_color: bool = True, include_material: bool = True) -> str:
         """
@@ -252,7 +252,7 @@ class MensOutfitGenerator:
                 material = random.choice(self.outfit_materials)
                 prompt_parts.append(f"{material} fabric")
             
-            full_prompt = " ".join(prompt_parts) + ", preserve original face and body proportions exactly"
+            full_prompt = " ".join(prompt_parts) + ", preserve original face, body proportions, and skin color exactly"
             
             logger.info(f"👔 Generated {category_name} men's outfit: {full_prompt}")
             return full_prompt
@@ -277,14 +277,14 @@ class MensOutfitGenerator:
         try:
             outfit = random.choice(casual_outfits)
             color = random.choice(self.outfit_colors)
-            prompt = f"change outfit to {outfit} in {color}, preserve original face and body proportions exactly"
+            prompt = f"change outfit to {outfit} in {color}, preserve original face, body proportions, and skin color exactly"
             
             logger.info(f"👔 Generated casual men's outfit: {prompt}")
             return prompt
             
         except Exception as e:
             logger.error(f"Error generating casual men's outfit: {e}")
-            return "change outfit to casual t-shirt and jeans, preserve original face and body proportions exactly"
+            return "change outfit to casual t-shirt and jeans, preserve original face, body proportions, and skin color exactly"
 
     def get_available_categories(self) -> List[str]:
         """Get list of available men's outfit categories."""

@@ -197,8 +197,8 @@ class WomensHairstyleGenerator:
                 effect = random.choice(self.hair_effects)
                 prompt_parts.append(effect)
             
-            # Combine with face preservation instruction
-            full_prompt = " ".join(prompt_parts) + ", preserve original face and facial features exactly"
+            # Combine with face and skin color preservation instruction
+            full_prompt = " ".join(prompt_parts) + ", preserve original face, facial features, and skin color exactly"
             
             # Log the generation
             generation_info = {
@@ -215,7 +215,7 @@ class WomensHairstyleGenerator:
         except Exception as e:
             logger.error(f"Error generating random women's hairstyle: {e}")
             # Fallback to simple hairstyle
-            return "change hairstyle to modern bob cut, preserve original face and facial features exactly"
+            return "change hairstyle to modern bob cut, preserve original face, facial features, and skin color exactly"
 
     def get_hairstyle_by_category(self, category_name: str, include_color: bool = True) -> str:
         """
@@ -242,7 +242,7 @@ class WomensHairstyleGenerator:
                 color = random.choice(self.hair_colors)
                 prompt_parts.append(f"with {color} hair color")
             
-            full_prompt = " ".join(prompt_parts) + ", preserve original face and facial features exactly"
+            full_prompt = " ".join(prompt_parts) + ", preserve original face, facial features, and skin color exactly"
             
             logger.info(f"💇‍♀️ Generated {category_name} women's hairstyle: {full_prompt}")
             return full_prompt
@@ -255,14 +255,14 @@ class WomensHairstyleGenerator:
         """Get a prompt that only changes hair color."""
         try:
             color = random.choice(self.hair_colors)
-            prompt = f"change hair color to {color}, keep exact same hairstyle and preserve original face"
+            prompt = f"change hair color to {color}, keep exact same hairstyle and preserve original face and skin color"
             
             logger.info(f"💇‍♀️ Generated women's color-only change: {prompt}")
             return prompt
             
         except Exception as e:
             logger.error(f"Error generating women's color change: {e}")
-            return "change hair color to blonde, keep exact same hairstyle and preserve original face"
+            return "change hair color to blonde, keep exact same hairstyle and preserve original face and skin color"
 
     def get_available_categories(self) -> List[str]:
         """Get list of available women's hairstyle categories."""

@@ -746,7 +746,7 @@ class PromptVariationGenerator:
                 
         except Exception as e:
             logger.error(f"Error generating hairstyle variation: {e}")
-            return original_prompt + ", preserve original face and facial features exactly"
+            return original_prompt + ", preserve original face, facial features, and skin color exactly"
     
     def _generate_dress_variation(self, label_key: str, original_prompt: str, preserve_gender: str = 'neutral') -> str:
         """Generate dress variation using the specialized dress generator with gender preservation."""
@@ -763,7 +763,7 @@ class PromptVariationGenerator:
         if is_mens_prompt:
             if not mens_outfit_generator:
                 logger.warning("Men's outfit generator not available, using fallback")
-                return original_prompt + ", preserve original face and body"
+                return original_prompt + ", preserve original face, body, and skin color"
             
             try:
                 # Determine which type of men's outfit generation to use
@@ -789,13 +789,13 @@ class PromptVariationGenerator:
                     
             except Exception as e:
                 logger.error(f"Error generating men's outfit variation: {e}")
-                return original_prompt + ", preserve original face and body proportions exactly"
+                return original_prompt + ", preserve original face, body proportions, and skin color exactly"
         
         # Handle women's dress prompts or default when gender is neutral/ambiguous
         if is_womens_prompt or (preserve_gender == 'neutral' and not is_mens_prompt):
             if not dress_generator:
                 logger.warning("Dress generator not available, using fallback")
-                return original_prompt + ", preserve original face and body"
+                return original_prompt + ", preserve original face, body, and skin color"
         
         try:
             # Determine which type of dress generation to use
@@ -841,7 +841,7 @@ class PromptVariationGenerator:
                 
         except Exception as e:
             logger.error(f"Error generating dress variation: {e}")
-            return original_prompt + ", preserve original face and body proportions exactly"
+            return original_prompt + ", preserve original face, body proportions, and skin color exactly"
         
         # If we reach here, handle cases where preserve_gender is set but no specific prompt detected
         if preserve_gender == 'men' and mens_outfit_generator:
@@ -850,7 +850,7 @@ class PromptVariationGenerator:
                 return mens_outfit_generator.get_random_outfit(include_color=True, include_material=True, include_effects=False)
             except Exception as e:
                 logger.error(f"Error generating forced men's outfit: {e}")
-                return "change outfit to casual men's shirt and pants, preserve original face and body proportions exactly"
+                return "change outfit to casual men's shirt and pants, preserve original face, body proportions, and skin color exactly"
         
         elif preserve_gender == 'women' and dress_generator:
             logger.info(f"🎯 Forcing women's dress generation due to preserve_gender='women'")
@@ -858,11 +858,11 @@ class PromptVariationGenerator:
                 return dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
             except Exception as e:
                 logger.error(f"Error generating forced women's dress: {e}")
-                return "change outfit to elegant dress, preserve original face and body proportions exactly"
+                return "change outfit to elegant dress, preserve original face, body proportions, and skin color exactly"
         
         # Ultimate fallback
         logger.warning(f"⚠️ No gender-specific generation possible, using original prompt")
-        return original_prompt + ", preserve original face and body proportions exactly"
+        return original_prompt + ", preserve original face, body proportions, and skin color exactly"
     
     def _generate_random_category_variation(self, original_prompt: str) -> str:
         """Generate variation for random category placeholders."""
