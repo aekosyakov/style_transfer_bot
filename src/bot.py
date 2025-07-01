@@ -21,9 +21,10 @@ from telegram.ext import (
 )
 from telegram.error import TimedOut, NetworkError, RetryAfter
 
-from config import config
+from src.config import config
 from localization import L
 from redis_client import redis_client
+from src.services.user_service import user_service
 from flux_api import flux_api
 from kling_api import kling_api
 from payments import payment_processor
@@ -225,28 +226,14 @@ class StyleTransferBot:
         logger.info("Bot handlers configured")
     
     def _get_user_language(self, telegram_user) -> str:
-        """Get user's preferred language, checking Redis first, then Telegram detection."""
-        user_id = telegram_user.id
-        
-        # First check Redis for stored language preference
-        stored_lang = redis_client.get_user_language(user_id)
-        if stored_lang and stored_lang in L.get_available_languages():
-            logger.debug(f"Using stored language preference for user {user_id}: {stored_lang}")
-            return stored_lang
-        
-        # Fall back to Telegram's language detection
-        detected_lang = L.get_user_language(telegram_user)
-        logger.debug(f"Using detected language for user {user_id}: {detected_lang}")
-        return detected_lang
+        """Get user's preferred language - MIGRATED to user_service."""
+        return user_service.get_user_language(telegram_user)
     
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle /start command."""
         try:
             user = update.effective_user
-            user_lang = self._get_user_language(user)
-            
-            # Store user language preference
-            redis_client.set_user_language(user.id, user_lang)
+            user_lang = user_service.initialize_user_language(user)
             
             # Check if this is a new user by looking at their quota
             flux_quota = stars_billing.get_user_quota(user.id, "flux")
@@ -279,7 +266,7 @@ class StyleTransferBot:
         """Handle /premium command."""
         user_id = update.effective_user.id
         user_lang = self._get_user_language(update.effective_user)
-        is_premium = redis_client.is_user_premium(user_id)
+        is_premium = user_service.is_user_premium(user_id)
         
         if is_premium:
             await update.message.reply_text(
@@ -292,7 +279,7 @@ class StyleTransferBot:
         """Handle /status command."""
         user_id = update.effective_user.id
         user_lang = self._get_user_language(update.effective_user)
-        is_premium = redis_client.is_user_premium(user_id)
+        is_premium = user_service.is_user_premium(user_id)
         
         status_text = f"{L.get('status.title', user_lang)}\n\n"
         status_text += f"{L.get('status.user_id', user_lang, user_id=user_id)}\n"
@@ -314,7 +301,7 @@ class StyleTransferBot:
             "⚙️ **Personal Settings**\n\n"
             f"🌐 Language: {L.get('lang_name', user_lang)}\n"
             f"👤 User ID: `{user_id}`\n"
-            f"📊 Status: {'Premium' if redis_client.is_user_premium(user_id) else '🆓 Free'}\n\n"
+            f"📊 Status: {'Premium' if user_service.is_user_premium(user_id) else '🆓 Free'}\n\n"
             "Use the buttons below to modify your settings:"
         )
         
@@ -583,7 +570,7 @@ class StyleTransferBot:
         user_lang = self._get_user_language(update.effective_user)
         
         # Grant premium for 30 days
-        success = redis_client.set_user_premium(user_id, True, 30)
+        success = user_service.set_user_premium(user_id, True, 30)
         
         if success:
             await update.message.reply_text(
@@ -608,7 +595,7 @@ class StyleTransferBot:
         user_lang = self._get_user_language(update.effective_user)
         
         # Revoke premium
-        success = redis_client.set_user_premium(user_id, False)
+        success = user_service.set_user_premium(user_id, False)
         
         if success:
             await update.message.reply_text("🔒 DEBUG: Premium status revoked. You now have free tier access only.")
@@ -816,7 +803,7 @@ class StyleTransferBot:
     
     def _get_main_menu_keyboard(self, lang: str, user_id: int) -> InlineKeyboardMarkup:
         """Get main menu keyboard."""
-        is_premium = redis_client.is_user_premium(user_id)
+        is_premium = user_service.is_user_premium(user_id)
         
         premium_text = L.get("btn.premium_features", lang) if is_premium else L.get("btn.upgrade_to_premium", lang)
         
@@ -832,7 +819,7 @@ class StyleTransferBot:
     
     def _get_enhancement_keyboard(self, lang: str, user_id: int) -> InlineKeyboardMarkup:
         """Get enhancement options keyboard."""
-        is_premium = redis_client.is_user_premium(user_id)
+        is_premium = user_service.is_user_premium(user_id)
         
         keyboard = [
             [InlineKeyboardButton(L.get("btn.style_transfer", lang), callback_data="category_style_transfer")],
@@ -933,7 +920,7 @@ class StyleTransferBot:
         category = data.replace("category_", "")
         user_id = update.effective_user.id
         user_lang = self._get_user_language(update.effective_user)
-        is_premium = redis_client.is_user_premium(user_id)
+        is_premium = user_service.is_user_premium(user_id)
         
         # Get available options for category (always show all options for better UX)
         options = config.get_category_options(category, is_premium, show_all=True)
@@ -1023,7 +1010,7 @@ class StyleTransferBot:
             option_hash = data_without_prefix[last_underscore + 1:]
             user_id = update.effective_user.id
             user_lang = self._get_user_language(update.effective_user)
-            is_premium = redis_client.is_user_premium(user_id)
+            is_premium = user_service.is_user_premium(user_id)
             
             logger.info(f"User {user_id} selected category: {category}, option hash: {option_hash}")
             
@@ -1198,7 +1185,7 @@ class StyleTransferBot:
     async def _handle_language_change(self, update: Update, context: ContextTypes.DEFAULT_TYPE, lang: str) -> None:
         """Handle language change requests."""
         user_id = update.effective_user.id
-        redis_client.set_user_language(user_id, lang)
+        user_service.set_user_language(user_id, lang)
         
         logger.info(f"User {user_id} changed language to {lang}")
         
@@ -1207,7 +1194,7 @@ class StyleTransferBot:
             "⚙️ **Personal Settings**\n\n"
             f"🌐 Language: {L.get('lang_name', lang)}\n"
             f"👤 User ID: `{user_id}`\n"
-            f"📊 Status: {'Premium' if redis_client.is_user_premium(user_id) else '🆓 Free'}\n\n"
+            f"📊 Status: {'Premium' if user_service.is_user_premium(user_id) else '🆓 Free'}\n\n"
             "Use the buttons below to modify your settings:"
         )
         

@@ -135,24 +135,36 @@ class TestUserServiceBaseline:
         
         print("✅ Minimum requirements met for user service extraction")
     
-    def test_config_import_issue_documented(self):
-        """Document the config import issue that prevents full integration testing."""
-        # This test documents known limitations and ensures we're aware of them
+    def test_config_import_issue_resolved(self):
+        """Verify that the config import issue has been resolved."""
+        # This test verifies that the config import issue is now fixed
         
-        config_import_issue = {
+        config_import_status = {
             'issue': 'cannot import name config from config',
+            'status': 'RESOLVED',
+            'fix': 'updated all imports to use src.config',
             'affects': ['redis_client', 'full bot integration'],
-            'workaround': 'use mocks for unit testing',
-            'resolution': 'fix config imports (outside refactoring scope)'
+            'result': 'full integration testing now possible'
         }
         
-        print(f"📋 Known issue documented: {config_import_issue}")
+        print(f"📋 Config import status: {config_import_status}")
         
-        # Verify the issue exists (this should fail as expected)
-        with pytest.raises(ImportError):
+        # Verify that imports now work correctly
+        try:
             from src.redis_client import redis_client
+            print("✅ redis_client import successful")
+            
+            from src.config import config
+            print("✅ config import successful")
+            
+            # Test that redis_client can access config
+            assert hasattr(redis_client, 'redis')
+            print("✅ redis_client properly initialized")
+            
+        except ImportError as e:
+            pytest.fail(f"Config import should now work but failed: {e}")
         
-        print("✅ Config import issue documented and handled")
+        print("✅ Config import issue successfully resolved!")
     
     def test_user_service_extraction_prerequisites(self):
         """Verify all prerequisites are met for safe extraction."""

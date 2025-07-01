@@ -4,7 +4,7 @@ import logging
 import asyncio
 from typing import Optional, Dict, Any
 import replicate
-from config import config
+from src.config import config
 
 logger = logging.getLogger(__name__)
 

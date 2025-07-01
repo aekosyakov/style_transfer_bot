@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Any, Optional
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice
 from telegram.ext import ContextTypes
-from config import config
+from src.config import config
 from redis_client import redis_client
 from localization import L
 
