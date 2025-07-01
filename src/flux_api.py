@@ -245,19 +245,33 @@ class FluxAPI:
             
             # List of placeholders to check
             placeholders_to_check = [
+                # Men's outfit placeholders
                 'RANDOM_MENS_OUTFIT', 'CASUAL_MENS_OUTFIT', 'MODERN_MENS_OUTFIT', 
                 'CLASSIC_MENS_OUTFIT', 'EDGY_MENS_OUTFIT', 'EVENING_MENS_OUTFIT',
                 'CULTURAL_MENS_OUTFIT', 'ANIME_MENS_OUTFIT',
+                
+                # Women's dress placeholders - SPECIFIC STYLES (THE MISSING ONES!)
+                'EIGHTIES_POWER_POP_DRESS', 'NINETIES_REVIVAL_DRESS', 'OLD_MONEY_STYLE_DRESS',
+                'DISCO_GLAM_DRESS', 'Y2K_FUTURIST_DRESS', 'HOLLYWOOD_GLAMOUR_DRESS',
+                'URBAN_STREETSTYLE_DRESS', 'GENZ_VIRAL_MIX_DRESS',
+                
+                # Generic dress/outfit placeholders
                 'RANDOM_DRESS', 'CASUAL_OUTFIT', 'MODERN_DRESS', 'CLASSIC_DRESS',
                 'EDGY_DRESS', 'EVENING_DRESS', 'CULTURAL_DRESS', 'ANIME_DRESS',
+                'RANDOM_ANY_OUTFIT', 'SURPRISE_OUTFIT',
+                
+                # Hairstyle placeholders
                 'RANDOM_HAIRSTYLE', 'MODERN_HAIRSTYLE', 'CLASSIC_HAIRSTYLE',
                 'EDGY_HAIRSTYLE', 'CULTURAL_HAIRSTYLE', 'ANIME_HAIRSTYLE',
+                'RANDOM_ANY_HAIRSTYLE', 'SURPRISE_HAIRSTYLE',
+                
                 # Gender-specific hairstyle placeholders
                 'RANDOM_MENS_HAIRSTYLE', 'MODERN_MENS_HAIRSTYLE', 'CLASSIC_MENS_HAIRSTYLE',
                 'EDGY_MENS_HAIRSTYLE', 'CULTURAL_MENS_HAIRSTYLE', 'ANIME_MENS_HAIRSTYLE',
                 'RANDOM_WOMENS_HAIRSTYLE', 'MODERN_WOMENS_HAIRSTYLE', 'CLASSIC_WOMENS_HAIRSTYLE',
                 'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE',
-                # Background placeholders (MISSING BACKGROUND FIX!)
+                
+                # Background placeholders
                 'RANDOM_BACKGROUND', 'RANDOM_CARTOON', 'RANDOM_ANIME', 'RANDOM_COMICS', 'RANDOM_ART_STYLE'
             ]
             
@@ -352,19 +366,33 @@ class FluxAPI:
             
             # List of placeholders to check (same as edit_object)
             placeholders_to_check = [
+                # Men's outfit placeholders
                 'RANDOM_MENS_OUTFIT', 'CASUAL_MENS_OUTFIT', 'MODERN_MENS_OUTFIT', 
                 'CLASSIC_MENS_OUTFIT', 'EDGY_MENS_OUTFIT', 'EVENING_MENS_OUTFIT',
                 'CULTURAL_MENS_OUTFIT', 'ANIME_MENS_OUTFIT',
+                
+                # Women's dress placeholders - SPECIFIC STYLES (THE MISSING ONES!)
+                'EIGHTIES_POWER_POP_DRESS', 'NINETIES_REVIVAL_DRESS', 'OLD_MONEY_STYLE_DRESS',
+                'DISCO_GLAM_DRESS', 'Y2K_FUTURIST_DRESS', 'HOLLYWOOD_GLAMOUR_DRESS',
+                'URBAN_STREETSTYLE_DRESS', 'GENZ_VIRAL_MIX_DRESS',
+                
+                # Generic dress/outfit placeholders
                 'RANDOM_DRESS', 'CASUAL_OUTFIT', 'MODERN_DRESS', 'CLASSIC_DRESS',
                 'EDGY_DRESS', 'EVENING_DRESS', 'CULTURAL_DRESS', 'ANIME_DRESS',
+                'RANDOM_ANY_OUTFIT', 'SURPRISE_OUTFIT',
+                
+                # Hairstyle placeholders
                 'RANDOM_HAIRSTYLE', 'MODERN_HAIRSTYLE', 'CLASSIC_HAIRSTYLE',
                 'EDGY_HAIRSTYLE', 'CULTURAL_HAIRSTYLE', 'ANIME_HAIRSTYLE',
+                'RANDOM_ANY_HAIRSTYLE', 'SURPRISE_HAIRSTYLE',
+                
                 # Gender-specific hairstyle placeholders
                 'RANDOM_MENS_HAIRSTYLE', 'MODERN_MENS_HAIRSTYLE', 'CLASSIC_MENS_HAIRSTYLE',
                 'EDGY_MENS_HAIRSTYLE', 'CULTURAL_MENS_HAIRSTYLE', 'ANIME_MENS_HAIRSTYLE',
                 'RANDOM_WOMENS_HAIRSTYLE', 'MODERN_WOMENS_HAIRSTYLE', 'CLASSIC_WOMENS_HAIRSTYLE',
                 'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE',
-                # Background placeholders (THE MISSING BACKGROUND FIX!)
+                
+                # Background placeholders
                 'RANDOM_BACKGROUND', 'RANDOM_CARTOON', 'RANDOM_ANIME', 'RANDOM_COMICS', 'RANDOM_ART_STYLE'
             ]
             
