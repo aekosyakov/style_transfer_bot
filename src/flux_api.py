@@ -345,8 +345,44 @@ class FluxAPI:
         try:
             from src.prompt_variations import prompt_variation_generator
             
+            # 🔧 CRITICAL FIX: Apply prompt variation for placeholders (same as edit_object)
+            original_prompt = prompt
+            
+            # List of placeholders to check (same as edit_object)
+            placeholders_to_check = [
+                'RANDOM_MENS_OUTFIT', 'CASUAL_MENS_OUTFIT', 'MODERN_MENS_OUTFIT', 
+                'CLASSIC_MENS_OUTFIT', 'EDGY_MENS_OUTFIT', 'EVENING_MENS_OUTFIT',
+                'CULTURAL_MENS_OUTFIT', 'ANIME_MENS_OUTFIT',
+                'RANDOM_DRESS', 'CASUAL_OUTFIT', 'MODERN_DRESS', 'CLASSIC_DRESS',
+                'EDGY_DRESS', 'EVENING_DRESS', 'CULTURAL_DRESS', 'ANIME_DRESS',
+                'RANDOM_HAIRSTYLE', 'MODERN_HAIRSTYLE', 'CLASSIC_HAIRSTYLE',
+                'EDGY_HAIRSTYLE', 'CULTURAL_HAIRSTYLE', 'ANIME_HAIRSTYLE',
+                # Gender-specific hairstyle placeholders (THE MISSING FIX!)
+                'RANDOM_MENS_HAIRSTYLE', 'MODERN_MENS_HAIRSTYLE', 'CLASSIC_MENS_HAIRSTYLE',
+                'EDGY_MENS_HAIRSTYLE', 'CULTURAL_MENS_HAIRSTYLE', 'ANIME_MENS_HAIRSTYLE',
+                'RANDOM_WOMENS_HAIRSTYLE', 'MODERN_WOMENS_HAIRSTYLE', 'CLASSIC_WOMENS_HAIRSTYLE',
+                'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE'
+            ]
+            
+            # Check if this is a special placeholder that needs variation
+            if any(placeholder in prompt for placeholder in placeholders_to_check):
+                logger.info(f"🔧 RETRY_PLACEHOLDER_DETECTED! Applying prompt variation for: '{prompt}'")
+                
+                # Apply prompt variations (same logic as edit_object)
+                varied_prompt = prompt_variation_generator.get_varied_prompt(
+                    category="object_edit", 
+                    label_key="object.edit", 
+                    original_prompt=prompt
+                )
+                logger.info(f"🔄 Applied prompt variation for retry:")
+                logger.info(f"   - Original: '{prompt}'")
+                logger.info(f"   - Varied: '{varied_prompt}'")
+                prompt = varied_prompt
+            else:
+                logger.info(f"📝 No placeholder detected in retry prompt: '{prompt[:50]}...'")
+            
             seed = prompt_variation_generator.get_random_seed() if use_random_seed else None
-            logger.info(f"Processing with variation - Seed: {seed}, Prompt: '{prompt[:50]}...'")
+            logger.info(f"Processing with variation - Seed: {seed}, Final Prompt: '{prompt[:50]}...'")
             
             return await self.process_image(
                 image_url=image_url,
