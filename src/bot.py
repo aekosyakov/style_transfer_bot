@@ -1317,7 +1317,7 @@ class StyleTransferBot:
         )
     
     async def _handle_retry(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Handle retry button - repeat with similar but varied processing, keep original message."""
+        """Handle Random button - generate random hairstyles with gender preservation or fallback to varied processing."""
         try:
             from generation_manager import generation_manager
             
@@ -1337,28 +1337,90 @@ class StyleTransferBot:
                 await update.callback_query.answer("⚠️ No previous processing to retry", show_alert=True)
                 return
             
-            # Create varied version of the selected option with gender preservation
+            category = last_processing['category']
             gender = last_processing.get('gender', 'neutral')
-            varied_option = self._create_varied_option(
-                last_processing['category'],
-                last_processing['selected_option'],
-                gender
-            )
             
-            logger.info(f"User {user_id} requested retry for {last_processing['category']}")
+            logger.info(f"🎲 RANDOM_BUTTON_DEBUG for user {user_id}:")
+            logger.info(f"   - Original category: {category}")
+            logger.info(f"   - Detected gender: {gender}")
+            logger.info(f"   - Original option: {last_processing['selected_option']}")
             
-            # Use special retry method that doesn't remove the result message
-            await generation_manager.retry_generation(
-                update, context, last_processing['photo_file_id'], 
-                last_processing['category'], varied_option, user_lang
-            )
-            
-            await update.callback_query.answer("🔄 Creating new variation...")
+            # 🎲 SMART RANDOM HAIRSTYLE LOGIC
+            if self._is_hairstyle_category(category):
+                logger.info(f"🎯 HAIRSTYLE DETECTED! Generating smart random hairstyle for user {user_id}")
+                
+                # Create random hairstyle option based on gender preference
+                if gender == 'men':
+                    logger.info(f"👨 Generating random men's hairstyle")
+                    random_option = {
+                        'label_key': 'hair.men_random',
+                        'prompt': 'RANDOM_MENS_HAIRSTYLE'
+                    }
+                    answer_text = "🎲 Generating random men's hairstyle..."
+                elif gender == 'women':
+                    logger.info(f"👩 Generating random women's hairstyle")
+                    random_option = {
+                        'label_key': 'hair.women_random', 
+                        'prompt': 'RANDOM_WOMENS_HAIRSTYLE'
+                    }
+                    answer_text = "🎲 Generating random women's hairstyle..."
+                else:
+                    # Fallback to random gender hairstyle
+                    logger.info(f"🎲 Generating random gender hairstyle (neutral/unknown)")
+                    random_option = {
+                        'label_key': 'hair.random_any',
+                        'prompt': 'RANDOM_HAIRSTYLE'  # This will trigger random gender selection
+                    }
+                    answer_text = "🎲 Generating random hairstyle..."
+                
+                # Use hairstyle category for generation
+                hairstyle_category = self._get_hairstyle_category_from_original(category, gender)
+                
+                await generation_manager.retry_generation(
+                    update, context, last_processing['photo_file_id'], 
+                    hairstyle_category, random_option, user_lang
+                )
+                
+                await update.callback_query.answer(answer_text)
+                
+            else:
+                # Not a hairstyle category - use original varied logic
+                logger.info(f"📝 Non-hairstyle category, using varied option logic")
+                varied_option = self._create_varied_option(
+                    last_processing['category'],
+                    last_processing['selected_option'],
+                    gender
+                )
+                
+                await generation_manager.retry_generation(
+                    update, context, last_processing['photo_file_id'], 
+                    last_processing['category'], varied_option, user_lang
+                )
+                
+                await update.callback_query.answer("🎲 Creating random variation...")
             
         except Exception as e:
-            logger.error(f"Error in retry handler: {e}")
+            logger.error(f"Error in random handler: {e}")
             await update.callback_query.answer("❌ Error occurred", show_alert=True)
-    
+
+    def _is_hairstyle_category(self, category: str) -> bool:
+        """Check if the category is hairstyle-related."""
+        hairstyle_categories = [
+            'new_hairstyle', 'new_hairstyle_women', 'new_hairstyle_men', 
+            'new_hairstyle_random'
+        ]
+        return category in hairstyle_categories
+
+    def _get_hairstyle_category_from_original(self, original_category: str, gender: str) -> str:
+        """Map original category to appropriate hairstyle category based on gender."""
+        if gender == 'men':
+            return 'new_hairstyle_men'
+        elif gender == 'women':
+            return 'new_hairstyle_women'
+        else:
+            # Fallback to random gender hairstyle
+            return 'new_hairstyle_random'
+
     async def _handle_repeat_video(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Handle repeat video button - repeat the same video generation, keep original message."""
         try:

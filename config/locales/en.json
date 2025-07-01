@@ -81,7 +81,7 @@
   "category.replace_text": "replace text",
   "category.animate": "animation",
 
-  "btn.retry": "🔄 New Variation",
+  "btn.retry": "🎲 Random",
   "btn.repeat": "🔄 Repeat",
   "btn.restart": "✏️ Edit", 
   "btn.animate_result": "📽 Animate",
