@@ -78,6 +78,75 @@ class WomensHairstyleGenerator:
             "70s Icon Hair", "Feathered Hair Cut", "Disco Era Layers", "70s Feathered Bob"
         ]
         
+        # Legacy categories (keeping for backward compatibility)
+        # Modern & Trendy (massively expanded)
+        self.modern_trendy = [
+            "Long Textured Waves", "Curtain Bangs Bob", "Wolf Cut with Shaggy Layers", "French Girl Chin Bob",
+            "Sleek High Ponytail", "Airy Pixie with Side Bangs", "Face-Framing Layered Lob", "Blunt Cut with Micro Fringe",
+            "Bubble Braids", "Half-Up Space Buns", "Textured Beach Waves", "Modern Shag Cut", "Butterfly Haircut",
+            "Wispy Bangs Bob", "Layered Curtain Bangs", "Messy Bun Updo", "Slicked Back Ponytail", "Chunky Highlights Bob",
+            "Face-Framing Layers", "Textured Pixie Cut", "Modern Mullet", "Asymmetrical Bob", "Wavy Lob",
+            "Feathered Layers", "Tousled Waves", "Edgy Pixie", "Voluminous Curls", "Sleek Straight Hair",
+            "Layered Shag", "Bouncy Blowout", "Textured Crop", "Modern Fringe", "Wavy Bob", "Choppy Layers",
+            "Effortless Waves", "Trendy Bangs", "Lived-in Color", "Undone Waves", "Contemporary Cut"
+        ]
+
+        # Classic & Timeless
+        self.classic_timeless = [
+            "Hollywood Glamour Waves",
+            "Elegant Chignon Bun",
+            "Soft Romantic Curls",
+            "Traditional French Twist",
+            "Pinned-Back Half Updo",
+            "Pageboy with Side Part",
+            "Long Straight Center Part",
+            "Voluminous 1960s Beehive",
+            "Classic Side Braid",
+            "Retro Victory Rolls"
+        ]
+
+        # Edgy / Statement
+        self.edgy_statement = [
+            "Undercut with Shaved Design",
+            "Rainbow Balayage Layers",
+            "Asymmetrical Lob",
+            "Geometric Bowl Cut",
+            "Two-Tone Split Dye",
+            "Extra Long Rapunzel Braid",
+            "Shaggy Mullet with Bangs",
+            "High-Contrast Roots",
+            "Micro Braided Top Knots",
+            "Faux Hawk Ponytail"
+        ]
+
+        # Cultural & Traditional
+        self.cultural_traditional = [
+            "Traditional Japanese Shimada Bun",
+            "Chinese Double-Loop Buns",
+            "Indian Bridal Braided Updo",
+            "Fulani Braids with Beads",
+            "West African Cornrows",
+            "Victorian Ringlet Curls",
+            "Renaissance Crown Braid",
+            "Greek Goddess Updo",
+            "Spanish Flamenco Low Bun",
+            "Russian Kokoshnik Braids"
+        ]
+
+        # Anime & Game-Inspired (content-safe descriptions)
+        self.anime_inspired = [
+            "Twin Tails with Ribbons",
+            "Double Buns with Long Pigtails",
+            "Super Spiky Heroine Cut",
+            "Mega-Volume Drill Curls",
+            "Cat Ear Buns",
+            "Long Hime Cut with Face Panels",
+            "Jagged Side Bangs",
+            "Rainbow Gradient Layered Hair",
+            "Oversized Clip Accessories",
+            "Holographic Anime Bob"
+        ]
+        
         # Hair Colors & Effects - ULTIMATE EXPANSION for infinite variety
         self.hair_colors = [
             # Premium Blondes - Expanded
