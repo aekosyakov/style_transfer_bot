@@ -284,6 +284,19 @@ class FluxAPI:
             matching_placeholders = [p for p in placeholders_to_check if p in object_description]
             logger.info(f"   🎯 Matching placeholders found: {matching_placeholders}")
             
+            # Add new era-specific hairstyle placeholders to the list
+            placeholders_to_check.extend([
+                # Men's hairstyle placeholders - NEW ERA-SPECIFIC STYLES
+                'EIGHTIES_POWER_BUSINESS_HAIR', 'NINETIES_GRUNGE_REBEL', 'Y2K_TECH_STYLE',
+                'OLD_MONEY_GENTLEMAN_HAIR', 'HOLLYWOOD_LEADING_MAN', 'URBAN_STREETWEAR_HAIR_MEN',
+                'GENZ_TIKTOK_HAIR', 'DISCO_RETRO_HAIR',
+                
+                # Women's hairstyle placeholders - NEW ERA-SPECIFIC STYLES  
+                'EIGHTIES_BIG_HAIR', 'NINETIES_GRUNGE_LAYERS', 'Y2K_CYBER_GLAM',
+                'OLD_MONEY_ELEGANCE', 'HOLLYWOOD_RED_CARPET', 'URBAN_STREETWEAR_HAIR',
+                'GENZ_VIRAL_HAIR', 'DISCO_ERA_FEATHERS'
+            ])
+            
             # Check if this is a special placeholder that needs variation
             if any(placeholder in object_description for placeholder in placeholders_to_check):
                 logger.info(f"✅ PLACEHOLDER DETECTED! Will apply prompt variation")
@@ -405,6 +418,19 @@ class FluxAPI:
                 # Background placeholders
                 'RANDOM_BACKGROUND', 'RANDOM_CARTOON', 'RANDOM_ANIME', 'RANDOM_COMICS', 'RANDOM_ART_STYLE'
             ]
+            
+            # Add new era-specific hairstyle placeholders to the list
+            placeholders_to_check.extend([
+                # Men's hairstyle placeholders - NEW ERA-SPECIFIC STYLES
+                'EIGHTIES_POWER_BUSINESS_HAIR', 'NINETIES_GRUNGE_REBEL', 'Y2K_TECH_STYLE',
+                'OLD_MONEY_GENTLEMAN_HAIR', 'HOLLYWOOD_LEADING_MAN', 'URBAN_STREETWEAR_HAIR_MEN',
+                'GENZ_TIKTOK_HAIR', 'DISCO_RETRO_HAIR',
+                
+                # Women's hairstyle placeholders - NEW ERA-SPECIFIC STYLES  
+                'EIGHTIES_BIG_HAIR', 'NINETIES_GRUNGE_LAYERS', 'Y2K_CYBER_GLAM',
+                'OLD_MONEY_ELEGANCE', 'HOLLYWOOD_RED_CARPET', 'URBAN_STREETWEAR_HAIR',
+                'GENZ_VIRAL_HAIR', 'DISCO_ERA_FEATHERS'
+            ])
             
             # Check if this is a special placeholder that needs variation
             if any(placeholder in prompt for placeholder in placeholders_to_check):

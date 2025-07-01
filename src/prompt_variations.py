@@ -637,7 +637,18 @@ class PromptVariationGenerator:
             "RANDOM_HAIRSTYLE", "MODERN_HAIRSTYLE", "CLASSIC_HAIRSTYLE", 
             "EDGY_HAIRSTYLE", "UPDO_HAIRSTYLE", "CULTURAL_HAIRSTYLE", 
             "ANIME_HAIRSTYLE", "haircut", "hairstyle", "hair.",
-            # Gender-specific hairstyle placeholders (CRITICAL FOR DETECTION!)
+            
+            # Men's hairstyle placeholders - NEW ERA-SPECIFIC STYLES
+            "EIGHTIES_POWER_BUSINESS_HAIR", "NINETIES_GRUNGE_REBEL", "Y2K_TECH_STYLE",
+            "OLD_MONEY_GENTLEMAN_HAIR", "HOLLYWOOD_LEADING_MAN", "URBAN_STREETWEAR_HAIR_MEN",
+            "GENZ_TIKTOK_HAIR", "DISCO_RETRO_HAIR",
+            
+            # Women's hairstyle placeholders - NEW ERA-SPECIFIC STYLES  
+            "EIGHTIES_BIG_HAIR", "NINETIES_GRUNGE_LAYERS", "Y2K_CYBER_GLAM",
+            "OLD_MONEY_ELEGANCE", "HOLLYWOOD_RED_CARPET", "URBAN_STREETWEAR_HAIR",
+            "GENZ_VIRAL_HAIR", "DISCO_ERA_FEATHERS",
+            
+            # Gender-specific hairstyle placeholders - LEGACY (CRITICAL FOR DETECTION!)
             "RANDOM_MENS_HAIRSTYLE", "MODERN_MENS_HAIRSTYLE", "CLASSIC_MENS_HAIRSTYLE",
             "EDGY_MENS_HAIRSTYLE", "CULTURAL_MENS_HAIRSTYLE", "ANIME_MENS_HAIRSTYLE",
             "RANDOM_WOMENS_HAIRSTYLE", "MODERN_WOMENS_HAIRSTYLE", "CLASSIC_WOMENS_HAIRSTYLE",
@@ -688,8 +699,60 @@ class PromptVariationGenerator:
             # IMPORTANT: Check gender-specific patterns FIRST before general patterns
             # to avoid both men's and women's hairstyles matching "RANDOM_HAIRSTYLE"
             
-            # Gender-specific random hairstyles
-            if "RANDOM_MENS_HAIRSTYLE" in original_prompt:
+            # Men's era-specific hairstyles (NEW CATEGORIES)
+            if "EIGHTIES_POWER_BUSINESS_HAIR" in original_prompt:
+                logger.info("🎯 Generating 80s power business men's hairstyle")
+                return mens_hairstyle_generator.get_hairstyle_by_category("eighties_power_business", include_color=True)
+            elif "NINETIES_GRUNGE_REBEL" in original_prompt:
+                logger.info("🎯 Generating 90s grunge rebel men's hairstyle")
+                return mens_hairstyle_generator.get_hairstyle_by_category("nineties_grunge_rebel", include_color=True)
+            elif "Y2K_TECH_STYLE" in original_prompt:
+                logger.info("🎯 Generating Y2K tech style men's hairstyle")
+                return mens_hairstyle_generator.get_hairstyle_by_category("y2k_tech_style", include_color=True)
+            elif "OLD_MONEY_GENTLEMAN_HAIR" in original_prompt:
+                logger.info("🎯 Generating old money gentleman men's hairstyle")
+                return mens_hairstyle_generator.get_hairstyle_by_category("old_money_gentleman", include_color=True)
+            elif "HOLLYWOOD_LEADING_MAN" in original_prompt:
+                logger.info("🎯 Generating Hollywood leading man hairstyle")
+                return mens_hairstyle_generator.get_hairstyle_by_category("hollywood_leading_man", include_color=True)
+            elif "URBAN_STREETWEAR_HAIR_MEN" in original_prompt:
+                logger.info("🎯 Generating urban streetwear men's hairstyle")
+                return mens_hairstyle_generator.get_hairstyle_by_category("urban_streetwear", include_color=True)
+            elif "GENZ_TIKTOK_HAIR" in original_prompt:
+                logger.info("🎯 Generating Gen-Z TikTok men's hairstyle")
+                return mens_hairstyle_generator.get_hairstyle_by_category("genz_tiktok", include_color=True)
+            elif "DISCO_RETRO_HAIR" in original_prompt:
+                logger.info("🎯 Generating disco retro men's hairstyle")
+                return mens_hairstyle_generator.get_hairstyle_by_category("disco_retro", include_color=True)
+                
+            # Women's era-specific hairstyles (NEW CATEGORIES)
+            elif "EIGHTIES_BIG_HAIR" in original_prompt:
+                logger.info("🎯 Generating 80s big hair women's hairstyle")
+                return womens_hairstyle_generator.get_hairstyle_by_category("eighties_big_hair", include_color=True)
+            elif "NINETIES_GRUNGE_LAYERS" in original_prompt:
+                logger.info("🎯 Generating 90s grunge layers women's hairstyle")
+                return womens_hairstyle_generator.get_hairstyle_by_category("nineties_grunge_layers", include_color=True)
+            elif "Y2K_CYBER_GLAM" in original_prompt:
+                logger.info("🎯 Generating Y2K cyber glam women's hairstyle")
+                return womens_hairstyle_generator.get_hairstyle_by_category("y2k_cyber_glam", include_color=True)
+            elif "OLD_MONEY_ELEGANCE" in original_prompt:
+                logger.info("🎯 Generating old money elegance women's hairstyle")
+                return womens_hairstyle_generator.get_hairstyle_by_category("old_money_elegance", include_color=True)
+            elif "HOLLYWOOD_RED_CARPET" in original_prompt:
+                logger.info("🎯 Generating Hollywood red carpet women's hairstyle")
+                return womens_hairstyle_generator.get_hairstyle_by_category("hollywood_red_carpet", include_color=True)
+            elif "URBAN_STREETWEAR_HAIR" in original_prompt:
+                logger.info("🎯 Generating urban streetwear women's hairstyle")
+                return womens_hairstyle_generator.get_hairstyle_by_category("urban_streetwear", include_color=True)
+            elif "GENZ_VIRAL_HAIR" in original_prompt:
+                logger.info("🎯 Generating Gen-Z viral women's hairstyle")
+                return womens_hairstyle_generator.get_hairstyle_by_category("genz_viral_hair", include_color=True)
+            elif "DISCO_ERA_FEATHERS" in original_prompt:
+                logger.info("🎯 Generating disco era feathers women's hairstyle")
+                return womens_hairstyle_generator.get_hairstyle_by_category("disco_era_feathers", include_color=True)
+                
+            # Gender-specific random hairstyles (LEGACY)
+            elif "RANDOM_MENS_HAIRSTYLE" in original_prompt:
                 logger.info("🎯 Generating random men's hairstyle")
                 return hairstyle_generator.get_mens_hairstyle(include_color=True, include_effects=False)
             elif "RANDOM_WOMENS_HAIRSTYLE" in original_prompt:

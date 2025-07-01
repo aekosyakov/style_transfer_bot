@@ -14,6 +14,71 @@ class MensHairstyleGenerator:
     """Generate random men's hairstyles with face-preserving prompts."""
     
     def __init__(self):
+        # 80s Power Business - Slicked back, Wall Street & executive styles
+        self.eighties_power_business = [
+            "Wall Street Slick Back", "80s Executive Hair", "Gordon Gekko Style", "Power Business Cut",
+            "Dynasty Business Hair", "80s Corporate Style", "Executive Slick Back", "80s Power Cut",
+            "Business Power Hair", "80s Wall Street", "Corporate Slick Style", "Executive Power Cut",
+            "80s Business Man", "Power Suit Hair", "Wall Street Executive", "80s Professional Cut"
+        ]
+        
+        # 90s Grunge Rebel - Longer, messy styles & alternative rebellion
+        self.nineties_grunge_rebel = [
+            "Kurt Cobain Grunge", "90s Alternative Hair", "Grunge Messy Cut", "90s Rebel Hair",
+            "Alternative Rock Hair", "90s Indie Style", "Grunge Long Hair", "90s Messy Cut",
+            "Alternative Grunge Style", "90s Rock Hair", "Grunge Shaggy Cut", "90s Underground Style",
+            "Alternative Rebel Hair", "90s Casual Grunge", "Indie Rock Hair", "90s Grunge Style"
+        ]
+        
+        # Y2K Tech Style - Frosted tips, faux hawks & early 2000s trends
+        self.y2k_tech_style = [
+            "Frosted Tips Y2K", "Early 2000s Faux Hawk", "Y2K Spiky Hair", "Tech Boy Hair",
+            "Digital Age Cut", "Y2K Emo Hair", "Early 2000s Style", "Cyber Tech Hair",
+            "Y2K Scene Hair", "Future Tech Cut", "Digital Native Hair", "Y2K Trendy Cut",
+            "Millennium Hair Style", "Tech Era Cut", "Y2K Modern Style", "Digital Age Hair"
+        ]
+        
+        # Old Money Gentleman - Classic side parts, preppy cuts & sophisticated styles
+        self.old_money_gentleman = [
+            "Classic Side Part", "Preppy Gentleman Cut", "Ivy League Style", "Country Club Hair",
+            "Tennis Club Cut", "Elite Preppy Style", "Heritage Gentleman Cut", "Classic Prep Hair",
+            "Refined Side Part", "Gentleman's Cut", "Elite Club Style", "Preppy Traditional Cut",
+            "Old Money Style", "Sophisticated Cut", "Elite Gentleman Hair", "Classic Preppy Cut"
+        ]
+        
+        # Hollywood Leading Man - James Dean, classic movie star & timeless appeal
+        self.hollywood_leading_man = [
+            "James Dean Style", "Classic Movie Star", "Hollywood Icon Hair", "Leading Man Cut",
+            "Classic Screen Star", "Vintage Hollywood Hair", "Movie Star Style", "Classic Leading Man",
+            "Hollywood Legend Hair", "Screen Icon Style", "Classic Movie Hair", "Hollywood Heartthrob",
+            "Movie Star Cut", "Classic Hollywood Style", "Silver Screen Hair", "Vintage Star Cut"
+        ]
+        
+        # Urban Streetwear - Modern fades, trendy cuts & contemporary street culture
+        self.urban_streetwear = [
+            "Modern Fade Cut", "Urban Street Style", "Contemporary Fade", "Street Fashion Hair",
+            "Modern Urban Cut", "Street Culture Hair", "Contemporary Style", "Urban Trendy Cut",
+            "Modern Street Hair", "Urban Fashion Cut", "Street Style Fade", "Contemporary Urban Hair",
+            "Modern City Cut", "Urban Edge Style", "Street Trend Hair", "Contemporary Fade Cut"
+        ]
+        
+        # Gen-Z TikTok - E-boy cuts, modern trends & social media aesthetics
+        self.genz_tiktok = [
+            "E-Boy Hair Cut", "TikTok Boy Hair", "Gen-Z Aesthetic Cut", "Social Media Hair",
+            "TikTok Trendy Hair", "E-Boy Style", "Gen-Z Hair Trend", "Viral Hair Cut",
+            "TikTok Famous Hair", "Digital Native Cut", "Gen-Z Style Hair", "Social Media Cut",
+            "E-Boy Aesthetic", "TikTok Hair Style", "Gen-Z Modern Cut", "Viral Hair Style"
+        ]
+        
+        # Disco Retro - Longer styles from the 70s, afros & retro glamour
+        self.disco_retro = [
+            "70s Disco Hair", "Retro Afro Style", "Disco Era Hair", "70s Long Hair",
+            "Retro Disco Style", "70s Glamour Hair", "Disco Funk Hair", "Retro 70s Cut",
+            "Disco Age Hair", "70s Icon Hair", "Retro Disco Cut", "70s Soul Hair",
+            "Disco Fever Hair", "Retro Groove Style", "70s Disco Style", "Vintage Disco Hair"
+        ]
+        
+        # Legacy categories (keeping for backward compatibility)
         # Modern & Trendy (massively expanded)
         self.modern_trendy = [
             "Textured Crop Fade", "Messy Quiff", "Disconnected Undercut", "French Crop with Fringe",
@@ -136,6 +201,17 @@ class MensHairstyleGenerator:
 
         # All categories combined for easy access
         self.all_categories = {
+            # New era-specific categories (matching outfits approach)
+            "eighties_power_business": self.eighties_power_business,
+            "nineties_grunge_rebel": self.nineties_grunge_rebel,
+            "y2k_tech_style": self.y2k_tech_style,
+            "old_money_gentleman": self.old_money_gentleman,
+            "hollywood_leading_man": self.hollywood_leading_man,
+            "urban_streetwear": self.urban_streetwear,
+            "genz_tiktok": self.genz_tiktok,
+            "disco_retro": self.disco_retro,
+            
+            # Legacy categories (for backward compatibility)
             "modern_trendy": self.modern_trendy,
             "classic_timeless": self.classic_timeless,
             "edgy_statement": self.edgy_statement,

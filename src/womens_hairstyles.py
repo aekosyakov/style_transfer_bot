@@ -14,74 +14,70 @@ class WomensHairstyleGenerator:
     """Generate random women's hairstyles with face-preserving prompts."""
     
     def __init__(self):
-        # Modern & Trendy (massively expanded)
-        self.modern_trendy = [
-            "Long Textured Waves", "Curtain Bangs Bob", "Wolf Cut with Shaggy Layers", "French Girl Chin Bob",
-            "Sleek High Ponytail", "Airy Pixie with Side Bangs", "Face-Framing Layered Lob", "Blunt Cut with Micro Fringe",
-            "Bubble Braids", "Half-Up Space Buns", "Textured Beach Waves", "Modern Shag Cut", "Butterfly Haircut",
-            "Wispy Bangs Bob", "Layered Curtain Bangs", "Messy Bun Updo", "Slicked Back Ponytail", "Chunky Highlights Bob",
-            "Face-Framing Layers", "Textured Pixie Cut", "Modern Mullet", "Asymmetrical Bob", "Wavy Lob",
-            "Feathered Layers", "Tousled Waves", "Edgy Pixie", "Voluminous Curls", "Sleek Straight Hair",
-            "Layered Shag", "Bouncy Blowout", "Textured Crop", "Modern Fringe", "Wavy Bob", "Choppy Layers",
-            "Effortless Waves", "Trendy Bangs", "Lived-in Color", "Undone Waves", "Contemporary Cut"
+        # 80s Big Hair Power - Volume, perms, teased hair & bold styles
+        self.eighties_big_hair = [
+            "Big Hair Perm", "Teased Volume Hair", "Madonna Big Hair", "80s Poodle Perm",
+            "Dynasty Hair Volume", "Cyndi Lauper Style", "80s Crimped Hair", "Big Hair Layered Perm",
+            "Volumized Side Perm", "80s Rock Hair", "Teased Bangs Style", "Big Hair Mullet",
+            "80s Power Hair", "Voluminous Feathered Hair", "80s Glam Hair", "Big Hair Side Sweep"
         ]
-
-        # Classic & Timeless
-        self.classic_timeless = [
-            "Hollywood Glamour Waves",
-            "Elegant Chignon Bun",
-            "Soft Romantic Curls",
-            "Traditional French Twist",
-            "Pinned-Back Half Updo",
-            "Pageboy with Side Part",
-            "Long Straight Center Part",
-            "Voluminous 1960s Beehive",
-            "Classic Side Braid",
-            "Retro Victory Rolls"
+        
+        # 90s Grunge Layers - Face-framing layers, alternative & casual rebellion  
+        self.nineties_grunge_layers = [
+            "Rachel Green Layers", "Grunge Face-Framing Layers", "90s Shaggy Bob", "Alternative Layers",
+            "Messy Grunge Cut", "90s Chunky Highlights", "Face-Framing Shag", "90s Alternative Bob",
+            "Layered Grunge Style", "90s Casual Layers", "Messy Layered Cut", "Grunge Pixie Cut",
+            "90s Indie Hair", "Alternative Shag Cut", "Grunge Bob Cut", "90s Relaxed Layers"
         ]
-
-        # Edgy / Statement
-        self.edgy_statement = [
-            "Undercut with Shaved Design",
-            "Rainbow Balayage Layers",
-            "Asymmetrical Lob",
-            "Geometric Bowl Cut",
-            "Two-Tone Split Dye",
-            "Extra Long Rapunzel Braid",
-            "Shaggy Mullet with Bangs",
-            "High-Contrast Roots",
-            "Micro Braided Top Knots",
-            "Faux Hawk Ponytail"
+        
+        # Y2K Cyber Glam - Pin-straight hair, chunky highlights & futuristic elements
+        self.y2k_cyber_glam = [
+            "Pin-Straight Y2K Hair", "Chunky Blonde Highlights", "Y2K Face-Framing Pieces", "Cyber Straight Hair",
+            "Y2K Flippy Ends", "Early 2000s Highlights", "Y2K Side Bangs", "Futuristic Straight Hair",
+            "Y2K Emo Fringe", "Cyber Goth Hair", "Y2K Scene Hair", "Digital Age Hair",
+            "Tech Girl Hair", "Y2K Metallic Hair", "Cyber Punk Hair", "Future Hair Style"
         ]
-
-        # Cultural & Traditional
-        self.cultural_traditional = [
-            "Traditional Japanese Shimada Bun",
-            "Chinese Double-Loop Buns",
-            "Indian Bridal Braided Updo",
-            "Fulani Braids with Beads",
-            "West African Cornrows",
-            "Victorian Ringlet Curls",
-            "Renaissance Crown Braid",
-            "Greek Goddess Updo",
-            "Spanish Flamenco Low Bun",
-            "Russian Kokoshnik Braids"
+        
+        # Old Money Elegance - Classic bobs, sophisticated updos & timeless sophistication
+        self.old_money_elegance = [
+            "Classic French Bob", "Elegant Chignon", "Preppy Bob Cut", "Sophisticated Updo",
+            "Old Money Waves", "Grace Kelly Hair", "Classic Side Part", "Timeless Bob Cut",
+            "Elegant French Twist", "Preppy Ponytail", "Classic Low Bun", "Refined Bob Cut",
+            "Country Club Hair", "Tennis Club Style", "Elite Updo", "Heritage Hair Style"
         ]
-
-        # Anime & Game-Inspired (content-safe descriptions)
-        self.anime_inspired = [
-            "Twin Tails with Ribbons",
-            "Double Buns with Long Pigtails",
-            "Super Spiky Heroine Cut",
-            "Mega-Volume Drill Curls",
-            "Cat Ear Buns",
-            "Long Hime Cut with Face Panels",
-            "Jagged Side Bangs",
-            "Rainbow Gradient Layered Hair",
-            "Oversized Clip Accessories",
-            "Holographic Anime Bob"
+        
+        # Hollywood Red Carpet - Glamorous waves, vintage curls & movie star styles
+        self.hollywood_red_carpet = [
+            "Old Hollywood Waves", "Red Carpet Curls", "Movie Star Hair", "Glamorous Side Waves",
+            "Vintage Hollywood Curls", "Classic Screen Siren", "Red Carpet Updo", "Hollywood Glamour Waves",
+            "Marilyn Monroe Curls", "Grace Kelly Waves", "Classic Movie Star", "Vintage Glamour Hair",
+            "Hollywood Diva Hair", "Red Carpet Style", "Classic Starlet Hair", "Timeless Glamour"
         ]
-
+        
+        # Urban Streetwear - Modern, edgy cuts & contemporary street culture
+        self.urban_streetwear = [
+            "Urban Pixie Cut", "Street Style Bob", "Modern Undercut", "City Girl Hair",
+            "Urban Shag Cut", "Street Fashion Hair", "Modern Edge Cut", "Urban Chic Style",
+            "Street Style Layers", "Contemporary Urban Cut", "Modern City Hair", "Urban Trendy Cut",
+            "Street Culture Hair", "Modern Edgy Bob", "Urban Fashion Cut", "City Street Style"
+        ]
+        
+        # Gen-Z Viral Hair - TikTok trends, e-girl styles & social media aesthetics
+        self.genz_viral_hair = [
+            "E-Girl Hair Style", "TikTok Trendy Hair", "Gen-Z Aesthetic Hair", "Viral Hair Trend",
+            "Social Media Hair", "E-Girl Bangs", "TikTok Famous Hair", "Gen-Z Hair Trend",
+            "Viral Hair Cut", "Internet Culture Hair", "Digital Native Hair", "Gen-Z Style Hair",
+            "TikTok Hair Style", "Social Media Trend", "Viral Hair Look", "E-Girl Hair Cut"
+        ]
+        
+        # Disco Era Feathers - Feathered hair, Farrah Fawcett styles & 70s glamour
+        self.disco_era_feathers = [
+            "Farrah Fawcett Feathers", "70s Feathered Hair", "Disco Era Hair", "Feathered Shag",
+            "70s Layered Feathers", "Disco Glam Hair", "Feathered Flip Hair", "70s Angel Hair",
+            "Disco Feathered Layers", "70s Glamour Hair", "Feathered Side Sweep", "Disco Hair Style",
+            "70s Icon Hair", "Feathered Hair Cut", "Disco Era Layers", "70s Feathered Bob"
+        ]
+        
         # Hair Colors & Effects - ULTIMATE EXPANSION for infinite variety
         self.hair_colors = [
             # Premium Blondes - Expanded
@@ -157,6 +153,17 @@ class WomensHairstyleGenerator:
 
         # All categories combined for easy access
         self.all_categories = {
+            # New era-specific categories (matching outfits approach)
+            "eighties_big_hair": self.eighties_big_hair,
+            "nineties_grunge_layers": self.nineties_grunge_layers,
+            "y2k_cyber_glam": self.y2k_cyber_glam,
+            "old_money_elegance": self.old_money_elegance,
+            "hollywood_red_carpet": self.hollywood_red_carpet,
+            "urban_streetwear": self.urban_streetwear,
+            "genz_viral_hair": self.genz_viral_hair,
+            "disco_era_feathers": self.disco_era_feathers,
+            
+            # Legacy categories (for backward compatibility)
             "modern_trendy": self.modern_trendy,
             "classic_timeless": self.classic_timeless,
             "edgy_statement": self.edgy_statement,
