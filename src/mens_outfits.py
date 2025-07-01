@@ -14,6 +14,119 @@ class MensOutfitGenerator:
     """Generate random men's outfits with face and body-preserving prompts."""
     
     def __init__(self):
+        # 80s Power Business - Wall Street power suits, broad shoulders & bold patterns
+        self.eighties_power_business = [
+            "Power Suit with Suspenders",
+            "Wall Street Suit",
+            "Bold Shoulder Blazer",
+            "Pin-Stripe Power Suit",
+            "Executive Double-Breasted",
+            "Dynasty Business Suit",
+            "Miami Vice Suit",
+            "Corporate Power Look",
+            "Bold Pattern Suit",
+            "CEO Power Ensemble"
+        ]
+        
+        # 90s Grunge Revival - Flannel layers, alternative rock & casual rebellion
+        self.nineties_grunge_style = [
+            "Grunge Flannel Shirt",
+            "Alternative Rock Look",
+            "Layered Grunge Style",
+            "Casual Rebellion Outfit",
+            "Seattle Grunge Look",
+            "Indie Band Style",
+            "Vintage Grunge Ensemble",
+            "Alternative Fashion Look",
+            "Relaxed Grunge Style",
+            "Underground Style"
+        ]
+        
+        # Old Money Gentleman - Preppy polo, country club & ivy league classics
+        self.old_money_gentleman = [
+            "Country Club Polo",
+            "Preppy Blazer",
+            "Ivy League Sweater",
+            "Tennis Club Attire",
+            "Yacht Club Ensemble",
+            "Gentleman's Cardigan",
+            "Classic Prep Look",
+            "Elite Club Style",
+            "Refined Casual Wear",
+            "Heritage Style Outfit"
+        ]
+        
+        # Disco Retro Glam - 70s disco, bell-bottoms & metallic flair
+        self.disco_retro_style = [
+            "Disco Suit",
+            "Retro Bell-Bottoms",
+            "Metallic Shirt",
+            "70s Disco Look",
+            "Glam Rock Style",
+            "Vintage Disco Outfit",
+            "Funky Retro Ensemble",
+            "Dance Floor Style",
+            "Studio 54 Look",
+            "Retro Glamour Outfit"
+        ]
+        
+        # Y2K Cyber Future - Tech wear, cyber aesthetics & futuristic elements
+        self.y2k_cyber_style = [
+            "Cyber Tech Outfit",
+            "Futuristic Jumpsuit",
+            "Y2K Tech Wear",
+            "Cyber Punk Style",
+            "Digital Age Look",
+            "Tech Ninja Outfit",
+            "Matrix Style Ensemble",
+            "Future Tech Wear",
+            "Cyber Urban Style",
+            "High-Tech Fashion"
+        ]
+        
+        # Hollywood Classic - James Bond elegance, red carpet & timeless sophistication
+        self.hollywood_classic = [
+            "James Bond Tuxedo",
+            "Red Carpet Suit",
+            "Classic Hollywood Look",
+            "Elegant Evening Wear",
+            "Sophistication Suit",
+            "Movie Star Style",
+            "Formal Elegance",
+            "Timeless Tuxedo",
+            "Gentleman's Evening Wear",
+            "Classic Formal Attire"
+        ]
+        
+        # Urban Streetwear - Modern street culture, oversized fits & sneaker aesthetics
+        self.urban_streetwear = [
+            "Oversized Hoodie Style",
+            "Streetwear Ensemble",
+            "Urban Culture Look",
+            "Modern Street Style",
+            "Casual Streetwear",
+            "Hip-Hop Inspired Look",
+            "Urban Fashion Style",
+            "Street Culture Outfit",
+            "Contemporary Casual",
+            "City Street Style"
+        ]
+        
+        # Gen-Z Viral Trends - TikTok fashion, E-boy aesthetics & viral styles
+        self.genz_viral_trends = [
+            "E-Boy Style",
+            "TikTok Trendy Look",
+            "Viral Fashion Style",
+            "Gen-Z Aesthetic",
+            "Social Media Style",
+            "Trendy E-Boy Look",
+            "Modern Youth Style",
+            "Internet Culture Fashion",
+            "Digital Native Style",
+            "Contemporary Trend Look"
+        ]
+        
+        # Legacy categories (keeping for backward compatibility)
         # Modern & Trendy Silhouettes
         self.modern_trendy = [
             "Modern Business Suit",
@@ -154,6 +267,17 @@ class MensOutfitGenerator:
         
         # All categories combined for easy access
         self.all_categories = {
+            # New era-specific categories (matching women's style approach)
+            "eighties_power_business": self.eighties_power_business,
+            "nineties_grunge_style": self.nineties_grunge_style,
+            "old_money_gentleman": self.old_money_gentleman,
+            "disco_retro_style": self.disco_retro_style,
+            "y2k_cyber_style": self.y2k_cyber_style,
+            "hollywood_classic": self.hollywood_classic,
+            "urban_streetwear": self.urban_streetwear,
+            "genz_viral_trends": self.genz_viral_trends,
+            
+            # Legacy categories (for backward compatibility)
             "modern_trendy": self.modern_trendy,
             "classic_timeless": self.classic_timeless,
             "edgy_statement": self.edgy_statement,

@@ -245,7 +245,12 @@ class FluxAPI:
             
             # List of placeholders to check
             placeholders_to_check = [
-                # Men's outfit placeholders
+                # Men's outfit placeholders - NEW ERA-SPECIFIC STYLES
+                'EIGHTIES_POWER_BUSINESS', 'NINETIES_GRUNGE_OUTFIT', 'OLD_MONEY_GENTLEMAN',
+                'DISCO_RETRO_STYLE', 'Y2K_CYBER_STYLE', 'HOLLYWOOD_CLASSIC',
+                'URBAN_STREETWEAR', 'GENZ_VIRAL_TRENDS',
+                
+                # Men's outfit placeholders - LEGACY (for backward compatibility)
                 'RANDOM_MENS_OUTFIT', 'CASUAL_MENS_OUTFIT', 'MODERN_MENS_OUTFIT', 
                 'CLASSIC_MENS_OUTFIT', 'EDGY_MENS_OUTFIT', 'EVENING_MENS_OUTFIT',
                 'CULTURAL_MENS_OUTFIT', 'ANIME_MENS_OUTFIT',
@@ -366,7 +371,12 @@ class FluxAPI:
             
             # List of placeholders to check (same as edit_object)
             placeholders_to_check = [
-                # Men's outfit placeholders
+                # Men's outfit placeholders - NEW ERA-SPECIFIC STYLES
+                'EIGHTIES_POWER_BUSINESS', 'NINETIES_GRUNGE_OUTFIT', 'OLD_MONEY_GENTLEMAN',
+                'DISCO_RETRO_STYLE', 'Y2K_CYBER_STYLE', 'HOLLYWOOD_CLASSIC',
+                'URBAN_STREETWEAR', 'GENZ_VIRAL_TRENDS',
+                
+                # Men's outfit placeholders - LEGACY (for backward compatibility)
                 'RANDOM_MENS_OUTFIT', 'CASUAL_MENS_OUTFIT', 'MODERN_MENS_OUTFIT', 
                 'CLASSIC_MENS_OUTFIT', 'EDGY_MENS_OUTFIT', 'EVENING_MENS_OUTFIT',
                 'CULTURAL_MENS_OUTFIT', 'ANIME_MENS_OUTFIT',

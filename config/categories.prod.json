@@ -95,15 +95,16 @@
   "new_look_men": {
     "free": [
       {"label_key": "mens.random", "prompt": "RANDOM_MENS_OUTFIT"},
-      {"label_key": "mens.casual_outfit", "prompt": "CASUAL_MENS_OUTFIT"}
+      {"label_key": "mens.nineties_grunge", "prompt": "NINETIES_GRUNGE_OUTFIT"}
     ],
     "premium": [
-      {"label_key": "mens.modern_outfit", "prompt": "MODERN_MENS_OUTFIT"},
-      {"label_key": "mens.classic_outfit", "prompt": "CLASSIC_MENS_OUTFIT"},
-      {"label_key": "mens.edgy_outfit", "prompt": "EDGY_MENS_OUTFIT"},
-      {"label_key": "mens.evening_outfit", "prompt": "EVENING_MENS_OUTFIT"},
-      {"label_key": "mens.cultural_outfit", "prompt": "CULTURAL_MENS_OUTFIT"},
-      {"label_key": "mens.anime_outfit", "prompt": "ANIME_MENS_OUTFIT"}
+      {"label_key": "mens.eighties_power", "prompt": "EIGHTIES_POWER_BUSINESS"},
+      {"label_key": "mens.old_money_gentleman", "prompt": "OLD_MONEY_GENTLEMAN"},
+      {"label_key": "mens.disco_retro", "prompt": "DISCO_RETRO_STYLE"},
+      {"label_key": "mens.y2k_cyber", "prompt": "Y2K_CYBER_STYLE"},
+      {"label_key": "mens.hollywood_classic", "prompt": "HOLLYWOOD_CLASSIC"},
+      {"label_key": "mens.urban_streetwear", "prompt": "URBAN_STREETWEAR"},
+      {"label_key": "mens.genz_viral", "prompt": "GENZ_VIRAL_TRENDS"}
     ]
   },
   "new_look_random": {

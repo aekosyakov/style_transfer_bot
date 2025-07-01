@@ -659,11 +659,19 @@ class PromptVariationGenerator:
     def _is_dress_prompt(self, label_key: str, prompt: str) -> bool:
         """Check if this is a dress/outfit-related prompt."""
         dress_keywords = [
+            # Women's dress placeholders
             "RANDOM_DRESS", "NINETIES_REVIVAL_DRESS", "EIGHTIES_POWER_POP_DRESS",
             "OLD_MONEY_STYLE_DRESS", "DISCO_GLAM_DRESS", "Y2K_FUTURIST_DRESS",
             "HOLLYWOOD_GLAMOUR_DRESS", "URBAN_STREETSTYLE_DRESS", "GENZ_VIRAL_MIX_DRESS",
             "MODERN_DRESS", "CLASSIC_DRESS", "EDGY_DRESS", "EVENING_DRESS", 
             "CULTURAL_DRESS", "ANIME_DRESS", "CASUAL_OUTFIT", "dress.", "outfit",
+            
+            # Men's outfit placeholders - NEW ERA-SPECIFIC
+            "EIGHTIES_POWER_BUSINESS", "NINETIES_GRUNGE_OUTFIT", "OLD_MONEY_GENTLEMAN",
+            "DISCO_RETRO_STYLE", "Y2K_CYBER_STYLE", "HOLLYWOOD_CLASSIC",
+            "URBAN_STREETWEAR", "GENZ_VIRAL_TRENDS",
+            
+            # Men's outfit placeholders - LEGACY
             "RANDOM_MENS_OUTFIT", "CASUAL_MENS_OUTFIT", "MODERN_MENS_OUTFIT",
             "CLASSIC_MENS_OUTFIT", "EDGY_MENS_OUTFIT", "EVENING_MENS_OUTFIT",
             "CULTURAL_MENS_OUTFIT", "ANIME_MENS_OUTFIT", "mens."
@@ -752,7 +760,16 @@ class PromptVariationGenerator:
         """Generate dress variation using the specialized dress generator with gender preservation."""
         # Determine gender from preserve_gender parameter or original prompt
         is_mens_prompt = (preserve_gender == 'men' or 
-                         any(keyword in original_prompt for keyword in ["RANDOM_MENS_OUTFIT", "CASUAL_MENS_OUTFIT", "MODERN_MENS_OUTFIT", "CLASSIC_MENS_OUTFIT", "EDGY_MENS_OUTFIT", "EVENING_MENS_OUTFIT", "CULTURAL_MENS_OUTFIT", "ANIME_MENS_OUTFIT"]))
+                         any(keyword in original_prompt for keyword in [
+                             # New era-specific men's placeholders
+                             "EIGHTIES_POWER_BUSINESS", "NINETIES_GRUNGE_OUTFIT", "OLD_MONEY_GENTLEMAN",
+                             "DISCO_RETRO_STYLE", "Y2K_CYBER_STYLE", "HOLLYWOOD_CLASSIC",
+                             "URBAN_STREETWEAR", "GENZ_VIRAL_TRENDS",
+                             # Legacy men's placeholders
+                             "RANDOM_MENS_OUTFIT", "CASUAL_MENS_OUTFIT", "MODERN_MENS_OUTFIT", 
+                             "CLASSIC_MENS_OUTFIT", "EDGY_MENS_OUTFIT", "EVENING_MENS_OUTFIT", 
+                             "CULTURAL_MENS_OUTFIT", "ANIME_MENS_OUTFIT"
+                         ]))
         
         is_womens_prompt = (preserve_gender == 'women' or 
                            any(keyword in original_prompt for keyword in ["RANDOM_DRESS", "MODERN_DRESS", "CLASSIC_DRESS", "EDGY_DRESS", "EVENING_DRESS", "CULTURAL_DRESS", "ANIME_DRESS", "CASUAL_OUTFIT"]))
@@ -767,7 +784,26 @@ class PromptVariationGenerator:
             
             try:
                 # Determine which type of men's outfit generation to use
-                if "RANDOM_MENS_OUTFIT" in original_prompt:
+                # New era-specific categories (matching women's approach)
+                if "EIGHTIES_POWER_BUSINESS" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("eighties_power_business", include_color=True, include_material=True)
+                elif "NINETIES_GRUNGE_OUTFIT" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("nineties_grunge_style", include_color=True, include_material=True)
+                elif "OLD_MONEY_GENTLEMAN" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("old_money_gentleman", include_color=True, include_material=True)
+                elif "DISCO_RETRO_STYLE" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("disco_retro_style", include_color=True, include_material=True)
+                elif "Y2K_CYBER_STYLE" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("y2k_cyber_style", include_color=True, include_material=True)
+                elif "HOLLYWOOD_CLASSIC" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("hollywood_classic", include_color=True, include_material=True)
+                elif "URBAN_STREETWEAR" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("urban_streetwear", include_color=True, include_material=True)
+                elif "GENZ_VIRAL_TRENDS" in original_prompt:
+                    return mens_outfit_generator.get_outfit_by_category("genz_viral_trends", include_color=True, include_material=True)
+                
+                # Legacy categories (for backward compatibility)
+                elif "RANDOM_MENS_OUTFIT" in original_prompt:
                     return mens_outfit_generator.get_random_outfit(include_color=True, include_material=True, include_effects=False)
                 elif "CASUAL_MENS_OUTFIT" in original_prompt:
                     return mens_outfit_generator.get_casual_outfit()
