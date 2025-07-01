@@ -1351,7 +1351,10 @@ class StyleTransferBot:
                 
                 # Create random hairstyle option based on gender preference
                 if gender == 'men':
-                    logger.info(f"👨 Generating random men's hairstyle")
+                    logger.info(f"👨 ENHANCED DEBUG: Generating random men's hairstyle for user {user_id}")
+                    logger.info(f"   - Original category: {category}")
+                    logger.info(f"   - Original gender: {gender}")
+                    logger.info(f"   - Will use prompt: RANDOM_MENS_HAIRSTYLE")
                     random_option = {
                         'label_key': 'hair.men_random',
                         'prompt': 'RANDOM_MENS_HAIRSTYLE'
