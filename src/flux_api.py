@@ -252,11 +252,13 @@ class FluxAPI:
                 'EDGY_DRESS', 'EVENING_DRESS', 'CULTURAL_DRESS', 'ANIME_DRESS',
                 'RANDOM_HAIRSTYLE', 'MODERN_HAIRSTYLE', 'CLASSIC_HAIRSTYLE',
                 'EDGY_HAIRSTYLE', 'CULTURAL_HAIRSTYLE', 'ANIME_HAIRSTYLE',
-                # Gender-specific hairstyle placeholders (MISSING - THIS WAS THE BUG!)
+                # Gender-specific hairstyle placeholders
                 'RANDOM_MENS_HAIRSTYLE', 'MODERN_MENS_HAIRSTYLE', 'CLASSIC_MENS_HAIRSTYLE',
                 'EDGY_MENS_HAIRSTYLE', 'CULTURAL_MENS_HAIRSTYLE', 'ANIME_MENS_HAIRSTYLE',
                 'RANDOM_WOMENS_HAIRSTYLE', 'MODERN_WOMENS_HAIRSTYLE', 'CLASSIC_WOMENS_HAIRSTYLE',
-                'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE'
+                'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE',
+                # Background placeholders (MISSING BACKGROUND FIX!)
+                'RANDOM_BACKGROUND', 'RANDOM_CARTOON', 'RANDOM_ANIME', 'RANDOM_COMICS', 'RANDOM_ART_STYLE'
             ]
             
             logger.info(f"🔍 Checking if object_description contains any placeholders...")
@@ -357,11 +359,13 @@ class FluxAPI:
                 'EDGY_DRESS', 'EVENING_DRESS', 'CULTURAL_DRESS', 'ANIME_DRESS',
                 'RANDOM_HAIRSTYLE', 'MODERN_HAIRSTYLE', 'CLASSIC_HAIRSTYLE',
                 'EDGY_HAIRSTYLE', 'CULTURAL_HAIRSTYLE', 'ANIME_HAIRSTYLE',
-                # Gender-specific hairstyle placeholders (THE MISSING FIX!)
+                # Gender-specific hairstyle placeholders
                 'RANDOM_MENS_HAIRSTYLE', 'MODERN_MENS_HAIRSTYLE', 'CLASSIC_MENS_HAIRSTYLE',
                 'EDGY_MENS_HAIRSTYLE', 'CULTURAL_MENS_HAIRSTYLE', 'ANIME_MENS_HAIRSTYLE',
                 'RANDOM_WOMENS_HAIRSTYLE', 'MODERN_WOMENS_HAIRSTYLE', 'CLASSIC_WOMENS_HAIRSTYLE',
-                'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE'
+                'EDGY_WOMENS_HAIRSTYLE', 'CULTURAL_WOMENS_HAIRSTYLE', 'ANIME_WOMENS_HAIRSTYLE',
+                # Background placeholders (THE MISSING BACKGROUND FIX!)
+                'RANDOM_BACKGROUND', 'RANDOM_CARTOON', 'RANDOM_ANIME', 'RANDOM_COMICS', 'RANDOM_ART_STYLE'
             ]
             
             # Check if this is a special placeholder that needs variation
