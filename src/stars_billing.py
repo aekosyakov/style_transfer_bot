@@ -497,7 +497,7 @@ class StarsBillingManager:
             text = (
                 f"🎟️ **Available Passes**\n\n"
                 f"Choose the perfect pass for your needs:\n\n"
-                f"💎 **1-Day Pro** - Perfect for quick projects\n"
+                f"**1-Day Pro** - Perfect for quick projects\n"
                 f"• {pro_pass['flux_quota']} FLUX + {pro_pass['kling_quota']} Kling generations\n"
                 f"• {pro_days} access\n"
                 f"• {pro_pass['price_stars']} ⭐\n\n"

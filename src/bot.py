@@ -314,7 +314,7 @@ class StyleTransferBot:
             "⚙️ **Personal Settings**\n\n"
             f"🌐 Language: {L.get('lang_name', user_lang)}\n"
             f"👤 User ID: `{user_id}`\n"
-            f"📊 Status: {'💎 Premium' if redis_client.is_user_premium(user_id) else '🆓 Free'}\n\n"
+            f"📊 Status: {'Premium' if redis_client.is_user_premium(user_id) else '🆓 Free'}\n\n"
             "Use the buttons below to modify your settings:"
         )
         
@@ -406,7 +406,7 @@ class StyleTransferBot:
             "**Your Referral Benefits:**\n"
             "• 🎁 Get 1 week free premium for each friend\n"
             "• 🏆 Unlock exclusive styles at 5 referrals\n"
-            "• 💎 Permanent premium at 10 referrals\n\n"
+            "• 🏆 Permanent premium at 10 referrals\n\n"
             f"**Your Invite Link:**\n"
             f"`https://t.me/{bot_username}?start=ref_{update.effective_user.id}`\n\n"
             "**Share Message:**\n"
@@ -1207,7 +1207,7 @@ class StyleTransferBot:
             "⚙️ **Personal Settings**\n\n"
             f"🌐 Language: {L.get('lang_name', lang)}\n"
             f"👤 User ID: `{user_id}`\n"
-            f"📊 Status: {'💎 Premium' if redis_client.is_user_premium(user_id) else '🆓 Free'}\n\n"
+            f"📊 Status: {'Premium' if redis_client.is_user_premium(user_id) else '🆓 Free'}\n\n"
             "Use the buttons below to modify your settings:"
         )
         

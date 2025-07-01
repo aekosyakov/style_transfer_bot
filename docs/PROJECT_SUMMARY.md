@@ -40,7 +40,7 @@ style_transfer_bot/
 - **📽 Animation**: Bring images to life with Kling AI
 
 ### Premium Features
-- **💎 Advanced Effects**: Access to premium styles and animations
+- **Advanced Effects**: Access to premium styles and animations
 - **🚀 Priority Processing**: Faster queue processing
 - **✨ Higher Quality**: Enhanced output quality
 - **🎬 Extended Animations**: Longer video durations
