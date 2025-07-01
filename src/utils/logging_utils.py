@@ -41,8 +41,7 @@ def generate_request_id() -> str:
 
 def log_user_action(user_id: int, action: str, details: Dict[str, Any] = None, request_id: str = None):
     """Log user action with context."""
-    if logger is None:
-        setup_logging()
+    current_logger = get_logger()
     
     log_data = {
         "user_id": user_id,
@@ -51,13 +50,12 @@ def log_user_action(user_id: int, action: str, details: Dict[str, Any] = None, r
         "timestamp": datetime.now().isoformat(),
         "details": details or {}
     }
-    logger.info(f"👤 USER_ACTION: {json.dumps(log_data)}")
+    current_logger.info(f"👤 USER_ACTION: {json.dumps(log_data)}")
 
 def log_api_call(api_name: str, request_id: str, user_id: int, params: Dict[str, Any], 
                  duration: float = None, success: bool = None, error: str = None):
     """Log API call with timing and result information."""
-    if logger is None:
-        setup_logging()
+    current_logger = get_logger()
     
     log_data = {
         "api": api_name,
@@ -70,15 +68,14 @@ def log_api_call(api_name: str, request_id: str, user_id: int, params: Dict[str,
         "error": error
     }
     if success:
-        logger.info(f"🌐 API_SUCCESS: {json.dumps(log_data)}")
+        current_logger.info(f"🌐 API_SUCCESS: {json.dumps(log_data)}")
     else:
-        logger.error(f"🌐 API_FAILURE: {json.dumps(log_data)}")
+        current_logger.error(f"🌐 API_FAILURE: {json.dumps(log_data)}")
 
 def log_processing_step(step: str, request_id: str, user_id: int, details: Dict[str, Any] = None, 
                        success: bool = True, error: str = None):
     """Log processing step with context."""
-    if logger is None:
-        setup_logging()
+    current_logger = get_logger()
     
     log_data = {
         "step": step,
@@ -90,9 +87,9 @@ def log_processing_step(step: str, request_id: str, user_id: int, details: Dict[
         "error": error
     }
     if success:
-        logger.info(f"⚙️  PROCESSING: {json.dumps(log_data)}")
+        current_logger.info(f"⚙️  PROCESSING: {json.dumps(log_data)}")
     else:
-        logger.error(f"⚙️  PROCESSING_ERROR: {json.dumps(log_data)}")
+        current_logger.error(f"⚙️  PROCESSING_ERROR: {json.dumps(log_data)}")
 
 def get_logger():
     """Get the global logger, initializing if needed."""

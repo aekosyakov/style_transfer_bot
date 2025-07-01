@@ -18,8 +18,8 @@ class TestUserWorkflowIntegration:
         """Test that user language detection components are available."""
         # Test that the key modules and functions exist for user language management
         try:
-            import redis_client
-            import localization
+            from src.redis_client import redis_client
+            from src import localization
             
             # Verify critical functions exist
             assert hasattr(redis_client, 'get_user_language')
@@ -53,7 +53,7 @@ class TestUserWorkflowIntegration:
     def test_premium_status_workflow(self):
         """Test premium status checking functionality."""
         try:
-            import redis_client
+            from src.redis_client import redis_client
             
             # Verify premium functions exist
             assert hasattr(redis_client, 'is_user_premium')
@@ -74,7 +74,7 @@ class TestUserWorkflowIntegration:
     def test_language_change_workflow(self):
         """Test language change workflow components."""
         try:
-            import redis_client
+            from src.redis_client import redis_client
             
             # Test that set_user_language works
             with patch.object(redis_client, 'set_user_language') as mock_set_lang:
@@ -87,8 +87,8 @@ class TestUserWorkflowIntegration:
     def test_user_service_dependencies(self):
         """Test that user service dependencies are available."""
         try:
-            import redis_client
-            import localization
+            from src.redis_client import redis_client
+            from src import localization
             
             # Test that key functions exist
             assert hasattr(redis_client, 'get_user_language')
@@ -103,8 +103,8 @@ class TestUserWorkflowIntegration:
     def test_critical_user_functions_exist(self):
         """Test that all critical user functions are available for extraction."""
         try:
-            import redis_client
-            import localization
+            from src.redis_client import redis_client
+            from src import localization
             
             # These should be accessible through imports
             assert hasattr(redis_client, 'get_user_language')
@@ -127,12 +127,12 @@ class TestUserWorkflowIntegration:
         # This test verifies that all the components needed for user service 
         # extraction are present and functional
         
-        required_modules = ['redis_client', 'localization']
+        required_modules = [('src.redis_client', 'redis_client'), ('src.localization', 'localization')]
         available_modules = []
         
-        for module_name in required_modules:
+        for module_path, module_name in required_modules:
             try:
-                module = __import__(module_name)
+                module = __import__(module_path, fromlist=[module_name])
                 available_modules.append(module_name)
             except ImportError:
                 pass

@@ -23,7 +23,7 @@ class FluxAPI:
         model_type: str = "pro",
         aspect_ratio: str = "match_input_image",
         output_format: str = "jpg",
-        safety_tolerance: int = 2,
+        safety_tolerance: int = 1,
         seed: Optional[int] = None
     ) -> Optional[str]:
         """

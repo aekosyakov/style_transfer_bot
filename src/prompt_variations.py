@@ -907,52 +907,54 @@ class PromptVariationGenerator:
             if not dress_generator:
                 logger.warning("Dress generator not available, using fallback")
                 return original_prompt + ", preserve original face, body, and skin color"
-        
-        try:
-            # Determine which type of dress generation to use
-            if "RANDOM_DRESS" in original_prompt:
-                return dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
-            # New trendy categories
-            elif "NINETIES_REVIVAL_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("nineties_revival", include_color=True, include_material=True)
-            elif "EIGHTIES_POWER_POP_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("eighties_power_pop", include_color=True, include_material=True)
-            elif "OLD_MONEY_STYLE_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)
-            elif "DISCO_GLAM_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("disco_glam", include_color=True, include_material=True)
-            elif "Y2K_FUTURIST_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("y2k_futurist", include_color=True, include_material=True)
-            elif "HOLLYWOOD_GLAMOUR_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("hollywood_glamour", include_color=True, include_material=True)
-            elif "URBAN_STREETSTYLE_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("urban_streetstyle", include_color=True, include_material=True)
-            elif "GENZ_VIRAL_MIX_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("genz_viral_mix", include_color=True, include_material=True)
-            # Legacy categories (for backward compatibility)
-            elif "MODERN_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("nineties_revival", include_color=True, include_material=True)  # Map to closest new category
-            elif "CLASSIC_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)  # Map to closest new category
-            elif "EDGY_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("y2k_futurist", include_color=True, include_material=True)  # Map to closest new category
-            elif "EVENING_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("hollywood_glamour", include_color=True, include_material=True)  # Map to closest new category
-            elif "CULTURAL_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)  # Map to closest new category
-            elif "ANIME_DRESS" in original_prompt:
-                return dress_generator.get_dress_by_category("genz_viral_mix", include_color=True, include_material=True)  # Map to closest new category
-            elif "CASUAL_OUTFIT" in original_prompt:
-                return dress_generator.get_casual_outfit()
-            elif "change_outfit" in label_key or "outfit" in original_prompt:
-                return dress_generator.get_random_dress(include_color=True, include_material=False, include_effects=False)
-            else:
-                # General dress variation
-                return dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
-                
-        except Exception as e:
-            logger.error(f"Error generating dress variation: {e}")
-            return original_prompt + ", preserve original face, body proportions, and skin color exactly"
+            
+            try:
+                # Determine which type of dress generation to use
+                if "RANDOM_DRESS" in original_prompt:
+                    logger.info("🎯 Generating random women's dress")
+                    return dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
+                # New trendy categories
+                elif "NINETIES_REVIVAL_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("nineties_revival", include_color=True, include_material=True)
+                elif "EIGHTIES_POWER_POP_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("eighties_power_pop", include_color=True, include_material=True)
+                elif "OLD_MONEY_STYLE_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)
+                elif "DISCO_GLAM_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("disco_glam", include_color=True, include_material=True)
+                elif "Y2K_FUTURIST_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("y2k_futurist", include_color=True, include_material=True)
+                elif "HOLLYWOOD_GLAMOUR_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("hollywood_glamour", include_color=True, include_material=True)
+                elif "URBAN_STREETSTYLE_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("urban_streetstyle", include_color=True, include_material=True)
+                elif "GENZ_VIRAL_MIX_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("genz_viral_mix", include_color=True, include_material=True)
+                # Legacy categories (for backward compatibility)
+                elif "MODERN_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("nineties_revival", include_color=True, include_material=True)  # Map to closest new category
+                elif "CLASSIC_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)  # Map to closest new category
+                elif "EDGY_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("y2k_futurist", include_color=True, include_material=True)  # Map to closest new category
+                elif "EVENING_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("hollywood_glamour", include_color=True, include_material=True)  # Map to closest new category
+                elif "CULTURAL_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("old_money_style", include_color=True, include_material=True)  # Map to closest new category
+                elif "ANIME_DRESS" in original_prompt:
+                    return dress_generator.get_dress_by_category("genz_viral_mix", include_color=True, include_material=True)  # Map to closest new category
+                elif "CASUAL_OUTFIT" in original_prompt:
+                    return dress_generator.get_casual_outfit()
+                elif "change_outfit" in label_key or "outfit" in original_prompt:
+                    return dress_generator.get_random_dress(include_color=True, include_material=False, include_effects=False)
+                else:
+                    # General dress variation
+                    logger.info("🎯 Generating general women's dress variation")
+                    return dress_generator.get_random_dress(include_color=True, include_material=True, include_effects=False)
+                    
+            except Exception as e:
+                logger.error(f"Error generating dress variation: {e}")
+                return original_prompt + ", preserve original face, body proportions, and skin color exactly"
         
         # If we reach here, handle cases where preserve_gender is set but no specific prompt detected
         if preserve_gender == 'men' and mens_outfit_generator:

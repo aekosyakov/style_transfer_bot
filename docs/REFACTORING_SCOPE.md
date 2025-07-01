@@ -89,12 +89,15 @@
 - Application lifecycle
 
 ## 📈 **Progress Tracking**
-- ✅ **Phase 1**: utils/logging_utils.py (DONE)
-- 🔄 **Phase 2**: Complete utils package  
-- ⏳ **Phase 3**: Extract services
-- ⏳ **Phase 4**: Extract UI components
-- ⏳ **Phase 5**: Extract handlers
-- ⏳ **Phase 6**: Refactor main bot class
+- ✅ **Phase 1**: utils/logging_utils.py (DONE - 97 lines, 11 tests)
+- ✅ **Phase 2**: utils/retry_utils.py (DONE - 49 lines, 14 tests)  
+- 🔄 **Phase 3**: Extract services (3 files)
+  - 👤 user_service.py - User language, premium status (~150 lines)
+  - 🔧 processing_service.py - Category logic, gender mapping (~200 lines)
+  - 📊 analytics_service.py - User action tracking, metrics (~100 lines)
+- ⏳ **Phase 4**: Extract UI components (2 files)
+- ⏳ **Phase 5**: Extract handlers (4 files)
+- ⏳ **Phase 6**: Refactor main bot class (~150 lines)
 
 ## 🎯 **Success Metrics**
 - All files under 300 lines ✅ (logging_utils: 97 lines)
